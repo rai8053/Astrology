@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-[#FDFBF7] text-[#1A1A1A] font-sans antialiased selection:bg-[#D4AF37]/20 selection:text-[#1A1A1A];
+  }
+}
+
+/* Custom scrollbar matching editorial beige/charcoal style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FDFBF7;
+}
+::-webkit-scrollbar-thumb {
+  background: #1A1A1A/20;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1A1A1A/45;
+}
+
+/* Editorial aesthetic card structures */
+.editorial-card {
+  @apply bg-white border border-[#1A1A1A]/10 p-6 md:p-8 rounded-none transition-all duration-300 shadow-sm hover:shadow-md hover:border-[#1A1A1A]/20;
+}
+
+.editorial-divider {
+  @apply border-[#1A1A1A]/10 my-4;
+}
+
+.editorial-divider-thick {
+  @apply border-[#1A1A1A] my-6;
+}
+
+/* Ink Buttons */
+.ink-btn-primary {
+  @apply bg-[#1A1A1A] hover:bg-[#1A1A1A]/90 text-white font-serif uppercase tracking-widest text-xs px-6 py-3 transition-all duration-300 active:scale-[0.98] cursor-pointer inline-flex items-center justify-center gap-2;
+}
+
+.ink-btn-secondary {
+  @apply border border-[#1A1A1A] hover:bg-[#1A1A1A]/5 text-[#1A1A1A] font-serif uppercase tracking-widest text-xs px-6 py-3 transition-all duration-300 active:scale-[0.98] cursor-pointer inline-flex items-center justify-center gap-2;
+}
+
+/* Input Fields styled elegantly */
+.editorial-input {
+  @apply w-full bg-[#FDFBF7] border-b border-[#1A1A1A]/20 focus:border-[#1A1A1A] text-sm text-[#1A1A1A] py-2 outline-none transition-all duration-300 font-serif placeholder:font-sans placeholder:text-slate-400;
+}
