@@ -1,35 +1,53 @@
-# Soma & Surya Setup Script
-Write-Host "🚀 Setting up Soma & Surya Astrology Platform..." -ForegroundColor Cyan
+param(
+  [switch]$Deploy
+)
+
+$ErrorActionPreference = "Stop"
+$cyan = "Cyan"; $green = "Green"; $yellow = "Yellow"; $red = "Red"
+
+Write-Host "🚀 Setting up astrology platform..." -ForegroundColor $cyan
 
 # Check Node.js
-$nodeVersion = node --version 2>$null
-if (-not $nodeVersion) {
-    Write-Host "❌ Node.js is required. Install from https://nodejs.org" -ForegroundColor Red
-    exit 1
+$nodeVer = node --version 2>$null
+if (-not $nodeVer) {
+  Write-Host "❌ Node.js >=18 required. Install from https://nodejs.org" -ForegroundColor $red
+  exit 1
 }
-Write-Host "✓ Node.js $nodeVersion detected" -ForegroundColor Green
+Write-Host "✓ Node.js $nodeVer detected" -ForegroundColor $green
 
 # Install dependencies
-Write-Host "`n📦 Installing root dependencies..." -ForegroundColor Cyan
+Write-Host "`n📦 Installing dependencies..." -ForegroundColor $cyan
 npm install
-
-Write-Host "`n📦 Installing backend dependencies..." -ForegroundColor Cyan
-Set-Location backend
+Push-Location backend
 npm install
-
-Write-Host "`n📦 Installing frontend dependencies..." -ForegroundColor Cyan
-Set-Location ../frontend
+Pop-Location
+Push-Location frontend
 npm install
+Pop-Location
 
-# Setup environment
-Set-Location ..
+# Setup .env
 if (-not (Test-Path "backend\.env")) {
-    Copy-Item "backend\.env.example" "backend\.env"
-    Write-Host "⚙️ Created backend\.env from .env.example - edit with your keys" -ForegroundColor Yellow
+  Copy-Item "backend\.env.example" "backend\.env"
+  Write-Host "⚙️ Created backend\.env — edit with your API keys" -ForegroundColor $yellow
 }
 
-Write-Host "`n✅ Setup complete!" -ForegroundColor Green
-Write-Host "`nNext steps:" -ForegroundColor Cyan
-Write-Host "1. Edit backend\.env with your API keys"
-Write-Host "2. Run: cd backend; npx prisma migrate dev --name init"
-Write-Host "3. Run: npm run dev"
+# Generate Prisma client
+Push-Location backend
+npx prisma generate
+Pop-Location
+
+if ($Deploy) {
+  Write-Host "`n🐳 Deploying with Docker..." -ForegroundColor $cyan
+  docker compose down --remove-orphans 2>$null
+  docker compose up -d --build
+  docker compose exec backend npx prisma migrate deploy
+  docker compose exec backend npx prisma db seed
+  Write-Host "✅ Deployed! Frontend: http://localhost" -ForegroundColor $green
+} else {
+  Write-Host "`n✅ Setup complete!" -ForegroundColor $green
+  Write-Host "`nNext steps:" -ForegroundColor $cyan
+  Write-Host "1. Edit backend\.env with your API keys"
+  Write-Host "2. cd backend; npx prisma migrate dev --name init"
+  Write-Host "3. npm run dev"
+  Write-Host "`nOr deploy now:  .\scripts\setup.ps1 -Deploy"
+}
