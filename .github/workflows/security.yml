@@ -1,0 +1,101 @@
+name: Security Scan
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  issues: write
+
+jobs:
+  audit:
+    name: npm Audit
+    runs-on: ubuntu-24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Audit Backend
+        working-directory: backend
+        run: |
+          npm audit --audit-level=moderate > audit-backend.txt || true
+          cat audit-backend.txt
+
+      - name: Audit Frontend
+        working-directory: frontend
+        run: |
+          npm audit --audit-level=moderate > audit-frontend.txt || true
+          cat audit-frontend.txt
+
+      - name: Upload Audit Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-reports
+          path: |
+            backend/audit-backend.txt
+            frontend/audit-frontend.txt
+          retention-days: 14
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v3
+
+  trivy:
+    name: Trivy Scan
+    runs-on: ubuntu-24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: 0
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy
+
+  report:
+    name: Generate Report
+    runs-on: ubuntu-24
+    needs: [audit, codeql, trivy]
+    if: always()
+    steps:
+      - name: Security Scan Summary
+        run: |
+          echo "## 🛡️ Weekly Security Scan Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- npm Audit: ${{ needs.audit.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- CodeQL Analysis: ${{ needs.codeql.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Trivy Filesystem Scan: ${{ needs.trivy.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Review findings in GitHub Security tab." >> $GITHUB_STEP_SUMMARY

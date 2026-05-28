@@ -1,0 +1,32 @@
+name: 'Setup Node & Dependencies'
+description: 'Reusable setup with Node 22, npm cache, and dependency installs'
+inputs:
+  working-directory:
+    description: 'Directory to install deps in (backend or frontend)'
+    required: true
+  install:
+    description: 'Run npm ci'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js 22 LTS
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: npm
+        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+
+    - name: Install dependencies
+      if: inputs.install == 'true'
+      working-directory: ${{ inputs.working-directory }}
+      run: npm ci
+      shell: bash
+
+    - name: Generate Prisma Client
+      if: inputs.working-directory == 'backend' && inputs.install == 'true'
+      working-directory: backend
+      run: npx prisma generate
+      shell: bash
