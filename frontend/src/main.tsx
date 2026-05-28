@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { AnimatePresence } from 'framer-motion';
 import App from './app/App';
+import { ScrollProgress } from './components/ScrollProgress';
 import './styles/globals.css';
 
 function ThemeObserver() {
@@ -36,13 +38,16 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <ThemeObserver />
-        <App />
+        <ScrollProgress />
+        <AnimatePresence mode="wait">
+          <App />
+        </AnimatePresence>
         <Toaster
           position="top-right"
           toastOptions={{
             className: 'font-sans text-sm',
             duration: 4000,
-            style: { background: 'var(--toast-bg, #1a1a1a)', color: 'var(--toast-color, #fdfbf7)' },
+            style: { background: '#1a0b3a', color: '#fdfbf7', borderRadius: '12px', border: '1px solid rgba(212,175,55,0.2)' },
           }}
         />
       </QueryClientProvider>

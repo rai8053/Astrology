@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Send, MessageCircle, Trash2, Sparkles } from 'lucide-react';
+import { Send, MessageCircle, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { PremiumButton } from '@/components/PremiumButton';
+import { PremiumCard } from '@/components/ui/PremiumCard';
+import { Skeleton } from '@/components/Skeleton';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -16,12 +18,59 @@ interface ChatSession {
   updatedAt: string;
 }
 
+const suggestedPrompts = [
+  'What is my ruling planet?',
+  'How to balance my dosha?',
+  'Best gemstone for Leo?',
+  'What career suits my chart?',
+];
+
+function TypingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div className="glass-card rounded-2xl px-5 py-3.5">
+        <div className="flex gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+              className="w-2 h-2 bg-gold/60 rounded-full"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChatBubble({ message, index }: { message: ChatMessage; index: number }) {
+  const isUser = message.role === 'user';
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+    >
+      <div className={`max-w-[85%] md:max-w-[75%] p-3.5 rounded-2xl text-sm leading-relaxed ${
+        isUser
+          ? 'bg-gradient-to-br from-gold to-amber-400 text-cosmic shadow-lg shadow-gold/20'
+          : 'glass-card'
+      }`}>
+        <p className="whitespace-pre-wrap">{message.content}</p>
+      </div>
+    </motion.div>
+  );
+}
+
 export function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [streaming, setStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: sessionsData, refetch: refetchSessions } = useQuery({
     queryKey: ['chat-sessions'],
@@ -42,7 +91,9 @@ export function ChatPage() {
     if (!input.trim() || streaming) return;
     setMessages((prev) => [...prev, { role: 'user', content: input }]);
     setStreaming(true);
-    chatMutation.mutate(input, { onSettled: () => { setStreaming(false); setInput(''); } });
+    chatMutation.mutate(input, {
+      onSettled: () => { setStreaming(false); setInput(''); inputRef.current?.focus(); },
+    });
   };
 
   const newSession = () => {
@@ -62,92 +113,137 @@ export function ChatPage() {
     } catch { /* ignore */ }
   };
 
+  const deleteSession = async (id: string) => {
+    try {
+      await api.delete(`/api/chat/sessions/${id}`);
+      if (sessionId === id) newSession();
+      refetchSessions();
+    } catch { /* ignore */ }
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-serif font-bold">AI Astrologer</h1>
-          <p className="text-ink/60 dark:text-parchment/60 mt-1">Chat with your Vedic guide</p>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold">AI Astrologer</h1>
+          <p className="text-ink/50 dark:text-parchment/50 mt-1">Chat with your Vedic guide</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={newSession}><Sparkles className="w-4 h-4" /> New Chat</Button>
-      </div>
+        <PremiumButton variant="ghost" size="sm" icon={<Sparkles className="w-4 h-4" />} onClick={newSession}>
+          New Chat
+        </PremiumButton>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-2">
-          <Card className="p-3">
-            <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-ink/50 mb-3">History</h3>
+          <PremiumCard glass className="p-3">
+            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/40 dark:text-parchment/40 mb-3 px-1">History</h3>
             {sessionsData?.data?.length ? (
               <div className="space-y-1">
                 {sessionsData.data.map((s) => (
-                  <button key={s.id} onClick={() => loadSession(s.id)}
-                    className="w-full text-left text-xs p-2 rounded-lg hover:bg-ink/5 dark:hover:bg-white/5 truncate transition-colors">
-                    {s.title || 'Chat'}
-                  </button>
+                  <motion.div
+                    key={s.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="group flex items-center gap-1"
+                  >
+                    <button
+                      onClick={() => loadSession(s.id)}
+                      className="flex-1 text-left text-xs p-2 rounded-lg hover:bg-gold/10 dark:hover:bg-white/[0.04] truncate transition-colors text-ink/60 dark:text-parchment/60 hover:text-gold"
+                    >
+                      {s.title || 'Chat'}
+                    </button>
+                    <button
+                      onClick={() => deleteSession(s.id)}
+                      className="p-1.5 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </motion.div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-ink/40">No sessions yet</p>
+              <p className="text-xs text-ink/30 dark:text-parchment/30 px-1">No sessions yet</p>
             )}
-          </Card>
+          </PremiumCard>
         </div>
 
         <div className="lg:col-span-3">
-          <Card className="h-[500px] flex flex-col">
-            <div className="flex-1 overflow-y-auto space-y-4 p-4">
-              {messages.length === 0 && !streaming && (
-                <div className="text-center py-16">
-                  <MessageCircle className="w-12 h-12 text-ink/20 mx-auto mb-3" />
-                  <p className="text-ink/50 text-sm">Ask anything about astrology, spirituality, or life guidance</p>
-                  <div className="flex flex-wrap justify-center gap-2 mt-4">
-                    {['What is my ruling planet?', 'How to balance my dosha?', 'Best gemstone for Leo?'].map((q, i) => (
-                      <button key={i} onClick={() => { setInput(q); }}
-                        className="px-3 py-1.5 text-xs border border-ink/20 dark:border-white/20 rounded-full hover:border-gold/50 transition-colors">
-                        {q}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-lg text-sm ${
-                    m.role === 'user'
-                      ? 'bg-gold text-cosmic'
-                      : 'bg-ink/5 dark:bg-white/5'
-                  }`}>
-                    {m.content}
-                  </div>
-                </div>
-              ))}
-              {streaming && (
-                <div className="flex justify-start">
-                  <div className="bg-ink/5 dark:bg-white/5 p-3 rounded-lg">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-gold rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-gold rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                      <div className="w-2 h-2 bg-gold rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+          <PremiumCard glass className="h-[600px] flex flex-col p-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+              <AnimatePresence>
+                {messages.length === 0 && !streaming && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center py-16"
+                  >
+                    <motion.div
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    >
+                      <MessageCircle className="w-14 h-14 text-gold/20 mx-auto mb-4" />
+                    </motion.div>
+                    <p className="text-ink/40 dark:text-parchment/40 text-sm mb-6">
+                      Ask anything about astrology, spirituality, or life guidance
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
+                      {suggestedPrompts.map((q, i) => (
+                        <motion.button
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => { setInput(q); inputRef.current?.focus(); }}
+                          className="px-4 py-2 text-xs border border-gold/20 rounded-full hover:border-gold/50 hover:bg-gold/5 transition-all text-ink/50 dark:text-parchment/50"
+                        >
+                          {q}
+                        </motion.button>
+                      ))}
                     </div>
-                  </div>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {messages.map((m, i) => (
+                <ChatBubble key={i} message={m} index={i} />
+              ))}
+
+              {streaming && <TypingIndicator />}
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="border-t border-ink/10 dark:border-white/10 p-4 flex gap-2">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask your astrologer..."
-                className="flex-1 bg-transparent border-b border-ink/20 dark:border-white/20 outline-none focus:border-gold py-2 text-sm font-serif"
-              />
-              <Button size="sm" onClick={handleSend} loading={chatMutation.isPending}>
-                <Send className="w-4 h-4" />
-              </Button>
+            <div className="border-t border-ink/10 dark:border-white/[0.06] p-4 md:p-5">
+              <div className="flex gap-3 items-center">
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder="Ask your astrologer..."
+                  className="flex-1 bg-transparent border-b border-ink/20 dark:border-white/10 outline-none focus:border-gold py-2.5 text-sm font-serif placeholder:text-ink/30 dark:placeholder:text-parchment/30 transition-colors"
+                />
+                <PremiumButton
+                  size="sm"
+                  onClick={handleSend}
+                  loading={chatMutation.isPending}
+                  icon={<Send className="w-4 h-4" />}
+                />
+              </div>
             </div>
-          </Card>
+          </PremiumCard>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

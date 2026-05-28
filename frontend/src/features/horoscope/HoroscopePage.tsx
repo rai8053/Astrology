@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { RefreshCw, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
-import { Card } from '@/components/ui/Card';
+import { PremiumCard } from '@/components/ui/PremiumCard';
+import { CardSkeleton } from '@/components/Skeleton';
 import { RASHIS } from '@/lib/utils';
 import type { DailyHoroscope } from '@shared/types/api';
+
+const staggerContainer = { animate: { transition: { staggerChildren: 0.03 } } };
+const staggerItem = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 export function HoroscopePage() {
   const [selectedRashi, setSelectedRashi] = useState('Mesh');
@@ -17,87 +21,127 @@ export function HoroscopePage() {
   const horoscope = data?.data;
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-serif font-bold">Daily Horoscope</h1>
-        <p className="text-ink/60 dark:text-parchment/60 mt-1">Sidereal Vedic forecasts for your Moon sign</p>
-      </div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold">Daily Horoscope</h1>
+        <p className="text-ink/50 dark:text-parchment/50 mt-1">Sidereal Vedic forecasts for your Moon sign</p>
+      </motion.div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
+      <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
         {RASHIS.map((r) => (
-          <button
+          <motion.button
             key={r.key}
+            variants={staggerItem}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setSelectedRashi(r.key)}
-            className={`p-3 text-center border rounded-lg transition-all ${
+            className={`p-3 text-center rounded-xl transition-all duration-300 ${
               selectedRashi === r.key
-                ? 'bg-gold text-cosmic border-gold'
-                : 'border-ink/10 dark:border-white/10 hover:border-gold/50 bg-white dark:bg-cosmic-light/50'
+                ? 'bg-gradient-to-br from-gold to-amber-400 text-cosmic shadow-lg shadow-gold/20'
+                : 'glass-card hover:cosmic-glow'
             }`}
           >
-            <span className="text-lg block">{r.symbol}</span>
-            <span className="text-[10px] font-sans font-bold uppercase block truncate">{r.key}</span>
-          </button>
+            <span className="text-lg block mb-0.5">{r.symbol}</span>
+            <span className="text-[9px] font-sans font-bold uppercase block truncate tracking-wider">{r.key}</span>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <RefreshCw className="w-8 h-8 text-gold animate-spin" />
-        </div>
+        <CardSkeleton />
       ) : horoscope ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        >
           <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <span className="text-[10px] uppercase tracking-widest font-sans font-bold text-gold">Cosmic Forecast</span>
-              <h2 className="text-3xl font-serif font-bold mt-1">{horoscope.rashi} <span className="text-lg font-normal text-ink/60">({horoscope.englishName})</span></h2>
-              <p className="text-lg leading-relaxed mt-4">{horoscope.general}</p>
-            </Card>
+            <PremiumCard glass glow>
+              <span className="text-[9px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Cosmic Forecast</span>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold mt-1">
+                {horoscope.rashi} <span className="text-lg font-normal text-ink/40 dark:text-parchment/40">({horoscope.englishName})</span>
+              </h2>
+              <p className="text-base leading-relaxed mt-4 text-ink/70 dark:text-parchment/70">{horoscope.general}</p>
+            </PremiumCard>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { label: 'Career', value: horoscope.career, color: 'border-l-blue-500' },
-                { label: 'Finance', value: horoscope.finance, color: 'border-l-green-500' },
-                { label: 'Love', value: horoscope.love, color: 'border-l-pink-500' },
-                { label: 'Health', value: horoscope.health, color: 'border-l-teal-500' },
+                { label: 'Career', value: horoscope.career, color: 'from-blue-500/10', border: 'border-l-blue-400' },
+                { label: 'Finance', value: horoscope.finance, color: 'from-green-500/10', border: 'border-l-green-400' },
+                { label: 'Love', value: horoscope.love, color: 'from-pink-500/10', border: 'border-l-pink-400' },
+                { label: 'Health', value: horoscope.health, color: 'from-teal-500/10', border: 'border-l-teal-400' },
               ].map((section, i) => (
-                <Card key={i} className={`border-l-4 ${section.color}`}>
-                  <span className="text-[10px] uppercase font-sans font-bold tracking-widest text-ink/50">{section.label}</span>
-                  <p className="text-sm mt-2 leading-relaxed">{section.value}</p>
-                </Card>
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * i }}
+                >
+                  <PremiumCard glass className={`border-l-4 ${section.border} relative overflow-hidden`}>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${section.color} to-transparent opacity-50`} />
+                    <div className="relative">
+                      <span className="text-[9px] uppercase font-sans font-bold tracking-widest text-ink/40 dark:text-parchment/40">{section.label}</span>
+                      <p className="text-sm mt-2 leading-relaxed text-ink/70 dark:text-parchment/70">{section.value}</p>
+                    </div>
+                  </PremiumCard>
+                </motion.div>
               ))}
             </div>
           </div>
 
           <div className="space-y-6">
-            <Card>
-              <span className="text-[10px] uppercase font-sans font-bold tracking-wider text-ink/50">Energy Level</span>
+            <PremiumCard glass>
+              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-ink/40 dark:text-parchment/40">Energy Level</span>
               <div className="flex items-end justify-between mt-2">
-                <span className="text-sm">Vitality</span>
-                <span className="text-2xl font-serif font-bold">{horoscope.energyLevel}%</span>
+                <span className="text-sm text-ink/60 dark:text-parchment/60">Vitality</span>
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-3xl font-serif font-bold text-gold"
+                >
+                  {horoscope.energyLevel}%
+                </motion.span>
               </div>
-              <div className="w-full h-1.5 bg-ink/10 dark:bg-white/10 rounded-full mt-2 overflow-hidden">
-                <div className="bg-gold h-full rounded-full transition-all duration-1000" style={{ width: `${horoscope.energyLevel}%` }} />
+              <div className="w-full h-2 bg-ink/5 dark:bg-white/5 rounded-full mt-2 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${horoscope.energyLevel}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  className="h-full rounded-full bg-gradient-to-r from-gold to-amber-400"
+                />
               </div>
-            </Card>
+            </PremiumCard>
 
-            <Card>
-              <span className="text-[10px] uppercase font-sans font-bold tracking-wider text-ink/50">Lucky Attributes</span>
+            <PremiumCard glass>
+              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-ink/40 dark:text-parchment/40">Lucky Attributes</span>
               <div className="space-y-3 mt-3">
-                <div className="flex justify-between text-sm"><span className="text-ink/60">Number</span><span className="font-bold">{horoscope.luckyNumber}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-ink/60">Color</span><span className="font-bold">{horoscope.luckyColor}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-ink/60">Time</span><span className="font-bold">{horoscope.luckyTime}</span></div>
+                {[
+                  { label: 'Number', value: horoscope.luckyNumber },
+                  { label: 'Color', value: horoscope.luckyColor },
+                  { label: 'Time', value: horoscope.luckyTime },
+                ].map((attr, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 * i }}
+                    className="flex justify-between text-sm"
+                  >
+                    <span className="text-ink/40 dark:text-parchment/40">{attr.label}</span>
+                    <span className="font-bold">{attr.value}</span>
+                  </motion.div>
+                ))}
               </div>
-            </Card>
+            </PremiumCard>
 
-            <Card className="border-gold/30">
-              <span className="text-[10px] uppercase font-sans font-bold tracking-wider text-gold">Remedy</span>
-              <p className="text-sm mt-2 italic">{horoscope.remedy}</p>
-            </Card>
+            <PremiumCard glass className="gold-border">
+              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-gold">Remedy</span>
+              <p className="text-sm mt-2 italic text-ink/70 dark:text-parchment/70">{horoscope.remedy}</p>
+            </PremiumCard>
           </div>
-        </div>
-      ) : (
-        <div className="text-center py-20 text-ink/50">Select a Rashi to view your horoscope</div>
-      )}
-    </div>
+        </motion.div>
+      ) : null}
+    </motion.div>
   );
 }

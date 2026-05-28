@@ -1,15 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
-import { Card } from '@/components/ui/Card';
+import { PremiumCard } from '@/components/ui/PremiumCard';
+import { TableSkeleton } from '@/components/Skeleton';
 import { formatDate } from '@/lib/utils';
 
 interface UserRow {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  emailVerified: boolean;
-  createdAt: string;
+  id: string; email: string; name: string; role: string; emailVerified: boolean; createdAt: string;
 }
 
 export function AdminUsers() {
@@ -18,44 +15,49 @@ export function AdminUsers() {
     queryFn: () => api.get<UserRow[]>('/api/admin/users'),
   });
 
-  if (isLoading) return <div className="py-20 text-center text-ink/50">Loading...</div>;
+  if (isLoading) return <TableSkeleton />;
 
   return (
-    <Card>
+    <PremiumCard glass>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-ink/10 dark:border-white/10">
-              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/50">Name</th>
-              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/50">Email</th>
-              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/50">Role</th>
-              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/50">Verified</th>
-              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/50">Joined</th>
+            <tr className="border-b border-ink/10 dark:border-white/[0.06]">
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Name</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Email</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Role</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Verified</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Joined</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-ink/5 dark:divide-white/5">
-            {data?.data?.map((user) => (
-              <tr key={user.id} className="hover:bg-ink/5 dark:hover:bg-white/5">
+          <tbody className="divide-y divide-ink/5 dark:divide-white/[0.03]">
+            {data?.data?.map((user, i) => (
+              <motion.tr key={user.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.02 }}
+                className="hover:bg-ink/5 dark:hover:bg-white/[0.02] transition-colors"
+              >
                 <td className="py-3 font-medium">{user.name}</td>
-                <td className="py-3 text-ink/70">{user.email}</td>
+                <td className="py-3 text-ink/60 dark:text-parchment/60">{user.email}</td>
                 <td className="py-3">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                     user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'
-                      ? 'bg-gold/20 text-gold'
+                      ? 'bg-gold/15 text-gold'
                       : user.role === 'PREMIUM'
-                      ? 'bg-green-500/20 text-green-600'
-                      : 'bg-ink/10 text-ink/60'
+                      ? 'bg-green-500/15 text-green-400'
+                      : 'bg-ink/10 dark:bg-white/[0.06] text-ink/50 dark:text-parchment/50'
                   }`}>
                     {user.role}
                   </span>
                 </td>
-                <td className="py-3">{user.emailVerified ? '✓' : '—'}</td>
-                <td className="py-3 text-ink/60 text-xs">{formatDate(user.createdAt)}</td>
-              </tr>
+                <td className="py-3">{user.emailVerified ? <span className="text-green-400 font-bold">✓</span> : <span className="text-ink/30">—</span>}</td>
+                <td className="py-3 text-ink/50 dark:text-parchment/50 text-xs">{formatDate(user.createdAt)}</td>
+              </motion.tr>
             ))}
           </tbody>
         </table>
       </div>
-    </Card>
+    </PremiumCard>
   );
 }
