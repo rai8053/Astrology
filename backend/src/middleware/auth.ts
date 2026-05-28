@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UnauthorizedError, ForbiddenError } from '../lib/errors.js';
-import { TokenPayload } from '../../../shared/types/auth.js';
+import { TokenPayload } from '@shared/types/auth.js';
 
 declare global {
   namespace Express {

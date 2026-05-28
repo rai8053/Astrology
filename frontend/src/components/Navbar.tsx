@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, Menu, X, Moon, Sun, User } from 'lucide-react';
+import { Sparkles, Menu, X, Sun, Moon, User } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/Button';
 import { useAuthStore, useThemeStore } from '@/lib/store';
@@ -9,7 +9,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
-  const { theme, setTheme } = useThemeStore();
+  const { theme, setTheme, resolved } = useThemeStore();
   const isLanding = location.pathname === '/';
 
   const links = isLanding
@@ -39,11 +39,11 @@ export function Navbar() {
               </a>
             ))}
             <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
               className="p-2 hover:bg-ink/5 dark:hover:bg-white/5 rounded-full transition-colors"
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
@@ -72,11 +72,21 @@ export function Navbar() {
       {open && (
         <div className="md:hidden bg-white dark:bg-cosmic border-t border-ink/5 dark:border-white/5">
           <div className="px-4 py-4 space-y-3">
+            <button
+              onClick={() => { setTheme(resolved === 'dark' ? 'light' : 'dark'); }}
+              className="flex items-center gap-3 w-full text-sm py-2 text-ink/70 dark:text-parchment/70"
+            >
+              {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {resolved === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </button>
             {links.map((l) => (
-              <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="block text-sm py-2">{l.label}</a>
+              <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="block text-sm py-2 text-ink/70 dark:text-parchment/70">{l.label}</a>
             ))}
             {isAuthenticated ? (
-              <Link to="/dashboard" onClick={() => setOpen(false)}><Button className="w-full">Dashboard</Button></Link>
+              <>
+                <Link to="/dashboard" onClick={() => setOpen(false)}><Button className="w-full">Dashboard</Button></Link>
+                <Button variant="ghost" className="w-full" onClick={logout}>Logout</Button>
+              </>
             ) : (
               <>
                 <Link to="/login" onClick={() => setOpen(false)}><Button variant="secondary" className="w-full">Sign In</Button></Link>

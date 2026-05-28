@@ -19,13 +19,14 @@ import { logger } from './lib/logger.js';
 const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,
+}));
 app.use(compression());
 app.use(cookieParser());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
 
-const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',');
+const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim());
 app.use(cors({
   origin: corsOrigins,
   credentials: true,
@@ -33,18 +34,31 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
-const limiter = rateLimit({
+const globalLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, error: 'Too many requests, please try again later.' },
+  message: { success: false, error: 'Too many requests. Please try again later.' },
 });
-app.use(limiter);
+app.use(globalLimiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many login attempts. Try again later.' },
+});
 
 app.use(requestLogger);
+
 app.use('/api/health', healthRouter);
-app.use('/api/auth', authRouter);
+app.use('/api/auth', authLimiter, authRouter);
+
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
 app.use('/api/astrology', astrologyRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/payments', paymentRouter);
@@ -54,6 +68,12 @@ app.use('/api/user', userRouter);
 app.use(errorHandler);
 
 app.listen(PORT, '0.0.0.0', () => {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'dev-secret-change-in-production') {
+    logger.warn('⚠️  JWT_SECRET is using a weak default. Set a strong secret in production.');
+  }
+  if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY && process.env.MOCK_AI !== 'true') {
+    logger.warn('⚠️  No AI provider keys configured. Set MOCK_AI=true for demo mode.');
+  }
   logger.info(`Soma & Surya API running on port ${PORT}`);
 });
 

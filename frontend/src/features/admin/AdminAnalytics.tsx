@@ -29,7 +29,7 @@ export function AdminAnalytics() {
                 <th className="pb-3 font-sans text-[10px] uppercase text-ink/50 text-right">Cost</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink/5">
+            <tbody className="divide-y divide-ink/5 dark:divide-white/5">
               {data?.data?.map((row, i) => (
                 <tr key={i}>
                   <td className="py-3 font-medium capitalize">{row.feature}</td>
