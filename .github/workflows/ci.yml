@@ -103,15 +103,6 @@ jobs:
           MOCK_AI: 'true'
         run: npx vitest run --reporter=github-actions
 
-      - name: Test Summary
-        if: always()
-        uses: dorny/test-reporter@v2
-        with:
-          name: Backend Test Results
-          path: '**/junit.xml'
-          reporter: java-junit
-          fail-on-error: true
-
   test-frontend:
     name: Test Frontend
     runs-on: ubuntu-latest
