@@ -6,6 +6,7 @@ interface User {
   email: string;
   name: string;
   role: string;
+  avatar?: string;
 }
 
 interface AuthState {
@@ -20,21 +21,21 @@ interface AuthState {
   setUser: (user: User) => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   accessToken: null,
   isLoading: true,
   isAuthenticated: false,
 
   login: async (email, password) => {
-    const res = await api.post('/api/auth/login', { email, password });
+    const res = await api.post<{ user: User; accessToken: string }>('/api/auth/login', { email, password });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
     set({ user, accessToken, isAuthenticated: true });
   },
 
   register: async (name, email, password) => {
-    const res = await api.post('/api/auth/register', { name, email, password });
+    const res = await api.post<{ user: User; accessToken: string }>('/api/auth/register', { name, email, password });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
     set({ user, accessToken, isAuthenticated: true });
@@ -48,12 +49,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   checkAuth: async () => {
     const token = localStorage.getItem('accessToken');
-    if (!token) {
-      set({ isLoading: false });
-      return;
-    }
+    if (!token) { set({ isLoading: false }); return; }
     try {
-      const res = await api.get('/api/auth/me');
+      const res = await api.get<User>('/api/auth/me');
       set({ user: res.data, accessToken: token, isAuthenticated: true, isLoading: false });
     } catch {
       localStorage.removeItem('accessToken');
@@ -64,20 +62,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setUser: (user) => set({ user }),
 }));
 
+type Theme = 'light' | 'dark' | 'system';
+
 interface ThemeState {
-  theme: 'light' | 'dark' | 'system';
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  resolved: 'light' | 'dark';
 }
 
+function getResolved(theme: Theme): 'light' | 'dark' {
+  if (theme === 'dark') return 'dark';
+  if (theme === 'light') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(resolved: 'light' | 'dark') {
+  document.documentElement.classList.toggle('dark', resolved === 'dark');
+}
+
+const storedTheme = (localStorage.getItem('theme') as Theme) || 'system';
+applyTheme(getResolved(storedTheme));
+
 export const useThemeStore = create<ThemeState>((set) => ({
-  theme: (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system',
+  theme: storedTheme,
+  resolved: getResolved(storedTheme),
   setTheme: (theme) => {
     localStorage.setItem('theme', theme);
-    set({ theme });
-    if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    const resolved = getResolved(theme);
+    applyTheme(resolved);
+    set({ theme, resolved });
   },
 }));

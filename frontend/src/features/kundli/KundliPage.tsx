@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Sparkles, Shield, Heart, User, Calendar, Clock, MapPin } from 'lucide-react';
+import { Sparkles, Shield, Heart, RefreshCw, User, Calendar, Clock, MapPin } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -152,6 +152,4 @@ export function KundliPage() {
   );
 }
 
-function RefreshCw(props: React.SVGProps<SVGSVGElement>) {
-  return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>;
-}
+
