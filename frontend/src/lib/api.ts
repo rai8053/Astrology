@@ -1,5 +1,7 @@
 import toast from 'react-hot-toast';
 
+const SESSION_EXPIRED_EVENT = 'session-expired';
+
 interface ApiError {
   success: false;
   error: string;
@@ -77,13 +79,13 @@ class ApiClient {
           const retryData = await retryRes.json() as ApiResponse<T>;
           if (!retryData.success) {
             localStorage.removeItem('accessToken');
-            window.location.href = '/login';
+            window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
             throw new Error((retryData as ApiError).error || 'Session expired');
           }
           return retryData as ApiSuccess<T>;
         }
         localStorage.removeItem('accessToken');
-        window.location.href = '/login';
+        window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
         throw new Error('Session expired');
       }
 

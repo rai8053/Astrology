@@ -79,8 +79,8 @@ paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
   if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
 
   const sig = req.headers['stripe-signature'] as string;
-  const rawBody = (req as unknown as { rawBody?: Buffer }).rawBody;
-  if (!rawBody) return res.status(400).json({ error: 'Raw body required for webhook verification' });
+  const rawBody = req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body));
+  if (!rawBody || rawBody.length === 0) return res.status(400).json({ error: 'Raw body required for webhook verification' });
 
   let event: Stripe.Event;
   try {
@@ -107,7 +107,8 @@ paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
               trialEnd: null,
             },
           });
-          await prisma.user.update({ where: { id: userId }, data: { role: 'PREMIUM' } });
+          const roleMap: Record<string, 'USER' | 'PREMIUM'> = { PRO: 'USER', PREMIUM: 'PREMIUM', ENTERPRISE: 'PREMIUM' };
+          await prisma.user.update({ where: { id: userId }, data: { role: roleMap[plan] || 'PREMIUM' } });
         }
         break;
       }

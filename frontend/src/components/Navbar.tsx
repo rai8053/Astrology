@@ -11,7 +11,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
-  const { theme, setTheme, resolved } = useThemeStore();
+  const { setTheme, resolved } = useThemeStore();
   const isLanding = location.pathname === '/';
 
   useEffect(() => {
