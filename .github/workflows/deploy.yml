@@ -96,8 +96,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check deploy secrets
+        id: check-secrets
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          if [ -n "$DEPLOY_HOST" ]; then
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy via SSH
-        if: ${{ secrets.DEPLOY_HOST != '' }}
+        if: steps.check-secrets.outputs.has_secret == 'true'
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.DEPLOY_HOST }}
