@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  PREMIUM
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  EXPIRED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  passwordHash  String
+  role          UserRole @default(USER)
+  avatar        String?
+  timezone      String   @default("UTC")
+  language      String   @default("en")
+  emailVerified Boolean  @default(false)
+  birthDate     String?
+  birthTime     String?
+  birthPlace    String?
+  refreshToken  String?
+  googleId      String?  @unique
+  githubId      String?  @unique
+
+  subscription   Subscription?
+  reports        AstrologyReport[]
+  chatSessions   ChatSession[]
+  usageRecords   UsageRecord[]
+  paymentMethods PaymentMethod[]
+  invoices       Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  plan                 SubscriptionPlan   @default(FREE)
+  status               SubscriptionStatus @default(TRIALING)
+  stripeSubscriptionId String?
+  stripeCustomerId     String?
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  trialEnd             DateTime?
+  canceledAt           DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([plan])
+}
+
+model AstrologyReport {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  input       Json
+  result      Json
+  aiProvider  String?
+  tokensUsed  Int?
+  costInCents Float?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String?
+  messages  Json     @default("[]")
+  context   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([updatedAt])
+}
+
+model UsageRecord {
+  id         String   @id @default(cuid())
+  userId     String
+  feature    String
+  tokensIn   Int      @default(0)
+  tokensOut  Int      @default(0)
+  cost       Float    @default(0)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([feature])
+  @@index([createdAt])
+}
+
+model PaymentMethod {
+  id                String   @id @default(cuid())
+  userId            String
+  stripePaymentId   String   @unique
+  brand             String?
+  last4             String?
+  expMonth          Int?
+  expYear           Int?
+  isDefault         Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Invoice {
+  id              String   @id @default(cuid())
+  userId          String
+  stripeInvoiceId String?  @unique
+  amount          Float
+  currency        String   @default("usd")
+  status          String
+  plan            SubscriptionPlan
+  paidAt          DateTime?
+  periodStart     DateTime?
+  periodEnd       DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Coupon {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  discountPct  Int
+  maxUses      Int?
+  usedCount    Int      @default(0)
+  expiresAt    DateTime?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  event     String
+  properties Json?
+  createdAt DateTime @default(now())
+
+  @@index([event])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resource   String
+  details    Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
