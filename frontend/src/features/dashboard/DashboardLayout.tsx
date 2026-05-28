@@ -27,7 +27,7 @@ export function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const { theme, setTheme, resolved } = useThemeStore();
+  const { setTheme, resolved } = useThemeStore();
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   const allItems = [...navItems, ...(isAdmin ? adminItems : [])];

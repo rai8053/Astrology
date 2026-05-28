@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { type HTMLAttributes, type ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   glow?: boolean;
@@ -23,16 +24,16 @@ export function PremiumCard({ glow, hover = true, floating, glass = true, animat
 
   return (
     <Comp
-      className={`
-        ${glass ? 'glass-card' : 'bg-white dark:bg-cosmic-light/50 border border-ink/10 dark:border-white/10'}
-        ${glow ? 'cosmic-glow' : ''}
-        ${floating ? 'animate-float' : ''}
-        rounded-xl p-6 transition-all duration-300
-        ${hover ? 'cursor-default' : ''}
-        ${className || ''}
-      `}
+      className={cn(
+        glass && 'glass-card',
+        !glass && 'bg-white dark:bg-cosmic-light/50 border border-ink/10 dark:border-white/10',
+        glow && 'cosmic-glow',
+        floating && 'animate-float',
+        'rounded-xl p-6 transition-all duration-300',
+        hover && 'cursor-default',
+        className,
+      )}
       {...animProps}
-      {...(props as any)}
     >
       {children}
     </Comp>

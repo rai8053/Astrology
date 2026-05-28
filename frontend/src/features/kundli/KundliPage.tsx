@@ -10,7 +10,7 @@ import type { BirthDetails, VedicProfile } from '@shared/types/api';
 
 export function KundliPage() {
   const [formData, setFormData] = useState<BirthDetails>({
-    name: '', birthDate: '1998-06-15', birthTime: '08:30', birthPlace: 'Mumbai, India',
+    name: '', birthDate: '', birthTime: '', birthPlace: '',
   });
 
   const mutation = useMutation({
@@ -19,7 +19,7 @@ export function KundliPage() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.birthPlace.trim()) return;
+    if (!formData.name.trim() || !formData.birthDate || !formData.birthTime || !formData.birthPlace.trim()) return;
     mutation.mutate(formData);
   };
 

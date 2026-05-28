@@ -5,11 +5,11 @@ import { logger } from './logger.js';
 export type AIProvider = 'gemini' | 'openai' | 'claude' | 'deepseek' | 'groq' | 'openrouter' | 'mock';
 
 interface AIProviderClient {
-  generateContent(params: { model: string; contents: string; config?: Record<string, unknown> }): Promise<{ text: string }>;
+  generateContent(params: { model: string; contents: string; config?: Record<string, unknown>; signal?: AbortSignal }): Promise<{ text: string }>;
 }
 
 class MockProvider implements AIProviderClient {
-  async generateContent(params: { model: string; contents: string }) {
+  async generateContent(params: { model: string; contents: string; signal?: AbortSignal }) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     const prompt = params.contents.toLowerCase();
     if (prompt.includes('birth') || prompt.includes('kundli')) {
@@ -48,11 +48,11 @@ class MockProvider implements AIProviderClient {
 class GeminiProvider implements AIProviderClient {
   private client: GoogleGenAI;
   constructor(apiKey: string) { this.client = new GoogleGenAI({ apiKey }); }
-  async generateContent(params: { model: string; contents: string; config?: Record<string, unknown> }) {
+  async generateContent(params: { model: string; contents: string; config?: Record<string, unknown>; signal?: AbortSignal }) {
     const response = await this.client.models.generateContent({
       model: params.model,
       contents: params.contents,
-      config: params.config as Record<string, unknown> | undefined,
+      config: { ...params.config, signal: params.signal } as Record<string, unknown> | undefined,
     });
     return { text: response.text || '' };
   }
@@ -63,11 +63,11 @@ class OpenAIProvider implements AIProviderClient {
   constructor(apiKey: string, baseURL?: string) {
     this.client = new OpenAI({ apiKey, baseURL });
   }
-  async generateContent(params: { model: string; contents: string }) {
-    const response = await this.client.chat.completions.create({
-      model: params.model,
-      messages: [{ role: 'user', content: params.contents }],
-    });
+  async generateContent(params: { model: string; contents: string; signal?: AbortSignal }) {
+    const response = await this.client.chat.completions.create(
+      { model: params.model, messages: [{ role: 'user', content: params.contents }] },
+      { signal: params.signal },
+    );
     return { text: response.choices[0]?.message?.content || '' };
   }
 }
@@ -97,11 +97,13 @@ function resolveProvider(): { provider: AIProviderClient; model: string; name: s
   const apiKey = process.env[config.envKey];
   if (apiKey) {
     const model = process.env[`${preferred.toUpperCase()}_MODEL`] || config.defaultModel;
-    if (preferred === 'groq') {
-      return { provider: new OpenAIProvider(apiKey, 'https://api.groq.com/openai/v1'), model, name: preferred };
-    }
-    if (preferred === 'openrouter') {
-      return { provider: new OpenAIProvider(apiKey, 'https://openrouter.ai/api/v1'), model, name: preferred };
+    const baseURLs: Record<string, string> = {
+      groq: 'https://api.groq.com/openai/v1',
+      openrouter: 'https://openrouter.ai/api/v1',
+      deepseek: 'https://api.deepseek.com',
+    };
+    if (baseURLs[preferred]) {
+      return { provider: new OpenAIProvider(apiKey, baseURLs[preferred]), model, name: preferred };
     }
     return { provider: new config.class(apiKey), model, name: preferred };
   }
@@ -131,7 +133,7 @@ export async function generateAIResponse(prompt: string, systemInstruction?: str
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
   try {
-    const response = await provider.generateContent({ model, contents: prompt, config });
+    const response = await provider.generateContent({ model, contents: prompt, config, signal: controller.signal });
     return { text: response.text, provider: name, model };
   } catch (error) {
     logger.error({ error, provider: name, model }, 'AI provider failed');

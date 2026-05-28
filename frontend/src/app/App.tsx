@@ -48,11 +48,18 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
 
 export default function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
+  const logout = useAuthStore((s) => s.logout);
   const location = useLocation();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    const handler = () => { logout(); };
+    window.addEventListener('session-expired', handler);
+    return () => window.removeEventListener('session-expired', handler);
+  }, [logout]);
 
   return (
     <ErrorBoundary>

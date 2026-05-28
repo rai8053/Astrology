@@ -10,8 +10,8 @@ import type { CompatibilityInput, CompatibilityResult } from '@shared/types/api'
 
 export function CompatibilityPage() {
   const [input, setInput] = useState<CompatibilityInput>({
-    partnerA: { name: '', birthDate: '1998-06-15', birthTime: '08:30', birthPlace: 'Mumbai' },
-    partnerB: { name: '', birthDate: '1999-07-20', birthTime: '14:15', birthPlace: 'Delhi' },
+    partnerA: { name: '', birthDate: '', birthTime: '', birthPlace: '' },
+    partnerB: { name: '', birthDate: '', birthTime: '', birthPlace: '' },
   });
 
   const mutation = useMutation({

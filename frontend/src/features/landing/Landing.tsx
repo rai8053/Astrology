@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Sparkles, Moon, Heart, Star, Globe, MessageCircle, ChevronDown, Check, ArrowRight, Quote } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PremiumButton } from '@/components/PremiumButton';

@@ -10,13 +10,6 @@ export function Skeleton({ className = '' }: { className?: string }) {
       <div className="absolute inset-0 -translate-x-full">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/10 to-transparent shimmer" />
       </div>
-      <style>{`
-        @keyframes shimmerSlide {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .shimmer { animation: shimmerSlide 1.5s ease-in-out infinite; }
-      `}</style>
     </motion.div>
   );
 }

@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Send, MessageCircle, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { Send, MessageCircle, Sparkles, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { Skeleton } from '@/components/Skeleton';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
