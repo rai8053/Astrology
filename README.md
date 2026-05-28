@@ -3,6 +3,16 @@
 <div align="center">
   <h3>✨ Ancient Vedic Wisdom Meets Modern AI ✨</h3>
   <p>A full-stack production-grade astrology SaaS platform with AI-powered readings, authentication, subscriptions, and dashboards.</p>
+
+  [![CI](https://github.com/rai8053/Astrology/actions/workflows/ci.yml/badge.svg)](https://github.com/rai8053/Astrology/actions/workflows/ci.yml)
+  [![Deploy](https://github.com/rai8053/Astrology/actions/workflows/deploy.yml/badge.svg)](https://github.com/rai8053/Astrology/actions/workflows/deploy.yml)
+  [![Security](https://github.com/rai8053/Astrology/actions/workflows/security.yml/badge.svg)](https://github.com/rai8053/Astrology/actions/workflows/security.yml)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+  [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
+  [![Node](https://img.shields.io/badge/Node-22-339933?logo=nodedotjs)](https://nodejs.org/)
+  [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma)](https://www.prisma.io/)
+  [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
+  [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 </div>
 
 ---
