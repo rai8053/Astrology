@@ -1,13 +1,38 @@
-import { Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export function LoadingScreen() {
   return (
-    <div className="fixed inset-0 bg-parchment dark:bg-cosmic flex flex-col items-center justify-center z-50">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-parchment dark:bg-cosmic flex flex-col items-center justify-center z-50"
+    >
       <div className="relative">
-        <Sparkles className="w-10 h-10 text-gold animate-pulse" />
-        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gold rounded-full animate-ping" />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          className="w-16 h-16 rounded-full border-2 border-gold/20 border-t-gold"
+        />
+        <motion.div
+          animate={{ rotate: -360, scale: [1, 1.2, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+          className="absolute inset-0 w-16 h-16 rounded-full border border-gold/10"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute -top-1 -right-1 w-4 h-4 bg-gold rounded-full"
+        />
       </div>
-      <p className="mt-4 text-sm font-serif text-ink/50 dark:text-parchment/50 italic">Loading cosmic data...</p>
-    </div>
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-6 text-sm font-serif text-ink/40 dark:text-parchment/40 italic"
+      >
+        Loading cosmic data...
+      </motion.p>
+    </motion.div>
   );
 }
