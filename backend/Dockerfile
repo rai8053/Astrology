@@ -1,9 +1,9 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY backend/package*.json ./backend/
-RUN cd backend && npm ci && npx prisma generate
+RUN cd backend && npm ci
 COPY . .
-RUN cd backend && npm run build
+RUN cd backend && npx prisma generate && npm run build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
