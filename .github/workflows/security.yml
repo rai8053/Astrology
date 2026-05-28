@@ -16,7 +16,7 @@ permissions:
 jobs:
   audit:
     name: npm Audit
-    runs-on: ubuntu-24
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
 
   codeql:
     name: CodeQL Analysis
-    runs-on: ubuntu-24
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
 
   trivy:
     name: Trivy Scan
-    runs-on: ubuntu-24
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,7 +87,7 @@ jobs:
 
   report:
     name: Generate Report
-    runs-on: ubuntu-24
+    runs-on: ubuntu-24.04
     needs: [audit, codeql, trivy]
     if: always()
     steps:
