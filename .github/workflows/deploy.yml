@@ -117,6 +117,7 @@ jobs:
           script: |
             cd /opt/soma-surya
             docker compose pull
+            docker compose run --rm backend npx prisma migrate deploy
             docker compose up -d --remove-orphans
             docker image prune -f
 
