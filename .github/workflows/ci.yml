@@ -9,10 +9,11 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.run_id }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -118,7 +119,7 @@ jobs:
 
       - name: Run tests
         working-directory: frontend
-        run: npx vitest run --reporter=github-actions || echo "No frontend tests yet"
+        run: npx vitest run --reporter=github-actions
 
   build:
     name: Production Build
