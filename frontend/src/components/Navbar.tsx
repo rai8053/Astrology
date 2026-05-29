@@ -1,18 +1,35 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, Menu, X, Sun, Moon, User } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Sparkles, Menu, X, Sun, Moon, User, Settings, Shield, LogOut, Crown, ChevronDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumButton } from './PremiumButton';
 import { useAuthStore, useThemeStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => {
+    if (typeof window !== 'undefined') return window.matchMedia(query).matches;
+    return false;
+  });
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [query]);
+  return matches;
+}
+
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
   const { setTheme, resolved } = useThemeStore();
   const isLanding = location.pathname === '/';
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const isMobile = useMediaQuery('(max-width: 767px)');
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -20,86 +37,156 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  const links = isLanding
-    ? [
-        { label: 'Features', href: '#features' },
-        { label: 'Pricing', href: '#pricing' },
-        { label: 'FAQ', href: '#faq' },
-      ]
-    : [];
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  useEffect(() => {
+    setUserMenuOpen(false);
+    setOpen(false);
+  }, [location.pathname]);
+
+  const links = isLanding ? [
+    { label: 'Features', href: '#features' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'FAQ', href: '#faq' },
+  ] : [];
+
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'U';
+
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+  const planBadge = user?.plan && user.plan !== 'FREE' ? user.plan : null;
 
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
-        isLanding && !scrolled ? 'bg-transparent' : 'glass border-b border-ink/5 dark:border-white/5',
-        scrolled ? 'shadow-lg shadow-black/5' : '',
+        scrolled ? 'glass-nav shadow-sm' : isLanding ? 'bg-transparent' : 'glass-nav',
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16 md:h-18">
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link to="/" className="flex items-center gap-2.5">
-              <div className="relative">
-                <Sparkles className="w-5 h-5 text-gold" />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-gold rounded-full animate-ping opacity-60" />
-              </div>
-              <span className="font-serif text-xl font-semibold bg-gradient-to-r from-gold to-amber-400 bg-clip-text text-transparent">
-                Soma & Surya
-              </span>
-            </Link>
-          </motion.div>
+      <div className="max-w-7xl mx-auto px-5 sm:px-8">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10">
+              <Sparkles className="w-4 h-4 text-accent" />
+            </div>
+            <span className="font-sans text-base font-semibold tracking-tight">
+              Soma<span className="text-text-tertiary dark:text-dark-text-tertiary font-normal">&</span>Surya
+            </span>
+          </Link>
 
-          <div className="hidden md:flex items-center gap-6">
-            {links.map((l) => (
-              <motion.a
+          <div className="hidden md:flex items-center gap-1">
+            {links.map(l => (
+              <a
                 key={l.href}
                 href={l.href}
-                whileHover={{ y: -1 }}
-                className="text-sm font-sans text-ink/60 dark:text-parchment/60 hover:text-gold transition-colors relative group"
+                className="relative px-3 py-2 text-sm text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
               >
                 {l.label}
-                <span className="absolute -bottom-0.5 left-0 w-0 h-[2px] bg-gold group-hover:w-full transition-all duration-300" />
-              </motion.a>
+                <span className="absolute bottom-0 left-3 right-3 h-[1.5px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </a>
             ))}
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-              className="p-2.5 hover:bg-ink/5 dark:hover:bg-white/5 rounded-full transition-colors"
-              aria-label="Toggle theme"
-            >
-              <motion.div
-                key={resolved}
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
+
+            <div className="ml-4 flex items-center gap-2">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
+                className="p-2 rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary transition-colors"
+                aria-label="Toggle theme"
               >
                 {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </motion.div>
-            </motion.button>
-            {isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <Link to="/dashboard">
-                  <PremiumButton variant="ghost" size="sm" icon={<User className="w-3.5 h-3.5" />}>
-                    Dashboard
-                  </PremiumButton>
-                </Link>
-                <PremiumButton variant="ghost" size="sm" onClick={logout}>Logout</PremiumButton>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Link to="/login"><PremiumButton variant="ghost" size="sm">Sign In</PremiumButton></Link>
-                <Link to="/register"><PremiumButton size="sm">Get Started</PremiumButton></Link>
-              </div>
-            )}
+              </motion.button>
+
+              {isAuthenticated ? (
+                <div className="relative" ref={userMenuRef}>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-accent/5 transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-md bg-accent/10 flex items-center justify-center text-[11px] font-semibold text-accent">
+                      {initials}
+                    </div>
+                    <motion.div animate={{ rotate: userMenuOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                      <ChevronDown className="w-3 h-3 text-text-tertiary dark:text-dark-text-tertiary" />
+                    </motion.div>
+                  </motion.button>
+                  <AnimatePresence>
+                    {userMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden"
+                      >
+                        <div className="px-4 py-3 border-b border-border-primary dark:border-dark-border-primary">
+                          <p className="text-sm font-medium truncate">{user?.name}</p>
+                          <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary truncate">{user?.email}</p>
+                        </div>
+                        <div className="p-1.5">
+                          {[
+                            { to: '/dashboard', icon: User, label: 'Dashboard' },
+                            { to: '/dashboard/settings', icon: Settings, label: 'Settings' },
+                            { to: '/pricing', icon: Crown, label: 'Upgrade Plan' },
+                          ].map(item => (
+                            <Link
+                              key={item.to}
+                              to={item.to}
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
+                            >
+                              <item.icon className="w-3.5 h-3.5" />
+                              {item.label}
+                            </Link>
+                          ))}
+                          {isAdmin && (
+            <>
+                            <div className="my-1 border-t border-border-primary dark:border-dark-border-primary" />
+                            <Link
+                              to="/admin"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
+                            >
+                              <Shield className="w-3.5 h-3.5" />
+                              Admin Panel
+                            </Link>
+                          </>
+                          )}
+                          <div className="my-1 border-t border-border-primary dark:border-dark-border-primary" />
+                          <button
+                            onClick={() => { setUserMenuOpen(false); logout(); }}
+                            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                            Sign Out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link to="/login"><PremiumButton variant="ghost" size="sm">Sign In</PremiumButton></Link>
+                  <Link to="/register"><PremiumButton size="sm">Get Started</PremiumButton></Link>
+                </div>
+              )}
+            </div>
           </div>
 
           <motion.button
             whileTap={{ scale: 0.9 }}
-            className="md:hidden p-2"
+            className="md:hidden p-2 -mr-2"
             onClick={() => setOpen(!open)}
             aria-label="Menu"
           >
@@ -114,30 +201,50 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass border-t border-ink/5 dark:border-white/5 overflow-hidden"
+            className="md:hidden border-t border-border-primary dark:border-dark-border-primary bg-bg-primary dark:bg-dark-bg-primary overflow-hidden"
           >
-            <div className="px-4 py-5 space-y-4">
+            <div className="px-5 py-5 space-y-3">
+              {isAuthenticated && (
+                <div className="flex items-center gap-3 px-1 pb-3 border-b border-border-primary dark:border-dark-border-primary">
+                  <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center text-xs font-semibold text-accent">
+                    {initials}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">{user?.email}</p>
+                  </div>
+                </div>
+              )}
+              {links.map(l => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="block text-sm py-2 px-3 rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary transition-colors"
+                >
+                  {l.label}
+                </a>
+              ))}
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => { setTheme(resolved === 'dark' ? 'light' : 'dark'); }}
-                className="flex items-center gap-3 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-ink/5 dark:hover:bg-white/5 text-ink/70 dark:text-parchment/70"
+                onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
+                className="flex items-center gap-3 w-full text-sm py-2 px-3 rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary transition-colors"
               >
                 {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 {resolved === 'dark' ? 'Light Mode' : 'Dark Mode'}
               </motion.button>
-              {links.map((l) => (
-                <a key={l.href} href={l.href} onClick={() => setOpen(false)}
-                  className="block text-sm py-2.5 px-3 rounded-lg hover:bg-ink/5 dark:hover:bg-white/5 text-ink/70 dark:text-parchment/70">
-                  {l.label}
-                </a>
-              ))}
               <div className="pt-2 space-y-2">
                 {isAuthenticated ? (
                   <>
                     <Link to="/dashboard" onClick={() => setOpen(false)}>
                       <PremiumButton className="w-full">Dashboard</PremiumButton>
                     </Link>
-                    <PremiumButton variant="ghost" className="w-full" onClick={logout}>Logout</PremiumButton>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setOpen(false)}>
+                        <PremiumButton variant="ghost" className="w-full">Admin Panel</PremiumButton>
+                      </Link>
+                    )}
+                    <PremiumButton variant="ghost" className="w-full" onClick={logout}>Sign Out</PremiumButton>
                   </>
                 ) : (
                   <>

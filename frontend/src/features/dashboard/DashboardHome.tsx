@@ -1,18 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Moon, Star, Heart, MessageCircle, ArrowRight, Sparkles, FileText } from 'lucide-react';
+import { Moon, Star, Heart, MessageCircle, ArrowRight, Sparkles, FileText, Sun, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
+import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { useAuthStore } from '@/lib/store';
+import { staggerContainer, staggerItem, easeOut } from '@/lib/animations';
 import { StatsSkeleton } from '@/components/Skeleton';
 
-const staggerContainer = { animate: { transition: { staggerChildren: 0.08 } } };
-const easeOut = [0.25, 0.1, 0.25, 1] as const;
-const staggerItem = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOut } } };
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return { text: 'Good Morning', icon: Sun };
+  if (h < 17) return { text: 'Good Afternoon', icon: Sun };
+  return { text: 'Good Evening', icon: Moon };
+}
 
 export function DashboardHome() {
   const { user } = useAuthStore();
+  const greeting = getGreeting();
+
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['dashboard-analytics'],
     queryFn: () => api.get<{ reportsGenerated: number; chatSessions: number; totalCost: number }>('/api/user/analytics'),
@@ -33,7 +40,7 @@ export function DashboardHome() {
   const stats = [
     { label: 'Reports Generated', value: analytics?.data?.reportsGenerated ?? 0, icon: FileText, color: 'text-gold' },
     { label: 'Chat Sessions', value: analytics?.data?.chatSessions ?? 0, icon: MessageCircle, color: 'text-blue-400' },
-    { label: 'Active Plan', value: sub?.data?.plan ?? 'Free', icon: Sparkles, color: 'text-purple-400' },
+    { label: 'Active Plan', value: sub?.data?.plan ?? 'Free', icon: Sparkles, color: 'text-purple-400', isString: true },
   ];
 
   return (
@@ -47,11 +54,29 @@ export function DashboardHome() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="flex items-center gap-4"
       >
-        <h1 className="text-3xl md:text-4xl font-serif font-bold">
-          Welcome, <span className="text-gradient">{user?.name}</span>
-        </h1>
-        <p className="text-ink/50 dark:text-parchment/50 mt-1">Your cosmic dashboard</p>
+        <motion.div
+          animate={{ rotate: [0, 5, 0, -5, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center"
+        >
+          <greeting.icon className="w-6 h-6 text-gold" />
+        </motion.div>
+        <div>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold">
+            {greeting.text}, <span className="text-gradient">{user?.name?.split(' ')[0]}</span>
+          </h1>
+          <p className="text-ink/50 dark:text-parchment/50 mt-1 flex items-center gap-2">
+            <span>Your cosmic dashboard</span>
+            {sub?.data?.plan && sub.data.plan !== 'FREE' && (
+              <>
+                <span className="w-1 h-1 rounded-full bg-gold/40" />
+                <span className="text-gold text-xs font-sans font-semibold uppercase tracking-wider">{sub.data.plan}</span>
+              </>
+            )}
+          </p>
+        </div>
       </motion.div>
 
       {analyticsLoading ? (
@@ -66,13 +91,12 @@ export function DashboardHome() {
                     <stat.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.3 + i * 0.1 }}
-                      className="text-2xl font-bold font-serif"
-                    >
-                      {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
+                    <motion.p className="text-2xl font-bold font-serif">
+                      {stat.isString ? (
+                        stat.value
+                      ) : (
+                        <AnimatedCounter to={stat.value as number} duration={2} delay={i * 0.15} />
+                      )}
                     </motion.p>
                     <p className="text-xs text-ink/50 dark:text-parchment/50">{stat.label}</p>
                   </div>
@@ -83,15 +107,17 @@ export function DashboardHome() {
         </motion.div>
       )}
 
-      <div>
-        <motion.h2
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-xl md:text-2xl font-serif font-semibold mb-4"
-        >
-          Quick Actions
-        </motion.h2>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl md:text-2xl font-serif font-semibold">Quick Actions</h2>
+          <motion.div
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            className="w-6 h-6"
+          >
+            <Sparkles className="w-4 h-4 text-gold/40" />
+          </motion.div>
+        </div>
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, i) => (
             <motion.div key={i} variants={staggerItem}>
@@ -113,7 +139,7 @@ export function DashboardHome() {
             </motion.div>
           ))}
         </motion.div>
-      </div>
+      </motion.div>
 
       {sub?.data?.plan === 'FREE' && (
         <motion.div
@@ -121,14 +147,26 @@ export function DashboardHome() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <PremiumCard glow glass className="border-gold/30">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="font-serif text-lg font-semibold text-gold">Upgrade to Pro</h3>
-                <p className="text-sm text-ink/50 dark:text-parchment/50">Get AI chat, compatibility analysis, and more premium features.</p>
+          <PremiumCard glow glass className="border-gold/30 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-gold/[0.03] via-transparent to-gold/[0.03]" />
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                  className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center shrink-0"
+                >
+                  <Zap className="w-5 h-5 text-gold" />
+                </motion.div>
+                <div>
+                  <h3 className="font-serif text-lg font-semibold text-gold">Unlock Premium Features</h3>
+                  <p className="text-sm text-ink/50 dark:text-parchment/50">Get AI chat, compatibility analysis, and more.</p>
+                </div>
               </div>
               <Link to="/pricing">
-                <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                <motion.span
+                  whileHover={{ scale: 1.03, boxShadow: '0 0 30px rgba(212,175,55,0.3)' }}
+                  whileTap={{ scale: 0.97 }}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gold to-amber-400 text-cosmic text-xs font-sans font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-gold/20 hover:shadow-gold/30 transition-all cursor-pointer"
                 >
                   View Plans <ArrowRight className="w-3 h-3" />
