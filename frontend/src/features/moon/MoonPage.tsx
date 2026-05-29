@@ -115,7 +115,7 @@ export function MoonPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <motion.div whileHover={{ y: -4 }}>
-                <PremiumCard glass className="bg-gradient-to-br from-cosmic to-cosmic-light text-parchment gold-border h-full">
+                <PremiumCard glass className="bg-gradient-to-br from-amber-50 to-parchment dark:from-cosmic dark:to-cosmic-light text-ink dark:text-parchment gold-border h-full">
                   <span className="text-[8px] uppercase font-sans font-bold text-gold tracking-wider">Next Full Moon</span>
                   <h3 className="text-xl font-serif font-bold mt-2">Purnima</h3>
                   <p className="text-lg mt-2 text-gold font-serif">{moon.nextPurnima}</p>

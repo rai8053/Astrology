@@ -1,34 +1,53 @@
-import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
+
+const footerLinks = [
+  { label: 'Features', href: '#features' },
+  { label: 'Pricing', href: '#pricing' },
+  { label: 'FAQ', href: '#faq' },
+  { label: 'Login', href: '/login' },
+  { label: 'Register', href: '/register' },
+];
 
 export function Footer() {
   return (
-    <motion.footer
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      className="border-t border-ink/10 dark:border-white/[0.04] py-10 mt-20 relative"
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gold/[0.02]" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-sans text-ink/40 dark:text-parchment/40">
-          <motion.span
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="font-medium"
-          >
-            28.6139° N, 77.2090° E — Sidereal Epoch
-          </motion.span>
-          <motion.span
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="font-medium"
-          >
-            © 2026 Soma & Surya • VedicPath Systems
-          </motion.span>
+    <footer className="border-t border-border-primary dark:border-dark-border-primary">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 py-12">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center w-7 h-7 rounded-md bg-accent/10">
+                <Sparkles className="w-3.5 h-3.5 text-accent" />
+              </div>
+              <span className="text-sm font-semibold tracking-tight">
+                Soma<span className="text-text-tertiary dark:text-dark-text-tertiary font-normal">&</span>Surya
+              </span>
+            </Link>
+            <span className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary hidden sm:inline">
+              &copy; {new Date().getFullYear()} VedicPath Systems
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            {footerLinks.map(link => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className="px-3 py-1.5 text-[13px] text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="mt-6 pt-6 border-t border-border-primary dark:border-dark-border-primary flex flex-col sm:flex-row justify-between items-center gap-3">
+          <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">
+            Sidereal Vedic Astrology &mdash; Lahiri Ayanamsa
+          </p>
+          <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">
+            hello@somasurya.com
+          </p>
         </div>
       </div>
-    </motion.footer>
+    </footer>
   );
 }
