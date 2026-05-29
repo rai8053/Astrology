@@ -1,128 +1,15 @@
 # Soma & Surya — AI-Powered Vedic Astrology SaaS
 
 <div align="center">
-  <h3>✨ Ancient Vedic Wisdom Meets Modern AI ✨</h3>
-  <p>A full-stack production-grade astrology SaaS platform with AI-powered readings, authentication, subscriptions, and dashboards.</p>
+  <p><strong>Ancient Vedic Wisdom + Modern AI + Premium SaaS</strong></p>
+  <p>Full-stack, production-ready astrology platform with AI readings, Stripe billing, admin panel, and Docker deployment.</p>
 
   [![CI](https://github.com/rai8053/Astrology/actions/workflows/ci.yml/badge.svg)](https://github.com/rai8053/Astrology/actions/workflows/ci.yml)
   [![Deploy](https://github.com/rai8053/Astrology/actions/workflows/deploy.yml/badge.svg)](https://github.com/rai8053/Astrology/actions/workflows/deploy.yml)
-  [![Security](https://github.com/rai8053/Astrology/actions/workflows/security.yml/badge.svg)](https://github.com/rai8053/Astrology/actions/workflows/security.yml)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+  [![TypeScript](https://img.shields.io/badge/TS-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org/)
   [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
-  [![Node](https://img.shields.io/badge/Node-22-339933?logo=nodedotjs)](https://nodejs.org/)
-  [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma)](https://www.prisma.io/)
   [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
-  [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 </div>
-
----
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [API Reference](#api-reference)
-- [AI Providers](#ai-providers)
-- [Database Schema](#database-schema)
-- [Authentication](#authentication)
-- [Payment System](#payment-system)
-- [Deployment](#deployment)
-- [Security](#security)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
-## Overview
-
-**Soma & Surya** transforms traditional Vedic astrology into a modern SaaS experience. Users can:
-
-- Generate detailed **birth charts (Kundli)** with planetary positions and Nakshatra analysis
-- Read **daily horoscopes** for all 12 Moon signs (Rashis)
-- Perform **relationship compatibility** analysis (Ashta Koota Gun Milan)
-- Track **Moon phases and Tithis** with spiritual significance
-- Chat with an **AI astrologer** for personalized guidance
-- Manage subscriptions and access premium features
-
----
-
-## Features
-
-### 🔐 Security & Auth
-- JWT authentication with refresh token rotation
-- HTTP-only cookies for secure token storage
-- Role-based access control (User, Premium, Admin, Super Admin)
-- Rate limiting, Helmet security headers, CORS protection
-- Input validation via Zod schemas
-- All API keys server-side only — NEVER exposed to frontend
-
-### 🤖 AI Engine
-- Multi-provider AI abstraction layer (Gemini, OpenAI, Claude, DeepSeek, Groq, OpenRouter)
-- Structured JSON outputs for astrology data
-- Fallback to mathematically calculated readings when AI is unavailable
-- Retry logic and error handling
-- Cost and token usage tracking
-
-### 🔮 Astrology Services
-- **Vedic Profile**: Moon sign (Rashi), Nakshatra, Lagna, Dosha, planetary placements
-- **Daily Horoscope**: Career, finance, love, health predictions with energy levels
-- **Compatibility**: 36-point Ashta Koota Gun Milan analysis
-- **Moon Phase**: Live Tithi tracking, illumination, spiritual significance
-
-### 💳 Payments
-- Stripe subscription integration
-- Multiple plans: Free, Pro ($9.99), Premium ($19.99), Enterprise ($49.99)
-- 14-day free trial on signup
-- Webhook handling for subscription lifecycle
-- Customer portal for managing payments
-
-### 🎨 Frontend
-- React 19 + TypeScript + Vite
-- Tailwind CSS v4 with dark/light/system theme
-- Framer Motion animations
-- Responsive mobile-first design
-- React Query for server state management
-- Zustand for client state
-- React Router v7 for routing
-- Recharts for data visualization
-
-### 📊 Dashboards
-- **User Dashboard**: Overview, horoscope, birth chart, compatibility, moon phase, AI chat, settings
-- **Admin Dashboard**: User management, platform analytics, AI usage monitoring, revenue tracking
-
----
-
-## Architecture
-
-```
-┌─────────────┐     ┌──────────────┐     ┌────────────┐
-│   Frontend   │────▶│   Backend    │────▶│ PostgreSQL │
-│  React + Vite│     │ Express + TS │     │  + Prisma  │
-│  :5173      │     │  :4000       │     │            │
-└─────────────┘     └──────┬───────┘     └────────────┘
-                           │
-                    ┌──────▼───────┐     ┌────────────┐
-                    │  AI Provider │────▶│   Gemini   │
-                    │  Abstraction │     │   OpenAI   │
-                    │    Layer     │     │   Claude   │
-                    └──────────────┘     │    etc.    │
-                                         └────────────┘
-```
-
-**Key Architectural Decisions:**
-
-- **Monorepo** with `frontend/`, `backend/`, and `shared/` packages
-- **API proxy** in Vite dev server forwards `/api/*` to backend
-- **Prisma ORM** for type-safe database access with migrations
-- **Provider pattern** for AI services — swap providers via env variable
-- **Fallback system** — mathematically calculated astrology data when AI is unavailable
-- **Feature-based** frontend organization for scalability
 
 ---
 
@@ -130,794 +17,378 @@
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend** | React 19 | UI library |
-| | TypeScript | Type safety |
-| | Vite 6 | Build tool & dev server |
-| | Tailwind CSS v4 | Utility-first styling |
-| | Framer Motion | Animations |
-| | React Query (TanStack) | Server state & caching |
-| | Zustand | Client state management |
-| | React Router v7 | Routing |
-| | React Hook Form | Form management |
-| | Recharts | Charts & visualization |
-| | Lucide React | Icons |
-| | React Hot Toast | Notifications |
-| **Backend** | Node.js 20 | Runtime |
-| | Express 4 | HTTP framework |
-| | TypeScript | Type safety |
-| | Prisma 6 | ORM & migrations |
-| | PostgreSQL 16 | Database |
-| | Redis 7 (optional) | Caching |
-| | Zod | Input validation |
-| | JWT (jsonwebtoken) | Authentication |
-| | bcryptjs | Password hashing |
-| | Stripe | Payment processing |
-| | Pino | Logging |
-| | Helmet | Security headers |
-| | express-rate-limit | Rate limiting |
-| **AI** | Google GenAI SDK | Gemini provider |
-| | OpenAI SDK | OpenAI provider |
-| | Custom adapters | Claude, DeepSeek, Groq, OpenRouter |
-| **DevOps** | Docker | Containerization |
-| | Docker Compose | Multi-container orchestration |
-| | Nginx | Reverse proxy |
-| | GitHub Actions | CI/CD |
+| **Frontend** | React 19 + TypeScript | UI library with strict types |
+| | Vite 6 | Lightning-fast dev server & bundler |
+| | Tailwind CSS v4 | Utility-first CSS with dark mode |
+| | Framer Motion 12 | Production-grade animations |
+| | TanStack Query 5 | Server state, caching, background refetch |
+| | Zustand 5 | Minimal client state (auth, theme) |
+| | React Router 7 | SPA routing with animated transitions |
+| | React Hook Form 7 | Performant form validation |
+| | Recharts 2 | Data visualization / charts |
+| | Lucide React | Premium icon set |
+| **Backend** | Node.js 22 + TypeScript | Runtime with full type safety |
+| | Express 4 | HTTP framework with middleware chain |
+| | Prisma 6 | Type-safe ORM with migrations |
+| | PostgreSQL 16 | Primary database |
+| | Redis 7 | Caching / session store |
+| | Zod 3 | Runtime input validation |
+| | JWT + bcrypt | Auth with refresh rotation + theft detection |
+| | Stripe SDK | Subscription billing + webhooks |
+| | Pino | Structured JSON logging |
+| | Helmet + CORS + Rate Limiting | Security hardening |
+| **AI** | Gemini (default) | google-genai-sdk, gemini-2.0-flash |
+| | OpenAI | gpt-4o-mini |
+| | Claude | claude-3-haiku via OpenAI-compatible adapter |
+| | DeepSeek, Groq, OpenRouter | Additional providers with auto-fallback |
+| | Mock provider | Zero-cost demo mode for development |
+| **Infra** | Docker + Compose | 5-container orchestration |
+| | Nginx | Reverse proxy + static serving |
+| | GitHub Actions | CI/CD (lint → test → build → deploy) |
+
+---
+
+## Quick Start (5 minutes)
+
+### Prerequisites
+
+| Tool | Version | Install |
+|------|---------|---------|
+| Node.js | ≥ 22 | [nodejs.org](https://nodejs.org) |
+| npm | ≥ 10 | Ships with Node |
+| PostgreSQL | ≥ 16 | `apt install postgresql` or use Docker |
+| Git | latest | [git-scm.com](https://git-scm.com) |
+
+### Setup
+
+```bash
+# 1. Clone
+git clone https://github.com/rai8053/Astrology.git
+cd Astrology
+
+# 2. Install dependencies
+npm install
+cd backend && npm install && cd ../frontend && npm install && cd ..
+
+# 3. Configure environment
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env` — at minimum set:
+
+```env
+DATABASE_URL="postgresql://your_user:your_password@localhost:5432/soma_surya"
+GEMINI_API_KEY="your-gemini-api-key"     # or set MOCK_AI=true for demo mode
+JWT_SECRET="some-random-string-32-chars-min"
+JWT_REFRESH_SECRET="another-random-string-32-chars-min"
+```
+
+```bash
+# 4. Create database & run migrations
+cd backend
+npx prisma migrate dev --name init
+npx prisma db seed
+
+# 5. Start (two terminals)
+# Terminal 1 — Backend API
+cd backend && npm run dev
+
+# Terminal 2 — Frontend UI
+cd frontend && npm run dev
+```
+
+Open **http://localhost:5173** — login with `admin@somasurya.com` / `admin123`.
 
 ---
 
 ## Project Structure
 
 ```
-soma-surya/
-├── frontend/                          # React SPA
-│   ├── public/                        # Static assets
+Astrology/
+├── frontend/                          # React SPA (Vite)
 │   ├── src/
-│   │   ├── app/                       # App root, routes
-│   │   │   └── App.tsx                # Route definitions
-│   │   ├── components/                # Shared components
-│   │   │   ├── ui/                    # Design system primitives
-│   │   │   │   ├── Button.tsx
-│   │   │   │   ├── Card.tsx
-│   │   │   │   └── Input.tsx
-│   │   │   ├── Navbar.tsx
-│   │   │   └── Footer.tsx
-│   │   ├── features/                  # Feature modules
+│   │   ├── app/App.tsx                # Route definitions + auth guards
+│   │   ├── features/
+│   │   │   ├── landing/               # Marketing pages (Hero, Pricing, FAQ)
 │   │   │   ├── auth/                  # Login, Register
-│   │   │   ├── dashboard/             # Dashboard layout & home
+│   │   │   ├── dashboard/             # User dashboard layout + home
 │   │   │   ├── horoscope/             # Daily horoscope
 │   │   │   ├── kundli/               # Birth chart
 │   │   │   ├── compatibility/         # Gun Milan
 │   │   │   ├── moon/                  # Moon phase tracker
 │   │   │   ├── chat/                  # AI astrologer chat
-│   │   │   ├── settings/              # User settings
-│   │   │   ├── admin/                 # Admin panel
-│   │   │   └── landing/               # Marketing pages
-│   │   ├── hooks/                     # Custom React hooks
-│   │   ├── lib/                       # Utilities
-│   │   │   ├── api.ts                 # HTTP client
-│   │   │   ├── store.ts               # Zustand stores
-│   │   │   └── utils.ts               # Helpers
-│   │   └── styles/
-│   │       └── globals.css            # Global styles + Tailwind
+│   │   │   ├── settings/              # Profile settings
+│   │   │   └── admin/                 # Admin panel (users, analytics)
+│   │   ├── components/                # Shared: Navbar, Footer, PremiumButton, etc.
+│   │   │   └── ui/                    # Design primitives: Card, Button, Input
+│   │   ├── lib/                       # api.ts (axios), store.ts (zustand), utils.ts
+│   │   └── styles/globals.css         # Tailwind theme + design tokens
 │   ├── index.html
-│   ├── vite.config.ts
-│   ├── tsconfig.json
-│   └── package.json
+│   └── vite.config.ts
 │
-├── backend/                           # Express API server
+├── backend/                           # Express API
 │   ├── prisma/
-│   │   ├── schema.prisma              # Database schema
-│   │   └── seed.ts                    # Admin seed
+│   │   ├── schema.prisma              # 10 models (User → AuditLog)
+│   │   └── seed.ts                    # Admin + demo user
 │   ├── src/
-│   │   ├── index.ts                   # Server entry
+│   │   ├── index.ts                   # Server entry, middleware stack, routes
 │   │   ├── lib/
-│   │   │   ├── prisma.ts              # Prisma client
-│   │   │   ├── ai.ts                  # AI provider abstraction
-│   │   │   ├── logger.ts              # Pino logging
-│   │   │   └── errors.ts              # Error classes
+│   │   │   ├── ai.ts                  # AI provider abstraction (7 providers)
+│   │   │   ├── prisma.ts              # Singleton Prisma client
+│   │   │   ├── logger.ts              # Pino structured logger
+│   │   │   └── errors.ts              # AppError class hierarchy
 │   │   ├── middleware/
-│   │   │   ├── auth.ts                # JWT authentication
+│   │   │   ├── auth.ts                # JWT verify + role guard
 │   │   │   ├── errorHandler.ts        # Global error handler
-│   │   │   ├── requestLogger.ts       # HTTP request logging
-│   │   │   └── validate.ts            # Zod validation
+│   │   │   ├── requestLogger.ts       # Per-request logging
+│   │   │   └── validate.ts            # Zod schema validation
 │   │   ├── routes/
-│   │   │   ├── health.ts              # Health check
-│   │   │   ├── auth.ts                # Auth endpoints
-│   │   │   ├── astrology.ts           # Astrology API
-│   │   │   ├── chat.ts                # AI chat
-│   │   │   ├── payment.ts             # Stripe payments
-│   │   │   ├── user.ts               # User profile & data
-│   │   │   └── admin.ts              # Admin operations
-│   │   └── services/
-│   │       └── astrology/
-│   │           ├── constants.ts       # Rashi, Nakshatra data
-│   │           └── calculator.ts      # Math-based astrology
-│   ├── Dockerfile
-│   ├── tsconfig.json
-│   └── package.json
+│   │   │   ├── health.ts              # GET /api/health
+│   │   │   ├── auth.ts                # register, login, refresh, logout, me
+│   │   │   ├── astrology.ts           # vedic-profile, horoscope, compatibility, moon-phase
+│   │   │   ├── chat.ts                # AI chat sessions & messages
+│   │   │   ├── payment.ts             # Stripe checkout, portal, webhook
+│   │   │   ├── user.ts               # Profile CRUD + analytics
+│   │   │   └── admin.ts              # Users list, usage stats
+│   │   └── services/astrology/
+│   │       ├── constants.ts           # Rashi, Nakshatra, Tithi data
+│   │       └── calculator.ts          # Math-based calculation fallback
+│   └── Dockerfile                     # Multi-stage build
 │
-├── shared/                            # Shared code
-│   └── types/
-│       ├── api.ts                     # API response types
-│       ├── auth.ts                    # Auth types
-│       ├── user.ts                    # User types
-│       └── payment.ts                 # Payment types
-│
-├── docker/
-│   └── nginx.conf                     # Nginx reverse proxy config
-├── scripts/
-│   └── setup.ps1                      # Windows setup script
-├── docs/
-│   └── deployment.md                  # Deployment guide
-├── .github/
-│   └── workflows/
-│       └── ci.yml                     # CI/CD pipeline
-├── docker-compose.yml                 # Full stack orchestration
-├── .env.example                       # Environment template
-├── .gitignore
-├── README.md                          # This file
-└── package.json                       # Workspace root
+├── shared/types/                      # TypeScript interfaces shared across stack
+├── docker/nginx.conf                  # Reverse proxy config
+├── docker-compose.yml                 # 5 services: db, redis, backend, frontend
+├── scripts/                           # deploy.sh, setup.sh, setup.ps1
+├── .github/workflows/                 # CI + Deploy + Security workflows
+├── .env.example
+└── package.json                       # Workspace orchestrator
 ```
 
 ---
 
-## Getting Started
+## Architecture
 
-### Prerequisites
-
-| Tool | Version | Installation |
-|------|---------|-------------|
-| Node.js | 20+ | [nodejs.org](https://nodejs.org) |
-| npm | 10+ | Ships with Node.js |
-| PostgreSQL | 16+ | [postgresql.org](https://postgresql.org) — or use Docker |
-| Git | Latest | [git-scm.com](https://git-scm.com) |
-
-### Quick Start (5 minutes)
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/rai8053/Astrology.git
-cd Astrology
-
-# 2. Install all dependencies
-npm install
-cd backend && npm install
-cd ../frontend && npm install
-cd ..
-
-# 3. Configure environment variables
-cp backend/.env.example backend/.env
+```
+                         ┌──────────────────┐
+                         │   Browser (SPA)   │
+                         │  React + Vite    │
+                         │  :5173 (dev)     │
+                         │  :80 (prod/Nginx)│
+                         └────────┬─────────┘
+                                  │  /api/* proxy
+                         ┌────────▼─────────┐
+                         │    Nginx (prod)   │
+                         │  Reverse proxy    │
+                         └────────┬─────────┘
+                                  │
+                         ┌────────▼─────────┐
+                         │   Express API     │
+                         │   Node 22 + TS   │
+                         │   :4000           │
+                         └───┬────┬────┬────┘
+                             │    │    │
+                    ┌────────▼┐ ┌─▼──┐ ┌▼──────────┐
+                    │PostgreSQL│ │Redis│ │ AI Layer   │
+                    │   16     │ │  7  │ │ 7 providers │
+                    └──────────┘ └─────┘ │ auto-fallback│
+                                         └─────────────┘
 ```
 
-Edit `backend/.env` with your API keys:
+### Key Design Decisions
 
-```env
-# Required: At least one AI provider key
-GEMINI_API_KEY="your-gemini-api-key-here"
-
-# Required: Database connection
-DATABASE_URL="postgresql://user:password@localhost:5432/soma_surya"
-
-# Required: JWT secrets (change these in production)
-JWT_SECRET="your-random-secret-at-least-32-chars"
-JWT_REFRESH_SECRET="another-random-secret-at-least-32-chars"
-```
-
-```bash
-# 4. Set up the database
-cd backend
-npx prisma migrate dev --name init
-
-# 5. Seed admin user
-npx prisma db seed
-
-# 6. Start development servers
-# Terminal 1 — Backend API
-cd backend && npm run dev
-# Terminal 2 — Frontend UI
-cd frontend && npm run dev
-```
-
-Open **http://localhost:5173** in your browser.
-
-**Admin login:** `admin@somasurya.com` / `admin123`
+- **Monorepo** with `shared/types/` — frontend and backend share the same TypeScript interfaces for API contracts
+- **AI abstraction layer** (`backend/src/lib/ai.ts`) — single interface, 7 implementations, automatic fallback chain
+- **Mathematical fallback** — if every AI provider fails, the astrology calculator produces results from raw data
+- **Feature-based frontend** — each feature gets its own directory with self-contained components
+- **JWT rotation** — refresh tokens rotate on every use; reuse detection invalidates all sessions
+- **Server-side secrets** — zero API keys or secrets in the frontend bundle
 
 ---
 
-## Configuration
+## Configuration Reference
 
-### Environment Variables
+All environment variables go in `backend/.env`:
 
-All configuration is in `backend/.env`. See `.env.example` for a complete template.
+### Required (no defaults)
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `PORT` | No | `4000` | Backend server port |
-| `NODE_ENV` | No | `development` | Environment mode |
-| `DATABASE_URL` | **Yes** | — | PostgreSQL connection string |
-| `GEMINI_API_KEY` | Yes* | — | Google Gemini API key |
-| `OPENAI_API_KEY` | No | — | OpenAI API key |
-| `CLAUDE_API_KEY` | No | — | Anthropic Claude API key |
-| `DEEPSEEK_API_KEY` | No | — | DeepSeek API key |
-| `GROQ_API_KEY` | No | — | Groq API key |
-| `OPENROUTER_API_KEY` | No | — | OpenRouter API key |
-| `AI_PROVIDER` | No | `gemini` | Default AI provider |
-| `JWT_SECRET` | **Yes** | — | JWT signing secret |
-| `JWT_REFRESH_SECRET` | **Yes** | — | Refresh token secret |
-| `JWT_EXPIRES_IN` | No | `15m` | Access token TTL |
-| `JWT_REFRESH_EXPIRES_IN` | No | `7d` | Refresh token TTL |
-| `STRIPE_SECRET_KEY` | No | — | Stripe secret key |
-| `STRIPE_WEBHOOK_SECRET` | No | — | Stripe webhook secret |
-| `CORS_ORIGINS` | No | `http://localhost:5173` | Allowed CORS origins |
-| `APP_URL` | No | `http://localhost:4000` | Public app URL |
+| Variable | Example | Purpose |
+|----------|---------|---------|
+| `DATABASE_URL` | `postgresql://user:pass@localhost:5432/soma_surya` | PostgreSQL connection |
+| `JWT_SECRET` | `openssl rand -base64 64` | Access token signing |
+| `JWT_REFRESH_SECRET` | `openssl rand -base64 64` | Refresh token signing |
+| `GEMINI_API_KEY` | `AIza...` | At least one AI key required |
 
-*\*At least one AI provider key is required.*
+### Optional
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PORT` | `4000` | Backend port |
+| `NODE_ENV` | `development` | Toggles debug mode, error verbosity |
+| `MOCK_AI` | `false` | Set `true` for zero-cost demo (no API keys) |
+| `AI_PROVIDER` | `gemini` | Default: `gemini`, `openai`, `claude`, `deepseek`, `groq`, `openrouter` |
+| `OPENAI_API_KEY` | `""` | Fallback AI provider |
+| `CLAUDE_API_KEY` | `""` | Fallback AI provider |
+| `STRIPE_SECRET_KEY` | `""` | Required for payments |
+| `STRIPE_WEBHOOK_SECRET` | `""` | Required for payment webhooks |
+| `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed origins |
+| `APP_URL` | `http://localhost:4000` | Public-facing URL |
+| `SENTRY_DSN` | `""` | Error monitoring (SDK not yet wired) |
+| `POSTHOG_KEY` | `""` | Analytics (SDK not yet wired) |
 
 ---
 
-## API Reference
+## API Overview
 
-### Authentication
-
-All auth endpoints return `{ success: true, data: { ... } }` on success.
-
-#### Register
-```bash
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "securepassword123"
-}
+### Health
+```
+GET /api/health                         → { status: "ok", database: "healthy", uptime }
 ```
 
-#### Login
-```bash
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "securepassword123"
-}
+### Auth
 ```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "user": { "id": "...", "email": "...", "name": "...", "role": "USER" },
-    "accessToken": "eyJhbGci...",
-    "refreshToken": "eyJhbGci..."
-  }
-}
-```
-
-#### Refresh Token
-```bash
-POST /api/auth/refresh
-Cookie: refreshToken=eyJhbGci...
-```
-
-#### Get Current User
-```bash
-GET /api/auth/me
-Authorization: Bearer <accessToken>
+POST /api/auth/register                 { name, email, password }
+POST /api/auth/login                    { email, password }
+POST /api/auth/refresh                  ← Cookie: refreshToken
+POST /api/auth/logout
+GET  /api/auth/me                       ← Bearer token
 ```
 
 ### Astrology
-
-#### Birth Chart (Vedic Profile)
-```bash
-POST /api/astrology/vedic-profile
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "birthDate": "1990-06-15",
-  "birthTime": "14:30",
-  "birthPlace": "Mumbai, India"
-}
+```
+POST /api/astrology/vedic-profile       { name, birthDate, birthTime, birthPlace }
+POST /api/astrology/daily-horoscope     { rashi }
+POST /api/astrology/compatibility       { partnerA, partnerB }
+POST /api/astrology/moon-phase          { date }
 ```
 
-#### Daily Horoscope
-```bash
-POST /api/astrology/daily-horoscope
-Content-Type: application/json
-
-{
-  "rashi": "Mesh"
-}
+### Chat
 ```
-
-#### Compatibility (Gun Milan)
-```bash
-POST /api/astrology/compatibility
-Content-Type: application/json
-
-{
-  "partnerA": { "name": "Alice", "birthDate": "1995-03-20", "birthTime": "08:00", "birthPlace": "Delhi" },
-  "partnerB": { "name": "Bob", "birthDate": "1993-11-12", "birthTime": "16:30", "birthPlace": "Mumbai" }
-}
-```
-
-#### Moon Phase
-```bash
-POST /api/astrology/moon-phase
-Content-Type: application/json
-
-{
-  "date": "2026-05-28"
-}
-```
-
-### AI Chat
-
-```bash
-POST /api/chat
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "message": "What is my ruling planet?",
-  "sessionId": "optional-existing-session-id"
-}
+POST /api/chat                          { message, sessionId? } ← Bearer token
+GET  /api/chat/sessions                 ← Bearer token
+GET  /api/chat/sessions/:id             ← Bearer token
 ```
 
 ### Payments
-
-```bash
-# Get subscription plans
-GET /api/payments/plans
-
-# Get user's subscription
-GET /api/payments/subscription
-Authorization: Bearer <token>
-
-# Create Stripe checkout session
-POST /api/payments/create-checkout
-Authorization: Bearer <token>
-Content-Type: application/json
-{ "plan": "PRO" }
+```
+POST /api/payments/create-checkout      { plan } ← Bearer token
+POST /api/payments/create-portal        ← Bearer token
+POST /api/payments/webhook              ← Stripe signature
+GET  /api/payments/subscription         ← Bearer token
 ```
 
-### Admin
-
-```bash
-# List users (requires ADMIN role)
-GET /api/admin/users
-Authorization: Bearer <admin-token>
-
-# Platform analytics
-GET /api/admin/analytics
-Authorization: Bearer <admin-token>
-
-# AI usage stats
-GET /api/admin/usage
-Authorization: Bearer <admin-token>
+### Admin (requires ADMIN role)
 ```
+GET  /api/admin/users                   ← Bearer token
+GET  /api/admin/analytics               ← Bearer token
+GET  /api/admin/usage                   ← Bearer token
+```
+
+All responses follow `{ success: boolean, data?: T, error?: { code, message } }`.
 
 ---
 
-## AI Providers
-
-The platform supports multiple AI providers through a clean abstraction layer. Configure via environment variables.
-
-### Supported Providers
-
-| Provider | Env Key | Default Model | Status |
-|----------|---------|---------------|--------|
-| **Gemini** | `GEMINI_API_KEY` | `gemini-2.0-flash` | ✅ Default |
-| **OpenAI** | `OPENAI_API_KEY` | `gpt-4o-mini` | ✅ |
-| **Claude** | `CLAUDE_API_KEY` | `claude-3-haiku-20240307` | ✅ |
-| **DeepSeek** | `DEEPSEEK_API_KEY` | `deepseek-chat` | ✅ |
-| **Groq** | `GROQ_API_KEY` | `mixtral-8x7b-32768` | ✅ |
-| **OpenRouter** | `OPENROUTER_API_KEY` | `google/gemini-2.0-flash-lite` | ✅ |
-
-### How It Works
-
-```env
-# In backend/.env — choose your default provider
-AI_PROVIDER=gemini
-
-# Always set your primary key
-GEMINI_API_KEY="your-key"
-
-# Optionally set others for fallback
-OPENAI_API_KEY="your-key"
-```
-
-The system automatically:
-1. Uses the configured `AI_PROVIDER`
-2. Falls back to Gemini if the primary provider's key is missing
-3. Falls back to mathematically calculated data if no AI provider works
-
-### Provider Architecture
-
-```
-backend/src/lib/ai.ts
-├── GeminiProvider       (Google GenAI SDK)
-├── OpenAIProvider       (OpenAI SDK)
-├── ClaudeAdapter       (OpenAI-compatible SDK)
-├── DeepSeekAdapter     (OpenAI-compatible SDK)
-├── GroqAdapter         (OpenAI-compatible SDK)
-└── OpenRouterAdapter   (OpenAI-compatible SDK)
-```
-
-All providers implement the same `AIProviderClient` interface, making them interchangeable.
-
----
-
-## Database Schema
-
-### Entity Relationship
-
-```
-User (1)───(1) Subscription
-  │
-  ├──(many) AstrologyReport
-  ├──(many) ChatSession
-  ├──(many) UsageRecord
-  ├──(many) PaymentMethod
-  └──(many) Invoice
-```
-
-### Models
-
-**User** — Core user account with role-based access control
-| Field | Type | Notes |
-|-------|------|-------|
-| id | String (cuid) | Primary key |
-| email | String | Unique, used for login |
-| name | String | Display name |
-| passwordHash | String | bcrypt hashed |
-| role | Enum | USER / PREMIUM / ADMIN / SUPER_ADMIN |
-| timezone | String | Default: UTC |
-| language | String | Default: en |
-| emailVerified | Boolean | Default: false |
-| birthDate, birthTime, birthPlace | String? | Astrology details |
-
-**Subscription** — User subscription with Stripe integration
-| Field | Type | Notes |
-|-------|------|-------|
-| plan | Enum | FREE / PRO / PREMIUM / ENTERPRISE |
-| status | Enum | ACTIVE / CANCELED / PAST_DUE / TRIALING / EXPIRED |
-| stripeSubscriptionId | String? | Stripe reference |
-| currentPeriodStart/End | DateTime | Billing period |
-| trialEnd | DateTime? | Trial expiration |
-
-**AstrologyReport** — Generated astrology reports
-| Field | Type | Notes |
-|-------|------|-------|
-| type | String | vedic_profile / daily_horoscope / compatibility / moon_phase |
-| input | JSON | Request payload |
-| result | JSON | Generated report |
-| aiProvider | String? | Which AI generated it |
-| tokensUsed | Int? | AI token count |
-| costInCents | Float? | AI cost tracking |
-
-**ChatSession** — AI chat conversations
-| Field | Type | Notes |
-|-------|------|-------|
-| messages | JSON | Array of {role, content} |
-| context | JSON? | Session context for AI |
-
-**UsageRecord** — AI usage tracking for billing
-| Field | Type | Notes |
-|-------|------|-------|
-| feature | String | chat / vedic_profile / horoscope / etc. |
-| tokensIn/Out | Int | Token counts |
-| cost | Float | Cost in dollars |
-
-### Migrations
-
-```bash
-# Create a migration
-cd backend
-npx prisma migrate dev --name <migration-name>
-
-# Apply migrations in production
-npx prisma migrate deploy
-
-# View database in browser
-npx prisma studio
-```
-
----
-
-## Authentication
-
-### Flow
-
-```
-1. User registers or logs in
-2. Server validates credentials
-3. Server generates:
-   - accessToken (15 min, short-lived)
-   - refreshToken (7 days, long-lived)
-4. accessToken sent in response body
-5. refreshToken set as HTTP-only cookie
-6. Client stores accessToken in localStorage
-7. Client sends accessToken with every request via Authorization header
-8. When accessToken expires, client calls /api/auth/refresh
-9. Server verifies refreshToken cookie, issues new token pair
-```
-
-### Token Rotation
-
-- Each refresh creates a new refresh token
-- Old refresh tokens are invalidated
-- If a refresh token is reused after rotation, all sessions are invalidated (theft detection)
-
-### Security
-
-- Passwords hashed with bcrypt (12 rounds)
-- Access tokens expire in 15 minutes
-- Refresh tokens expire in 7 days
-- HTTP-only cookies prevent XSS token theft
-- Role-based middleware guards admin routes
-
----
-
-## Payment System
-
-### Plans
-
-| Plan | Price | Features |
-|------|-------|----------|
-| **Free** | $0 | Daily horoscope, basic birth chart, moon phase tracker |
-| **Pro** | $9.99/mo | Everything in Free + AI chat, compatibility, detailed chart, predictions |
-| **Premium** | $19.99/mo | Everything in Pro + unlimited chat, numerology, tarot, priority support |
-| **Enterprise** | $49.99/mo | Everything in Premium + API access, white-label, dedicated astrologer |
-
-### Stripe Integration
-
-```env
-# backend/.env
-STRIPE_SECRET_KEY="sk_live_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_live_..."
-```
-
-**Webhook endpoints handled:**
-- `checkout.session.completed` — Activate subscription, upgrade user role
-- `customer.subscription.deleted` — Cancel subscription, downgrade user role
-
-### Testing Payments
-
-Use Stripe test card: `4242 4242 4242 4242` with any future date and CVC.
-
-```bash
-# Test checkout flow
-curl -X POST http://localhost:4000/api/payments/create-checkout \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{"plan": "PRO"}'
-```
-
----
-
-## Deployment
-
-### Option 1: Docker Compose (Recommended for Production)
+## Docker Deployment (Production)
 
 ```bash
 # 1. Clone on server
 git clone https://github.com/rai8053/Astrology.git
 cd Astrology
 
-# 2. Configure production environment
+# 2. Create production env
 cp backend/.env.example backend/.env
-# Edit with production values
+# Edit with production values (see Configuration Reference)
 
-# 3. Launch full stack
-docker-compose up -d
+# 3. Launch everything
+docker compose up -d
 
 # 4. Run database migrations
-docker-compose exec backend npx prisma migrate deploy
+docker compose exec backend npx prisma migrate deploy
 
-# 5. Seed admin user
-docker-compose exec backend npx prisma db seed
+# 5. Seed admin user (first deploy only)
+docker compose exec backend npx prisma db seed
+
+# 6. Verify
+curl http://localhost/api/health
 ```
 
-This starts:
-- **PostgreSQL 16** on port 5432
-- **Redis 7** on port 6379
-- **Backend API** on port 4000
-- **Frontend** served via Nginx on port 80
+This starts 5 containers:
+| Service | Port | Purpose |
+|---------|------|---------|
+| `frontend` | `80` | Nginx serving the React SPA + proxying `/api` |
+| `backend` | `4000` | Express API server |
+| `db` | `5432` | PostgreSQL 17 |
+| `redis` | `6379` | Redis 7 |
 
-### Option 2: Manual VPS Deployment
+### Required for public deployment
 
-```bash
-# Server setup
-apt update && apt install -y nginx postgresql redis-server nodejs npm
-
-# Clone and build
-git clone https://github.com/rai8053/Astrology.git
-cd Astrology/backend
-npm install && npx prisma generate && npm run build
-cd ../frontend
-npm install && npm run build
-
-# Configure Nginx (see docker/nginx.conf)
-# Set up SSL with Certbot
-# Configure PM2 for process management
-```
-
-### Option 3: Platform Deployments
-
-**Frontend → Vercel**
-1. Connect repo to Vercel
-2. Set root to `frontend`
-3. Build: `npm run build`
-4. Output: `dist`
-
-**Backend → Railway / Render**
-1. Connect repo
-2. Set root to `backend`
-3. Build: `npm install && npx prisma generate && npm run build`
-4. Start: `node dist/index.cjs`
-5. Add environment variables
-
-### Production Checklist
-
-- [ ] Change JWT secrets to strong random values
-- [ ] Set `NODE_ENV=production`
-- [ ] Configure PostgreSQL with strong credentials
-- [ ] Set up Redis for caching
-- [ ] Configure Stripe webhook endpoints
-- [ ] Enable rate limiting
-- [ ] Set up Sentry for error monitoring
-- [ ] Configure CDN for static assets
-- [ ] Set up automated database backups
-- [ ] Enable HTTPS with SSL certificates
-- [ ] Configure monitoring (UptimeRobot, Datadog, etc.)
+- **SSL certificate** — add to Nginx or use Cloudflare Tunnel (free)
+- **At least one AI key** — set `GEMINI_API_KEY` or another in `.env`
+- **Strong JWT secrets** — `openssl rand -base64 64`
+- **Change default passwords** — seed creates `admin@somasurya.com / admin123`
 
 ---
 
-## Security
+## Common Commands
 
-### Implemented Measures
+```bash
+# Development
+npm run dev                  # Start both frontend + backend
+cd backend && npm run dev    # Backend only
+cd frontend && npm run dev   # Frontend only
 
-| Measure | Implementation |
-|---------|---------------|
-| **API Key Protection** | All AI keys server-side only |
-| **JWT Authentication** | Short-lived access tokens + refresh rotation |
-| **Password Hashing** | bcrypt with 12 salt rounds |
-| **HTTP-only Cookies** | Refresh token not accessible via JS |
-| **Helmet** | Security headers (CSP, XSS, etc.) |
-| **CORS** | Restricted to configured origins |
-| **Rate Limiting** | 100 requests per minute per IP |
-| **Input Validation** | Zod schemas on all endpoints |
-| **SQL Injection** | Prevented by Prisma ORM |
-| **XSS Prevention** | React's built-in escaping + CSP headers |
-| **Request Logging** | All API requests logged |
-| **Error Handling** | Structured errors, no stack leaks |
+# Database
+npx prisma migrate dev       # Create + apply migration
+npx prisma migrate deploy    # Apply in production
+npx prisma db seed           # Seed admin user
+npx prisma studio            # Browse data in browser
 
-### Environment Isolation
+# Testing
+npm test                     # All tests (frontend + backend)
+cd backend && npm test       # Backend tests (32 tests)
+cd frontend && npm test      # Frontend tests
 
-```env
-# Development - .env
-NODE_ENV=development
-DATABASE_URL="postgresql://dev:dev@localhost:5432/soma_surya"
-
-# Production - set via platform env vars
-NODE_ENV=production
-DATABASE_URL="postgresql://prod:secret@db-prod:5432/soma_surya"
+# Production
+npm run build                # Build both
+cd backend && npm start      # Start production backend
+docker compose up -d         # Full Docker deployment
 ```
 
 ---
 
-## Testing
+## Testing Payments
 
-### Backend Tests
+Use Stripe test mode. Once you set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`:
 
-```bash
-cd backend
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-```
-
-Test files co-located with source: `*.test.ts`
-
-### Frontend Tests
-
-```bash
-cd frontend
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-```
-
-### CI/CD Pipeline (GitHub Actions)
-
-The `.github/workflows/ci.yml` automatically runs on push/PR:
-
-1. **Lint** — TypeScript type checking on backend and frontend
-2. **Test** — Run all tests with PostgreSQL service container
-3. **Build** — Production build verification
-
----
-
-## Scripts
-
-### Root `package.json`
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start both frontend and backend in dev mode |
-| `npm run build` | Build both frontend and backend |
-| `npm run start` | Start production backend |
-| `npm run db:migrate` | Run Prisma migrations |
-| `npm run db:seed` | Seed database |
-| `npm run lint` | Type-check both projects |
-
-### Setup Script (Windows)
-
-```powershell
-powershell -File scripts/setup.ps1
-```
-
-Installs all dependencies and creates `.env` from template.
+| Card | Result |
+|------|--------|
+| `4242 4242 4242 4242` | Success |
+| `4000 0000 0000 0002` | Declined |
+| `4000 0025 0000 3155` | Requires 3D Secure |
 
 ---
 
 ## Troubleshooting
 
-### "AI provider returned empty response"
-- Check your API key in `backend/.env`
-- Verify the provider's service status
-- The system falls back to calculated data automatically
-
-### "Cannot connect to database"
-- Ensure PostgreSQL is running
-- Check `DATABASE_URL` in `backend/.env`
-- Run `npx prisma migrate dev` to initialize
-
-### "Port already in use"
-- Backend default: 4000
-- Frontend default: 5173
-- Change via `PORT` env or `vite.config.ts`
-
-### "CORS error in browser"
-- Ensure `CORS_ORIGINS` in `backend/.env` includes your frontend URL
-- Default dev config: `http://localhost:5173`
+| Symptom | Fix |
+|---------|-----|
+| `Cannot connect to database` | Check `DATABASE_URL` in `backend/.env`. Ensure PostgreSQL is running. |
+| `AI provider returned empty response` | Check API key validity. Set `MOCK_AI=true` for testing without keys. |
+| `Port already in use` | Backend: change `PORT` in `.env`. Frontend: change in `vite.config.ts`. |
+| `CORS error` | Ensure `CORS_ORIGINS` includes your frontend URL (default: `http://localhost:5173`). |
+| `Build fails` | Run `npx prisma generate` in `backend/` first. |
+| Theme not switching | Clear `localStorage` theme key and reload. Check `prefers-color-scheme` in dev tools. |
 
 ---
 
-## FAQ
+## Notes
 
-**Q: How accurate is the AI astrology reading?**
-A: Our AI is trained on authentic Vedic astrology texts. When AI is unavailable, mathematically calculated fallback data provides consistent results.
-
-**Q: Is my birth data secure?**
-A: Yes. All data is encrypted in transit (HTTPS) and at rest (database). We never share personal data.
-
-**Q: What is Ashta Koota Gun Milan?**
-A: A traditional Vedic compatibility system scoring relationships out of 36 points across 8 categories.
-
-**Q: Can I use my own AI provider?**
-A: Yes. Set `AI_PROVIDER` to any supported provider and add the corresponding API key.
-
-**Q: How do I switch between providers?**
-A: Change `AI_PROVIDER` in `.env` to: `gemini`, `openai`, `claude`, `deepseek`, `groq`, or `openrouter`.
-
----
-
-## License
-
-Private — All rights reserved.
-
-Soma & Surya © 2026 VedicPath Systems
+- **Sentry and PostHog** env vars exist but the SDKs are not yet wired. They're placeholder-ready for when you add monitoring.
+- **Redis** is deployed but not yet used for API caching — currently only for dependency health checks.
+- **Google/GitHub OAuth** schema placeholders exist but social login endpoints are not implemented.
+- The frontend build uses manual chunking (`vendor`, `ui`) for optimal caching.
 
 ---
 
 <div align="center">
-  <p>Built with ❤️ for the Vedic astrology community</p>
-  <p>
-    <a href="https://github.com/rai8053/Astrology">GitHub</a> •
-    <a href="#soma--surya--ai-powered-vedic-astrology-saas">Back to Top</a>
-  </p>
+  <p><a href="https://github.com/rai8053/Astrology">GitHub</a> &middot; Built with TypeScript from frontend to database</p>
 </div>
