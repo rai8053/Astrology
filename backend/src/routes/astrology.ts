@@ -75,8 +75,8 @@ astrologyRouter.post('/vedic-profile', optionalAuth, validate(birthChartSchema),
   try {
     const { rashiKey, nakshatraName, lagnaKey } = calculateBirthDetails(birthDate, birthTime);
     const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
-    const prompt = `Generate a detailed Vedic astrology birth chart for ${name}, born ${birthDate} at ${birthTime} in ${birthPlace}. Moon Sign: ${rashiKey} (${rd.translation}), Nakshatra: ${nakshatraName}, Lagna: ${lagnaKey}. Return a personalized reading with strengths, weaknesses, lucky attributes, and planetary placements as JSON.`;
-    const aiResult = await generateStructuredJSON<VedicProfile>(prompt, 'You are an expert Vedic astrologer. Return valid JSON.');
+    const prompt = `Generate a detailed Vedic astrology birth chart for ${name}, born ${birthDate} at ${birthTime} in ${birthPlace}. Moon Sign: ${rashiKey} (${rd.translation}), Nakshatra: ${nakshatraName}, Lagna: ${lagnaKey}. Return a flat JSON object (not nested) with fields: rashi, westernSign, nakshatra, nakshatraLord, lagna, element, rashiLord, doshaDominance, generalReading, strengths (array), weaknesses (array), luckyNumber, luckyColor, gemstone, planetaryPlacements (array of {planet, sign, house, description}).`;
+    const aiResult = await generateStructuredJSON<VedicProfile>(prompt, 'You are a Vedic astrologer. Return ONLY a flat JSON object. No nested wrappers, no markdown.');
     const merged = { ...fallback, ...aiResult, name, birthDate, birthTime, birthPlace };
 
     if (req.user) {
@@ -111,8 +111,8 @@ astrologyRouter.post('/daily-horoscope', optionalAuth, validate(horoscopeSchema)
   };
 
   try {
-    const prompt = `Generate a Vedic daily horoscope for Moon Sign ${rashi} (${rd.translation}), ruled by ${rd.lord}. Include general, career, finance, love, health, lucky attributes, energyLevel (1-100), and a mantra remedy. Return JSON.`;
-    const aiResult = await generateStructuredJSON<DailyHoroscope>(prompt, 'You are an expert Vedic astrologer providing daily horoscopes. Return JSON.');
+    const prompt = `Generate a Vedic daily horoscope for Moon Sign ${rashi} (${rd.translation}), ruled by ${rd.lord}. Respond with a flat JSON object (not nested under a key) with these exact fields: general (string), career (string), finance (string), love (string), health (string), luckyNumber (number), luckyColor (string), luckyTime (string), energyLevel (number 1-100), remedy (string).`;
+    const aiResult = await generateStructuredJSON<DailyHoroscope>(prompt, 'You are a Vedic astrologer. Return ONLY a flat JSON object with these keys: general, career, finance, love, health, luckyNumber, luckyColor, luckyTime, energyLevel, remedy. No nested objects, no markdown.');
     const merged = { ...fallback, ...aiResult, rashi };
     if (req.user) {
       await prisma.astrologyReport.create({
@@ -165,8 +165,8 @@ astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchem
   };
 
   try {
-    const prompt = `Vedic compatibility (Gun Milan) for:\nPartner A: ${partnerA.name}, born ${partnerA.birthDate} ${partnerA.birthTime} (Rashi: ${rashiA}, Nakshatra: ${nakshatraA})\nPartner B: ${partnerB.name}, born ${partnerB.birthDate} ${partnerB.birthTime} (Rashi: ${rashiB}, Nakshatra: ${nakshatraB})\nProvide Ashta Koota breakdown, strengths, challenges, remedy, and detailed analysis. Return JSON.`;
-    const aiResult = await generateStructuredJSON<CompatibilityResult>(prompt, 'You are an expert Vedic matchmaker specializing in Ashta Koota Gun Milan.');
+    const prompt = `Vedic compatibility (Gun Milan) for:\nPartner A: ${partnerA.name}, born ${partnerA.birthDate} ${partnerA.birthTime} (Rashi: ${rashiA}, Nakshatra: ${nakshatraA})\nPartner B: ${partnerB.name}, born ${partnerB.birthDate} ${partnerB.birthTime} (Rashi: ${rashiB}, Nakshatra: ${nakshatraB})\nReturn a flat JSON object with fields: partnerA_Rashi, partnerB_Rashi, partnerA_Nakshatra, partnerB_Nakshatra, compatibilityScore (number 0-100), gunsMatched (number 0-36), verdict (string), gunAnalysis (array of {kootaName, description, pointsScored, maxPoints}), strengths (string), challenges (string), remedy (string), detailedAnalysis (string).`;
+    const aiResult = await generateStructuredJSON<CompatibilityResult>(prompt, 'You are a Vedic matchmaker. Return ONLY a flat JSON object. No nested wrappers, no markdown.');
     const merged = { ...fallback, ...aiResult };
     if (req.user) {
       await prisma.astrologyReport.create({
@@ -203,8 +203,8 @@ astrologyRouter.post('/moon-phase', optionalAuth, validate(moonPhaseSchema), asy
   };
 
   try {
-    const prompt = `Enrich moon details for ${fallback.date}: Phase: ${moon.phaseName}, Illumination: ${moon.illumination}%, Tithi: ${moon.tithiName}. Provide spiritual significance. Return JSON.`;
-    const aiResult = await generateStructuredJSON<{ tithiSignificance: string }>(prompt, 'You are a Vedic lunar sage.');
+    const prompt = `Enrich moon details for ${fallback.date}: Phase: ${moon.phaseName}, Illumination: ${moon.illumination}%, Tithi: ${moon.tithiName}. Return a flat JSON object with a single field: tithiSignificance (string).`;
+    const aiResult = await generateStructuredJSON<{ tithiSignificance: string }>(prompt, 'You are a Vedic lunar sage. Return ONLY {"tithiSignificance": "..."} with no nesting or markdown.');
     const merged = { ...fallback, ...aiResult };
     if (req.user) {
       await prisma.astrologyReport.create({

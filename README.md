@@ -37,11 +37,10 @@
 | | Stripe SDK | Subscription billing + webhooks |
 | | Pino | Structured JSON logging |
 | | Helmet + CORS + Rate Limiting | Security hardening |
-| **AI** | Gemini (default) | google-genai-sdk, gemini-2.0-flash |
-| | OpenAI | gpt-4o-mini |
-| | Claude | claude-3-haiku via OpenAI-compatible adapter |
-| | DeepSeek, Groq, OpenRouter | Additional providers with auto-fallback |
-| | Mock provider | Zero-cost demo mode for development |
+| **AI** | OpenRouter | OpenAI SDK → openrouter.ai/api/v1 |
+| | Fallback chain | deepseek-chat-v3-0324 → qwen3-235b-a22b → claude-sonnet-4 |
+| | Retry + timeout | 3 retries per model, 30s timeout, auto fallthrough |
+| | No mock/demo mode | Real AI responses always |
 | **Infra** | Docker + Compose | 5-container orchestration |
 | | Nginx | Reverse proxy + static serving |
 | | GitHub Actions | CI/CD (lint → test → build → deploy) |
@@ -78,7 +77,7 @@ Edit `backend/.env` — at minimum set:
 
 ```env
 DATABASE_URL="postgresql://your_user:your_password@localhost:5432/soma_surya"
-GEMINI_API_KEY="your-gemini-api-key"     # or set MOCK_AI=true for demo mode
+OPENROUTER_API_KEY="sk-or-v1-..."        # Get at https://openrouter.ai
 JWT_SECRET="some-random-string-32-chars-min"
 JWT_REFRESH_SECRET="another-random-string-32-chars-min"
 ```
@@ -133,7 +132,7 @@ Astrology/
 │   ├── src/
 │   │   ├── index.ts                   # Server entry, middleware stack, routes
 │   │   ├── lib/
-│   │   │   ├── ai.ts                  # AI provider abstraction (7 providers)
+│   │   │   ├── ai.ts                  # OpenRouter service (fallback chain, retry, streaming)
 │   │   │   ├── prisma.ts              # Singleton Prisma client
 │   │   │   ├── logger.ts              # Pino structured logger
 │   │   │   └── errors.ts              # AppError class hierarchy
@@ -187,17 +186,17 @@ Astrology/
                          │   :4000           │
                          └───┬────┬────┬────┘
                              │    │    │
-                    ┌────────▼┐ ┌─▼──┐ ┌▼──────────┐
-                    │PostgreSQL│ │Redis│ │ AI Layer   │
-                    │   16     │ │  7  │ │ 7 providers │
-                    └──────────┘ └─────┘ │ auto-fallback│
-                                         └─────────────┘
+                     ┌────────▼┐ ┌─▼──┐ ┌▼───────────┐
+                     │PostgreSQL│ │Redis│ │ AI Layer    │
+                     │   16     │ │  7  │ │ OpenRouter  │
+                     └──────────┘ └─────┘ │ 3-model fallback│
+                                          └─────────────────┘
 ```
 
 ### Key Design Decisions
 
 - **Monorepo** with `shared/types/` — frontend and backend share the same TypeScript interfaces for API contracts
-- **AI abstraction layer** (`backend/src/lib/ai.ts`) — single interface, 7 implementations, automatic fallback chain
+- **OpenRouter AI** (`backend/src/lib/ai.ts`) — single provider via OpenAI SDK, 3-model fallback chain, retry + timeout + streaming
 - **Mathematical fallback** — if every AI provider fails, the astrology calculator produces results from raw data
 - **Feature-based frontend** — each feature gets its own directory with self-contained components
 - **JWT rotation** — refresh tokens rotate on every use; reuse detection invalidates all sessions
@@ -216,7 +215,7 @@ All environment variables go in `backend/.env`:
 | `DATABASE_URL` | `postgresql://user:pass@localhost:5432/soma_surya` | PostgreSQL connection |
 | `JWT_SECRET` | `openssl rand -base64 64` | Access token signing |
 | `JWT_REFRESH_SECRET` | `openssl rand -base64 64` | Refresh token signing |
-| `GEMINI_API_KEY` | `AIza...` | At least one AI key required |
+| `OPENROUTER_API_KEY` | `sk-or-v1-...` | Required for AI readings (get at [openrouter.ai](https://openrouter.ai)) |
 
 ### Optional
 
@@ -224,10 +223,10 @@ All environment variables go in `backend/.env`:
 |----------|---------|---------|
 | `PORT` | `4000` | Backend port |
 | `NODE_ENV` | `development` | Toggles debug mode, error verbosity |
-| `MOCK_AI` | `false` | Set `true` for zero-cost demo (no API keys) |
-| `AI_PROVIDER` | `gemini` | Default: `gemini`, `openai`, `claude`, `deepseek`, `groq`, `openrouter` |
-| `OPENAI_API_KEY` | `""` | Fallback AI provider |
-| `CLAUDE_API_KEY` | `""` | Fallback AI provider |
+
+| `OPENROUTER_MODEL` | `deepseek/deepseek-chat-v3-0324` | Preferred model for AI readings |
+| `OPENROUTER_FALLBACK_MODELS` | `qwen/qwen3-235b-a22b,anthropic/claude-sonnet-4` | Comma-separated fallback chain |
+| `OPENROUTER_MAX_RETRIES` | `3` | Retry attempts per model before fallthrough |
 | `STRIPE_SECRET_KEY` | `""` | Required for payments |
 | `STRIPE_WEBHOOK_SECRET` | `""` | Required for payment webhooks |
 | `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed origins |
@@ -322,7 +321,7 @@ This starts 5 containers:
 ### Required for public deployment
 
 - **SSL certificate** — add to Nginx or use Cloudflare Tunnel (free)
-- **At least one AI key** — set `GEMINI_API_KEY` or another in `.env`
+- **OpenRouter API key** — set `OPENROUTER_API_KEY` in `.env` (get one at [openrouter.ai](https://openrouter.ai))
 - **Strong JWT secrets** — `openssl rand -base64 64`
 - **Change default passwords** — seed creates `admin@somasurya.com / admin123`
 
@@ -372,7 +371,7 @@ Use Stripe test mode. Once you set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRE
 | Symptom | Fix |
 |---------|-----|
 | `Cannot connect to database` | Check `DATABASE_URL` in `backend/.env`. Ensure PostgreSQL is running. |
-| `AI provider returned empty response` | Check API key validity. Set `MOCK_AI=true` for testing without keys. |
+| `AI provider returned empty response` | Check `OPENROUTER_API_KEY` validity at [openrouter.ai](https://openrouter.ai) |
 | `Port already in use` | Backend: change `PORT` in `.env`. Frontend: change in `vite.config.ts`. |
 | `CORS error` | Ensure `CORS_ORIGINS` includes your frontend URL (default: `http://localhost:5173`). |
 | `Build fails` | Run `npx prisma generate` in `backend/` first. |
