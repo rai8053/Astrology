@@ -65,7 +65,13 @@ class ApiClient {
         credentials: 'include',
       });
 
-      const data = await res.json() as ApiResponse<T>;
+      let data: ApiResponse<T>;
+      try {
+        data = await res.json() as ApiResponse<T>;
+      } catch {
+        const text = await res.text().catch(() => '');
+        throw new Error(`Server returned ${res.status}${text ? ': ' + text.slice(0, 200) : ' with empty body'}`);
+      }
 
       if (!res.ok && res.status === 401) {
         const refreshed = await this.attemptRefresh();
