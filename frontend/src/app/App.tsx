@@ -3,7 +3,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
-import { api } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CosmicBackground } from '@/components/CosmicBackground';
@@ -48,11 +47,11 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
   return <>{children}</>;
 }
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 export default function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
   const logout = useAuthStore((s) => s.logout);
-  const googleClientId = useAuthStore((s) => s.googleClientId);
-  const setGoogleClientId = useAuthStore((s) => s.setGoogleClientId);
   const location = useLocation();
 
   useEffect(() => {
@@ -65,41 +64,39 @@ export default function App() {
     return () => window.removeEventListener('session-expired', handler);
   }, [logout]);
 
-  useEffect(() => {
-    api.get<{ clientId: string }>('/api/auth/google/client-id')
-      .then((res) => setGoogleClientId(res.data.clientId))
-      .catch(() => {});
-  }, [setGoogleClientId]);
+  const content = (
+    <ErrorBoundary>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageWrap cosmic><Landing /></PageWrap>} />
+          <Route path="/pricing" element={<PageWrap cosmic><PricingPage /></PageWrap>} />
+          <Route path="/login" element={<PageWrap><LoginPage /></PageWrap>} />
+          <Route path="/register" element={<PageWrap><RegisterPage /></PageWrap>} />
+          <Route path="/dashboard" element={<ProtectedRoute><PageWrap><DashboardLayout /></PageWrap></ProtectedRoute>}>
+            <Route index element={<DashboardHome />} />
+            <Route path="horoscope" element={<HoroscopePage />} />
+            <Route path="kundli" element={<KundliPage />} />
+            <Route path="compatibility" element={<CompatibilityPage />} />
+            <Route path="moon" element={<MoonPage />} />
+            <Route path="chat" element={<ChatPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+          <Route path="/admin" element={<ProtectedRoute adminOnly><PageWrap><AdminLayout /></PageWrap></ProtectedRoute>}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+    </ErrorBoundary>
+  );
 
-  if (!googleClientId) return <LoadingScreen />;
+  if (!googleClientId) return content;
 
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
-      <ErrorBoundary>
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<PageWrap cosmic><Landing /></PageWrap>} />
-            <Route path="/pricing" element={<PageWrap cosmic><PricingPage /></PageWrap>} />
-            <Route path="/login" element={<PageWrap><LoginPage /></PageWrap>} />
-            <Route path="/register" element={<PageWrap><RegisterPage /></PageWrap>} />
-            <Route path="/dashboard" element={<ProtectedRoute><PageWrap><DashboardLayout /></PageWrap></ProtectedRoute>}>
-              <Route index element={<DashboardHome />} />
-              <Route path="horoscope" element={<HoroscopePage />} />
-              <Route path="kundli" element={<KundliPage />} />
-              <Route path="compatibility" element={<CompatibilityPage />} />
-              <Route path="moon" element={<MoonPage />} />
-              <Route path="chat" element={<ChatPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
-            <Route path="/admin" element={<ProtectedRoute adminOnly><PageWrap><AdminLayout /></PageWrap></ProtectedRoute>}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="analytics" element={<AdminAnalytics />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AnimatePresence>
-      </ErrorBoundary>
+      {content}
     </GoogleOAuthProvider>
   );
 }
