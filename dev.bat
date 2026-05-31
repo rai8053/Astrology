@@ -3,6 +3,11 @@ title Soma & Surya Dev
 echo Starting Soma & Surya dev servers...
 echo.
 
+echo === Generating Prisma Client ===
+cd /d "%~dp0backend"
+npx prisma generate
+
+echo.
 echo === Backend (http://localhost:4000) ===
 start "Soma-Surya-Backend" cmd /c "cd /d "%~dp0backend" && npx tsx src/index.ts"
 
