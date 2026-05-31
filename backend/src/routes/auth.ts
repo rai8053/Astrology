@@ -26,85 +26,77 @@ function generateTokens(payload: { userId: string; role: string }) {
   return { accessToken, refreshToken };
 }
 
-authRouter.post('/google', (req, res) => {
-  (async () => {
-    try {
-      const { credential } = req.body;
-      if (!credential) {
-        res.status(400).json({ success: false, error: 'Google credential is required', code: 'VALIDATION_ERROR' });
-        return;
-      }
+authRouter.post('/google', asyncHandler(async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) {
+    res.status(400).json({ success: false, error: 'Google credential is required', code: 'VALIDATION_ERROR' });
+    return;
+  }
 
-      const ticket = await googleClient.verifyIdToken({
-        idToken: credential,
-        audience: GOOGLE_CLIENT_ID,
+  const ticket = await googleClient.verifyIdToken({
+    idToken: credential,
+    audience: GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  if (!payload?.email) {
+    res.status(401).json({ success: false, error: 'Invalid Google token', code: 'UNAUTHORIZED' });
+    return;
+  }
+
+  const { sub: googleId, email, name, picture } = payload;
+
+  let user = await prisma.user.findUnique({ where: { googleId } })
+    ?? await prisma.user.findUnique({ where: { email } });
+
+  if (user) {
+    if (!user.googleId) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { googleId, avatar: picture || user.avatar },
       });
-      const payload = ticket.getPayload();
-      if (!payload?.email) {
-        res.status(401).json({ success: false, error: 'Invalid Google token', code: 'UNAUTHORIZED' });
-        return;
-      }
-
-      const { sub: googleId, email, name, picture } = payload;
-
-      let user = await prisma.user.findUnique({ where: { googleId } })
-        ?? await prisma.user.findUnique({ where: { email } });
-
-      if (user) {
-        if (!user.googleId) {
-          user = await prisma.user.update({
-            where: { id: user.id },
-            data: { googleId, avatar: picture || user.avatar },
-          });
-        }
-      } else {
-        const passwordHash = await bcrypt.hash(crypto.randomUUID(), 12);
-        user = await prisma.user.create({
-          data: {
-            name: name || email.split('@')[0],
-            email,
-            passwordHash,
-            googleId,
-            avatar: picture || null,
-          },
-        });
-        await prisma.subscription.create({
-          data: {
-            userId: user.id,
-            plan: 'FREE',
-            status: 'TRIALING',
-            currentPeriodStart: new Date(),
-            currentPeriodEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-            trialEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-          },
-        });
-      }
-
-      const tokens = generateTokens({ userId: user.id, role: user.role });
-      await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken } });
-
-      res.cookie('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        path: '/api/auth',
-      });
-
-      res.json({
-        success: true,
-        data: {
-          user: { id: user.id, email: user.email, name: user.name, role: user.role, avatar: user.avatar },
-          accessToken: tokens.accessToken,
-        },
-      });
-    } catch (err) {
-      console.error('[Google Auth] Error:', err);
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      res.status(500).json({ success: false, error: message, code: 'INTERNAL_ERROR' });
     }
-  })();
-});
+  } else {
+    const passwordHash = await bcrypt.hash(crypto.randomUUID(), 12);
+    user = await prisma.user.create({
+      data: {
+        name: name || email.split('@')[0],
+        email,
+        passwordHash,
+        googleId,
+        avatar: picture || null,
+      },
+    });
+    await prisma.subscription.create({
+      data: {
+        userId: user.id,
+        plan: 'FREE',
+        status: 'TRIALING',
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        trialEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      },
+    });
+  }
+
+  const tokens = generateTokens({ userId: user.id, role: user.role });
+  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken } });
+
+  res.cookie('refreshToken', tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/api/auth',
+  });
+
+  res.json({
+    success: true,
+    data: {
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, avatar: user.avatar },
+      accessToken: tokens.accessToken,
+    },
+  });
+}));
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
