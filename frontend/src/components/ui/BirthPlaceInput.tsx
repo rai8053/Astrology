@@ -45,8 +45,10 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
   }, []);
 
   const stateOptions = useMemo(() => {
-    return [...allStates, 'Other'];
-  }, [allStates]);
+    if (!country) return [];
+    if (country === 'India') return [...allStates, 'Other'];
+    return ['Other'];
+  }, [country, allStates]);
 
   const select = (place: Place) => {
     onChange(`${place.village}, ${place.district}`);
@@ -147,10 +149,12 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
           <select
             value={state}
             onChange={(e) => onStateChange(e.target.value)}
+            disabled={!country}
             className={cn(
               'w-full bg-transparent border-b text-sm py-2 outline-none transition-colors focus:border-gold font-serif',
               !state ? 'text-ink/30 dark:text-parchment/30' : 'text-ink dark:text-parchment',
               'border-ink/20 dark:border-parchment/20',
+              !country && 'opacity-40 cursor-not-allowed',
             )}
           >
             <option value="" disabled>Select State</option>
