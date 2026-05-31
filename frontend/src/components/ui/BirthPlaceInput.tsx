@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import indianPlaces from '@/data/indian-places.json';
+import worldPlaces from '@/data/world-places.json';
 import countryStates from '@/data/country-states.json';
 
 interface BirthPlaceInputProps {
@@ -35,7 +35,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
   const filtered = useMemo(() => {
     if (!value.trim()) return [];
     const q = value.trim().toLowerCase();
-    return (indianPlaces as Place[])
+    return (worldPlaces as Place[])
       .filter((p) => p.village.toLowerCase().startsWith(q))
       .slice(0, 8);
   }, [value]);
