@@ -13,7 +13,6 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, loginWithGoogle, isAuthenticated } = useAuthStore();
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
   const navigate = useNavigate();
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
@@ -65,26 +64,22 @@ export function LoginPage() {
               <span className="bg-white dark:bg-cosmic-deeper px-2 text-ink/40 dark:text-parchment/40">or continue with</span>
             </div>
           </div>
-          {googleClientId ? (
-            <div className="flex justify-center">
-              <GoogleLogin
-                onSuccess={async (credentialResponse) => {
-                  if (credentialResponse.credential) {
-                    try {
-                      await loginWithGoogle(credentialResponse.credential);
-                      navigate('/dashboard');
-                    } catch { /* handled by API client */ }
-                  }
-                }}
-                onError={() => toast.error('Google sign-in failed')}
-                size="large"
-                shape="pill"
-                text="signin_with"
-              />
-            </div>
-          ) : (
-            <p className="text-xs text-center text-ink/40 dark:text-parchment/40">Google Login is temporarily unavailable.</p>
-          )}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                if (credentialResponse.credential) {
+                  try {
+                    await loginWithGoogle(credentialResponse.credential);
+                    navigate('/dashboard');
+                  } catch { /* handled by API client */ }
+                }
+              }}
+              onError={() => toast.error('Google sign-in failed')}
+              size="large"
+              shape="pill"
+              text="signin_with"
+            />
+          </div>
           <p className="text-sm text-center mt-6 text-ink/40 dark:text-parchment/40">
             Don't have an account?{' '}
             <Link to="/register" className="text-gold hover:underline font-medium">Create one</Link>
