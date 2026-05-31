@@ -1,23 +1,19 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { generateAIResponse, generateStructuredJSON } from '../lib/ai.js';
+import { describe, it, expect } from 'vitest';
 
-const origEnv = process.env;
+const itWithKey = process.env.OPENROUTER_API_KEY ? it : it.skip;
 
 describe('AI module', () => {
-  beforeAll(() => {
-    process.env = { ...origEnv, MOCK_AI: 'true' };
-  });
-
-  it('generateAIResponse returns mock text', async () => {
-    const result = await generateAIResponse('Tell me about my birth chart');
+  itWithKey('generateAIResponse returns text', async () => {
+    const { generateAIResponse } = await import('../lib/ai.js');
+    const result = await generateAIResponse('Say hello in 3 words', 'Be concise.');
     expect(result).toHaveProperty('text');
-    expect(result).toHaveProperty('provider', 'mock');
-    expect(result).toHaveProperty('model', 'mock');
+    expect(result).toHaveProperty('provider', 'openrouter');
     expect(typeof result.text).toBe('string');
     expect(result.text.length).toBeGreaterThan(0);
   });
 
-  it('generateStructuredJSON returns parsed object', async () => {
+  itWithKey('generateStructuredJSON returns parsed object', async () => {
+    const { generateStructuredJSON } = await import('../lib/ai.js');
     const result = await generateStructuredJSON<{ test: string }>(
       'Return { "test": "hello" }',
       'Return JSON only',
