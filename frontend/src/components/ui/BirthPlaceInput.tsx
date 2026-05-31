@@ -44,10 +44,9 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
     return Array.from(s).sort();
   }, []);
 
-  const filteredStates = useMemo(() => {
-    if (country === 'India') return allStates;
-    return [];
-  }, [country, allStates]);
+  const stateOptions = useMemo(() => {
+    return [...allStates, 'Other'];
+  }, [allStates]);
 
   const select = (place: Place) => {
     onChange(`${place.village}, ${place.district}`);
@@ -155,12 +154,9 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
             )}
           >
             <option value="" disabled>Select State</option>
-            {filteredStates.map((s) => (
+            {stateOptions.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
-            {country !== 'India' && (
-              <option value="Other">Other</option>
-            )}
           </select>
         </div>
         <div className="space-y-1">
