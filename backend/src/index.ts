@@ -57,7 +57,6 @@ app.use(requestLogger);
 app.use('/api/health', healthRouter);
 
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
-
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
@@ -75,8 +74,8 @@ app.listen(PORT, '0.0.0.0', () => {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'dev-secret-change-in-production') {
     logger.warn('⚠️  JWT_SECRET is using a weak default. Set a strong secret in production.');
   }
-  if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY && process.env.MOCK_AI !== 'true') {
-    logger.warn('⚠️  No AI provider keys configured. Set MOCK_AI=true for demo mode.');
+  if (!process.env.OPENROUTER_API_KEY) {
+    logger.warn('⚠️  No OPENROUTER_API_KEY configured. Get one at https://openrouter.ai');
   }
   logger.info(`Soma & Surya API running on port ${PORT}`);
 });
