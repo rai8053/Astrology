@@ -26,6 +26,10 @@ function generateTokens(payload: { userId: string; role: string }) {
   return { accessToken, refreshToken };
 }
 
+authRouter.get('/google/client-id', asyncHandler(async (_req, res) => {
+  res.json({ success: true, data: { clientId: GOOGLE_CLIENT_ID } });
+}));
+
 authRouter.post('/google', asyncHandler(async (req, res) => {
   const { credential } = req.body;
   if (!credential) {
