@@ -9,6 +9,7 @@ interface BirthPlaceInputProps {
   onChange: (value: string) => void;
   required?: boolean;
   placeholder?: string;
+  error?: string;
 }
 
 interface Place {
@@ -16,7 +17,7 @@ interface Place {
   district: string;
 }
 
-export function BirthPlaceInput({ label, id, value, onChange, required, placeholder }: BirthPlaceInputProps) {
+export function BirthPlaceInput({ label, id, value, onChange, required, placeholder, error }: BirthPlaceInputProps) {
   const [open, setOpen] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,10 +83,12 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
         required={required}
         placeholder={placeholder}
         className={cn(
-          'w-full bg-transparent border-b border-ink/20 dark:border-parchment/20 text-sm py-2 outline-none transition-colors focus:border-gold font-serif placeholder:text-ink/30 dark:placeholder:text-parchment/30',
+          'w-full bg-transparent border-b text-sm py-2 outline-none transition-colors focus:border-gold font-serif placeholder:text-ink/30 dark:placeholder:text-parchment/30',
+          error ? 'border-red-500' : 'border-ink/20 dark:border-parchment/20',
         )}
         autoComplete="off"
       />
+      {error && <p className="text-[10px] text-red-500 mt-1">{error}</p>}
       {show && (
         <div
           ref={listRef}
