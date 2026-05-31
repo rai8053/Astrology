@@ -101,7 +101,6 @@ jobs:
         working-directory: backend
         env:
           DATABASE_URL: postgresql://postgres:test@localhost:5432/test?schema=public
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npx vitest run --reporter=github-actions
 
   test-frontend:

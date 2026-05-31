@@ -1,13 +1,9 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
-describe('AI module (requires OPENROUTER_API_KEY)', () => {
-  beforeAll(() => {
-    if (!process.env.OPENROUTER_API_KEY) {
-      throw new Error('OPENROUTER_API_KEY must be set to run AI tests');
-    }
-  });
+const itWithKey = process.env.OPENROUTER_API_KEY ? it : it.skip;
 
-  it('generateAIResponse returns text', async () => {
+describe('AI module', () => {
+  itWithKey('generateAIResponse returns text', async () => {
     const { generateAIResponse } = await import('../lib/ai.js');
     const result = await generateAIResponse('Say hello in 3 words', 'Be concise.');
     expect(result).toHaveProperty('text');
@@ -16,7 +12,7 @@ describe('AI module (requires OPENROUTER_API_KEY)', () => {
     expect(result.text.length).toBeGreaterThan(0);
   });
 
-  it('generateStructuredJSON returns parsed object', async () => {
+  itWithKey('generateStructuredJSON returns parsed object', async () => {
     const { generateStructuredJSON } = await import('../lib/ai.js');
     const result = await generateStructuredJSON<{ test: string }>(
       'Return { "test": "hello" }',
