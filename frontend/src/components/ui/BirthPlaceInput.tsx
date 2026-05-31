@@ -1,7 +1,33 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import worldPlaces from '@/data/world-places.json';
 import countryStates from '@/data/country-states.json';
+
+const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+
+interface NominatimAddress {
+  city?: string;
+  town?: string;
+  village?: string;
+  hamlet?: string;
+  municipality?: string;
+  state_district?: string;
+  county?: string;
+  region?: string;
+  state?: string;
+  country?: string;
+}
+
+interface NominatimResult {
+  display_name: string;
+  address: NominatimAddress;
+}
+
+interface Place {
+  village: string;
+  district: string;
+  state: string;
+  country: string;
+}
 
 interface BirthPlaceInputProps {
   label?: string;
@@ -17,35 +43,56 @@ interface BirthPlaceInputProps {
   onCountryChange: (v: string) => void;
 }
 
-interface Place {
-  village: string;
-  district: string;
-  state: string;
-  country: string;
-}
-
 const countries = ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Italy', 'Spain', 'Brazil', 'Mexico', 'Japan', 'China', 'South Korea', 'Singapore', 'Malaysia', 'Indonesia', 'Thailand', 'Vietnam', 'Philippines', 'South Africa', 'Nigeria', 'Egypt', 'Kenya', 'Morocco', 'Saudi Arabia', 'UAE', 'Turkey', 'Russia', 'Ukraine', 'Poland', 'Netherlands', 'Belgium', 'Switzerland', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Portugal', 'Greece', 'Ireland', 'New Zealand', 'Argentina', 'Chile', 'Colombia', 'Peru', 'Pakistan', 'Bangladesh', 'Sri Lanka', 'Nepal', 'Bhutan', 'Myanmar', 'Afghanistan', 'Iran', 'Iraq', 'Israel'].sort();
+
+function extractPlace(r: NominatimResult): Place {
+  const a = r.address;
+  const village = a.city || a.town || a.village || a.hamlet || a.municipality || '';
+  const district = a.state_district || a.county || a.region || a.state || '';
+  const state = a.state || '';
+  const country = a.country || '';
+  return { village, district, state, country };
+}
 
 export function BirthPlaceInput({ label, id, value, onChange, required, placeholder, error, state, onStateChange, country, onCountryChange }: BirthPlaceInputProps) {
   const [open, setOpen] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
+  const [results, setResults] = useState<Place[]>([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const filtered = useMemo(() => {
-    if (!value.trim()) return [];
-    const q = value.trim().toLowerCase();
-    return (worldPlaces as Place[])
-      .filter((p) => p.village.toLowerCase().startsWith(q))
-      .slice(0, 8);
-  }, [value]);
+  const search = useCallback(async (q: string) => {
+    if (!q.trim()) { setResults([]); return; }
+    setLoading(true);
+    try {
+      const res = await fetch(`${NOMINATIM_URL}?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=5`, {
+        headers: { 'Accept-Language': 'en' },
+      });
+      if (!res.ok) { setResults([]); return; }
+      const data: NominatimResult[] = await res.json();
+      setResults(data.map(extractPlace).filter(p => p.village));
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const stateOptions = useMemo(() => {
+  const onChangeInput = (v: string) => {
+    onChange(v);
+    setOpen(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => search(v), 300);
+  };
+
+  const stateOptions = (() => {
     if (!country) return [];
     const states = (countryStates as Record<string, string[]>)[country];
     if (states && states.length > 0) return [...states, 'Other'];
     return ['Other'];
-  }, [country]);
+  })();
 
   const select = (place: Place) => {
     onChange(`${place.village}, ${place.district}`);
@@ -53,11 +100,12 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
     onCountryChange(place.country);
     setOpen(false);
     setFocusedIdx(-1);
+    setResults([]);
   };
 
   useEffect(() => {
     setFocusedIdx(-1);
-  }, [filtered.length]);
+  }, [results.length]);
 
   useEffect(() => {
     if (!open) setFocusedIdx(-1);
@@ -74,15 +122,19 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!open || filtered.length === 0) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); setFocusedIdx((prev) => Math.min(prev + 1, filtered.length - 1)); }
+    if (!open || results.length === 0) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setFocusedIdx((prev) => Math.min(prev + 1, results.length - 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setFocusedIdx((prev) => Math.max(prev - 1, 0)); }
-    else if (e.key === 'Enter' && focusedIdx >= 0 && filtered[focusedIdx]) { e.preventDefault(); select(filtered[focusedIdx]); }
+    else if (e.key === 'Enter' && focusedIdx >= 0 && results[focusedIdx]) { e.preventDefault(); select(results[focusedIdx]); }
     else if (e.key === 'Escape') { setOpen(false); }
   };
 
-  const show = open && filtered.length > 0;
+  const show = open && (results.length > 0 || loading);
 
   return (
     <div className="space-y-1">
@@ -96,8 +148,8 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
           ref={inputRef}
           id={id}
           value={value}
-          onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
+          onChange={(e) => onChangeInput(e.target.value)}
+          onFocus={() => { if (results.length > 0) setOpen(true); }}
           onKeyDown={handleKeyDown}
           required={required}
           placeholder={placeholder}
@@ -113,8 +165,11 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
             ref={listRef}
             className="absolute z-50 left-0 right-0 top-full mt-1 max-h-64 overflow-y-auto rounded-xl bg-white dark:bg-cosmic-deeper border border-ink/10 dark:border-parchment/10 shadow-lg shadow-black/5"
           >
-            {filtered.map((place, i) => (
-              <div key={`${place.village}-${place.district}`}>
+            {loading && results.length === 0 && (
+              <div className="px-4 py-3 text-sm text-ink/40 dark:text-parchment/40">Searching...</div>
+            )}
+            {results.map((place, i) => (
+              <div key={`${place.village}-${place.district}-${i}`}>
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
@@ -128,10 +183,10 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
                     {place.village}
                   </span>
                   <span className="block text-xs text-ink/40 dark:text-parchment/40 mt-px">
-                    {place.village}, {place.district}
+                    {place.district ? `${place.village}, ${place.district}` : place.village}
                   </span>
                 </button>
-                {i < filtered.length - 1 && <hr className="border-t border-ink/5 dark:border-parchment/5 mx-3" />}
+                {i < results.length - 1 && <hr className="border-t border-ink/5 dark:border-parchment/5 mx-3" />}
               </div>
             ))}
           </div>
