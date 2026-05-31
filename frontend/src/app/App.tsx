@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
+import { api } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CosmicBackground } from '@/components/CosmicBackground';
@@ -47,6 +49,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
 }
 
 export default function App() {
+  const [googleClientId, setGoogleClientId] = useState<string | null>(null);
   const checkAuth = useAuthStore((s) => s.checkAuth);
   const logout = useAuthStore((s) => s.logout);
   const location = useLocation();
@@ -61,7 +64,13 @@ export default function App() {
     return () => window.removeEventListener('session-expired', handler);
   }, [logout]);
 
-  return (
+  useEffect(() => {
+    api.get<{ clientId: string }>('/api/auth/google/client-id')
+      .then((res) => setGoogleClientId(res.data.clientId))
+      .catch(() => {});
+  }, []);
+
+  const content = (
     <ErrorBoundary>
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
@@ -88,4 +97,10 @@ export default function App() {
       </AnimatePresence>
     </ErrorBoundary>
   );
+
+  if (googleClientId) {
+    return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>;
+  }
+
+  return content;
 }

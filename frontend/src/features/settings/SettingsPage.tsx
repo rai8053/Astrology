@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
+import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumButton } from '@/components/PremiumButton';
 import { useAuthStore, useThemeStore } from '@/lib/store';
 import toast from 'react-hot-toast';
@@ -51,7 +52,7 @@ export function SettingsPage() {
               <Input label="Birth Date" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
               <div className="grid grid-cols-2 gap-4">
                 <Input label="Birth Time" type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
-                <Input label="Birth Place" value={birthPlace} onChange={(e) => setBirthPlace(e.target.value)} placeholder="City" />
+                <BirthPlaceInput label="Birth Place" value={birthPlace} onChange={(v) => setBirthPlace(v)} placeholder="e.g., Sadhaura, Yamunanagar" />
               </div>
               <PremiumButton onClick={handleSave} loading={updateMutation.isPending} icon={<Save className="w-3.5 h-3.5" />} className="w-full">
                 Save Changes

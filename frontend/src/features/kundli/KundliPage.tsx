@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { Input } from '@/components/ui/Input';
+import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import type { BirthDetails, VedicProfile } from '@shared/types/api';
 
@@ -52,7 +53,7 @@ export function KundliPage() {
                 <Input id="k_date" label="Birth Date" type="date" value={formData.birthDate} onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })} required />
                 <Input id="k_time" label="Birth Time" type="time" value={formData.birthTime} onChange={(e) => setFormData({ ...formData, birthTime: e.target.value })} required />
               </div>
-              <Input id="k_place" label="Birth Place" value={formData.birthPlace} onChange={(e) => setFormData({ ...formData, birthPlace: e.target.value })} required placeholder="City, Country" />
+              <BirthPlaceInput id="k_place" label="Birth Place" value={formData.birthPlace} onChange={(v) => setFormData({ ...formData, birthPlace: v })} required placeholder="e.g., Sadhaura, Yamunanagar" />
               <PremiumButton type="submit" loading={mutation.isPending} icon={<Sparkles className="w-3.5 h-3.5" />} className="w-full">
                 Generate Chart
               </PremiumButton>

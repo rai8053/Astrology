@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { Input } from '@/components/ui/Input';
+import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import type { CompatibilityInput, CompatibilityResult } from '@shared/types/api';
 
@@ -51,7 +52,7 @@ export function CompatibilityPage() {
                     <Input label="Birth Date" type="date" value={input.partnerA.birthDate} onChange={(e) => setInput({ ...input, partnerA: { ...input.partnerA, birthDate: e.target.value } })} required />
                     <Input label="Birth Time" type="time" value={input.partnerA.birthTime} onChange={(e) => setInput({ ...input, partnerA: { ...input.partnerA, birthTime: e.target.value } })} required />
                   </div>
-                  <Input label="Birth Place" value={input.partnerA.birthPlace} onChange={(e) => setInput({ ...input, partnerA: { ...input.partnerA, birthPlace: e.target.value } })} required placeholder="City" />
+                  <BirthPlaceInput label="Birth Place" value={input.partnerA.birthPlace} onChange={(v) => setInput({ ...input, partnerA: { ...input.partnerA, birthPlace: v } })} required placeholder="e.g., Sadhaura, Yamunanagar" />
                 </div>
               </div>
               <div>
@@ -62,7 +63,7 @@ export function CompatibilityPage() {
                     <Input label="Birth Date" type="date" value={input.partnerB.birthDate} onChange={(e) => setInput({ ...input, partnerB: { ...input.partnerB, birthDate: e.target.value } })} required />
                     <Input label="Birth Time" type="time" value={input.partnerB.birthTime} onChange={(e) => setInput({ ...input, partnerB: { ...input.partnerB, birthTime: e.target.value } })} required />
                   </div>
-                  <Input label="Birth Place" value={input.partnerB.birthPlace} onChange={(e) => setInput({ ...input, partnerB: { ...input.partnerB, birthPlace: e.target.value } })} required placeholder="City" />
+                  <BirthPlaceInput label="Birth Place" value={input.partnerB.birthPlace} onChange={(v) => setInput({ ...input, partnerB: { ...input.partnerB, birthPlace: v } })} required placeholder="e.g., Sadhaura, Yamunanagar" />
                 </div>
               </div>
               <PremiumButton type="submit" loading={mutation.isPending} icon={<Heart className="w-3.5 h-3.5" />} className="w-full">
