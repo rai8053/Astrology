@@ -1,156 +1,199 @@
-import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 import { logger } from './logger.js';
 
-export type AIProvider = 'gemini' | 'openai' | 'claude' | 'deepseek' | 'groq' | 'openrouter' | 'mock';
-
-interface AIProviderClient {
-  generateContent(params: { model: string; contents: string; config?: Record<string, unknown>; signal?: AbortSignal }): Promise<{ text: string }>;
+interface AIUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
 }
 
-class MockProvider implements AIProviderClient {
-  async generateContent(params: { model: string; contents: string; signal?: AbortSignal }) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const prompt = params.contents.toLowerCase();
-    if (prompt.includes('birth') || prompt.includes('kundli')) {
-      return {
-        text: JSON.stringify({
-          moonSign: 'Taurus', nakshatra: 'Kritika', lagna: 'Gemini', dosha: 'Vata-Pitta',
-          interpretation: 'Your Moon in Taurus indicates a practical and stable nature. The Kritika Nakshatra brings leadership qualities.',
-          timestamp: new Date().toISOString(),
-        }),
-      };
-    }
-    if (prompt.includes('horoscope') || prompt.includes('prediction')) {
-      return {
-        text: JSON.stringify({
-          career: 'This is a favorable period for new ventures and professional growth.',
-          finance: 'Financial opportunities are approaching. Consider diversifying your investments.',
-          love: 'Relationships are harmonious. Single natives may meet someone special.',
-          health: 'Take care of your sleep schedule. Regular exercise recommended.',
-          energy: 7, luckyNumber: 5, luckyColor: 'Blue', luckyTime: '6-8 AM',
-        }),
-      };
-    }
-    if (prompt.includes('compatibility') || prompt.includes('match')) {
-      return {
-        text: JSON.stringify({
-          totalScore: 28, maxScore: 36, percentage: 77,
-          varna: 1, vasya: 2, tara: 0, yoni: 4, grahaMaitri: 5, gana: 0, bhakoot: 7, nadi: 9,
-          analysis: 'Good overall compatibility. The couple shares common values and emotional understanding.',
-        }),
-      };
-    }
-    return { text: JSON.stringify({ message: 'Mock response — configure real AI API keys for production' }) };
-  }
+interface ProviderClient {
+  generateContent(params: {
+    model?: string;
+    contents: string;
+    config?: Record<string, unknown>;
+    signal?: AbortSignal;
+  }): Promise<{ text: string; model: string; usage?: AIUsage }>;
 }
 
-class GeminiProvider implements AIProviderClient {
-  private client: GoogleGenAI;
-  constructor(apiKey: string) { this.client = new GoogleGenAI({ apiKey }); }
-  async generateContent(params: { model: string; contents: string; config?: Record<string, unknown>; signal?: AbortSignal }) {
-    const response = await this.client.models.generateContent({
-      model: params.model,
-      contents: params.contents,
-      config: { ...params.config, signal: params.signal } as Record<string, unknown> | undefined,
-    });
-    return { text: response.text || '' };
-  }
-}
+const DEFAULT_FALLBACK_MODELS = [
+  'deepseek/deepseek-chat-v3-0324',
+  'qwen/qwen3-235b-a22b',
+  'anthropic/claude-sonnet-4',
+];
 
-class OpenAIProvider implements AIProviderClient {
+class OpenRouterService implements ProviderClient {
   private client: OpenAI;
-  constructor(apiKey: string, baseURL?: string) {
-    this.client = new OpenAI({ apiKey, baseURL });
-  }
-  async generateContent(params: { model: string; contents: string; signal?: AbortSignal }) {
-    const response = await this.client.chat.completions.create(
-      { model: params.model, messages: [{ role: 'user', content: params.contents }] },
-      { signal: params.signal },
-    );
-    return { text: response.choices[0]?.message?.content || '' };
-  }
-}
+  private preferredModel: string;
+  private fallbackModels: string[];
+  private maxRetries: number;
 
-type ProviderClass = { new (...args: any[]): AIProviderClient };
-
-const providerConfigs: Record<string, { envKey: string; defaultModel: string; class: ProviderClass }> = {
-  mock: { envKey: '', defaultModel: 'mock', class: MockProvider },
-  gemini: { envKey: 'GEMINI_API_KEY', defaultModel: 'gemini-2.0-flash', class: GeminiProvider },
-  openai: { envKey: 'OPENAI_API_KEY', defaultModel: 'gpt-4o-mini', class: OpenAIProvider },
-  claude: { envKey: 'CLAUDE_API_KEY', defaultModel: 'claude-3-haiku-20240307', class: OpenAIProvider },
-  deepseek: { envKey: 'DEEPSEEK_API_KEY', defaultModel: 'deepseek-chat', class: OpenAIProvider },
-  groq: { envKey: 'GROQ_API_KEY', defaultModel: 'mixtral-8x7b-32768', class: OpenAIProvider },
-  openrouter: { envKey: 'OPENROUTER_API_KEY', defaultModel: 'google/gemini-2.0-flash-lite', class: OpenAIProvider },
-};
-
-function resolveProvider(): { provider: AIProviderClient; model: string; name: string } {
-  if (process.env.MOCK_AI === 'true') {
-    logger.info('Using MOCK AI provider (portfolio/demo mode)');
-    return { provider: new MockProvider(), model: 'mock', name: 'mock' };
+  constructor(apiKey: string) {
+    this.client = new OpenAI({
+      apiKey,
+      baseURL: 'https://openrouter.ai/api/v1',
+      defaultHeaders: {
+        'HTTP-Referer': process.env.APP_URL || 'http://localhost:5173',
+        'X-Title': 'Soma & Surya - AI Vedic Astrology',
+      },
+    });
+    this.preferredModel = process.env.OPENROUTER_MODEL || DEFAULT_FALLBACK_MODELS[0];
+    const envFallback = process.env.OPENROUTER_FALLBACK_MODELS;
+    this.fallbackModels = envFallback
+      ? envFallback.split(',').map(s => s.trim()).filter(Boolean)
+      : DEFAULT_FALLBACK_MODELS;
+    this.maxRetries = Math.max(1, parseInt(process.env.OPENROUTER_MAX_RETRIES || '3', 10));
   }
 
-  const preferred = (process.env.AI_PROVIDER || 'gemini') as string;
-  const config = providerConfigs[preferred];
-  if (!config) return resolveProviderByName('gemini');
+  async generateContent(params: {
+    model?: string;
+    contents: string;
+    config?: Record<string, unknown>;
+    signal?: AbortSignal;
+  }): Promise<{ text: string; model: string; usage?: AIUsage }> {
+    const modelsToTry = this.buildModelList(params.model);
+    const systemInstruction = params.config?.systemInstruction as string | undefined;
+    let lastError: Error | null = null;
 
-  const apiKey = process.env[config.envKey];
-  if (apiKey) {
-    const model = process.env[`${preferred.toUpperCase()}_MODEL`] || config.defaultModel;
-    const baseURLs: Record<string, string> = {
-      groq: 'https://api.groq.com/openai/v1',
-      openrouter: 'https://openrouter.ai/api/v1',
-      deepseek: 'https://api.deepseek.com',
-    };
-    if (baseURLs[preferred]) {
-      return { provider: new OpenAIProvider(apiKey, baseURLs[preferred]), model, name: preferred };
+    for (const model of modelsToTry) {
+      for (let attempt = 0; attempt < this.maxRetries; attempt++) {
+        try {
+          const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
+          if (systemInstruction) {
+            messages.push({ role: 'system', content: systemInstruction });
+          }
+          messages.push({ role: 'user', content: params.contents });
+
+          const response = await this.client.chat.completions.create(
+            {
+              model,
+              messages,
+              temperature: 0.7,
+              max_tokens: 4096,
+            },
+            { signal: params.signal, timeout: 30000 },
+          );
+
+          const text = response.choices[0]?.message?.content || '';
+          const usage = response.usage
+            ? {
+                promptTokens: response.usage.prompt_tokens,
+                completionTokens: response.usage.completion_tokens,
+                totalTokens: response.usage.total_tokens,
+              }
+            : undefined;
+
+          logger.info({ model, provider: 'openrouter', usage }, 'OpenRouter AI response');
+
+          return { text, model, usage };
+        } catch (error) {
+          lastError = error as Error;
+          const status = (error as any)?.status;
+          logger.warn({ error, model, attempt: attempt + 1, status }, `OpenRouter model "${model}" failed`);
+
+          if (status === 400 || status === 401 || status === 403 || status === 404) break;
+
+          if (attempt < this.maxRetries - 1) {
+            await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
+          }
+        }
+      }
     }
-    return { provider: new config.class(apiKey), model, name: preferred };
+
+    logger.error({ modelsTried: modelsToTry, error: lastError }, 'All OpenRouter models exhausted');
+    throw lastError || new Error('All OpenRouter models exhausted');
   }
 
-  logger.warn(`No API key for "${preferred}", falling back to gemini`);
-  return resolveProviderByName('gemini');
+  async *streamContent(params: {
+    model?: string;
+    contents: string;
+    systemInstruction?: string;
+    signal?: AbortSignal;
+  }): AsyncIterable<string> {
+    const model = params.model || this.preferredModel;
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
+    if (params.systemInstruction) {
+      messages.push({ role: 'system', content: params.systemInstruction });
+    }
+    messages.push({ role: 'user', content: params.contents });
+
+    const stream = await this.client.chat.completions.create(
+      { model, messages, stream: true, temperature: 0.7, max_tokens: 4096 },
+      { signal: params.signal, timeout: 60000 },
+    );
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      if (content) yield content;
+    }
+  }
+
+  private buildModelList(override?: string): string[] {
+    if (override) return [override];
+    const models = [this.preferredModel];
+    for (const m of this.fallbackModels) {
+      if (m !== this.preferredModel) models.push(m);
+    }
+    return models;
+  }
 }
 
-function resolveProviderByName(name: string): { provider: AIProviderClient; model: string; name: string } {
-  const config = providerConfigs[name];
-  if (!config) {
-    logger.warn(`No provider config for "${name}", using mock provider`);
-    return { provider: new MockProvider(), model: 'mock', name: 'mock' };
-  }
-  const apiKey = process.env[config.envKey];
+function resolveProvider(): OpenRouterService {
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    logger.warn(`No API key configured for "${name}" — falling back to mock provider`);
-    return { provider: new MockProvider(), model: 'mock', name: 'mock' };
+    throw new Error('OPENROUTER_API_KEY is not configured');
   }
-  return { provider: new config.class(apiKey), model: config.defaultModel, name };
+  return new OpenRouterService(apiKey);
 }
 
 export async function generateAIResponse(prompt: string, systemInstruction?: string): Promise<{ text: string; provider: string; model: string }> {
-  const { provider, model, name } = resolveProvider();
+  const provider = resolveProvider();
   const config: Record<string, unknown> = {};
   if (systemInstruction) config.systemInstruction = systemInstruction;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
   try {
-    const response = await provider.generateContent({ model, contents: prompt, config, signal: controller.signal });
-    return { text: response.text, provider: name, model };
+    const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
+    return { text: response.text, provider: 'openrouter', model: response.model };
   } catch (error) {
-    logger.error({ error, provider: name, model }, 'AI provider failed');
+    logger.error({ error }, 'AI provider failed');
     throw error;
   } finally {
     clearTimeout(timeout);
   }
 }
 
+function extractJSON(text: string): string {
+  const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlock) return codeBlock[1].trim();
+  const braceMatch = text.match(/\{[\s\S]*\}/);
+  if (braceMatch) return braceMatch[0];
+  return text.trim();
+}
+
 export async function generateStructuredJSON<T>(prompt: string, systemInstruction: string): Promise<T> {
-  const { provider, model, name } = resolveProvider();
-  const config: Record<string, unknown> = { systemInstruction, responseMimeType: 'application/json' };
+  const provider = resolveProvider();
+  const config: Record<string, unknown> = { systemInstruction };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
   try {
-    const response = await provider.generateContent({ model, contents: prompt, config });
-    return JSON.parse(response.text || '{}') as T;
+    const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
+    const extracted = extractJSON(response.text || '{}');
+    return JSON.parse(extracted) as T;
   } catch (error) {
-    logger.error({ error, provider: name, model }, 'Structured AI generation failed — returning empty result');
+    logger.error({ error }, 'Structured AI generation failed — returning empty result');
     return {} as T;
+  } finally {
+    clearTimeout(timeout);
   }
+}
+
+export async function* streamAIResponse(prompt: string, systemInstruction?: string, signal?: AbortSignal): AsyncIterable<string> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    yield 'OPENROUTER_API_KEY is not configured';
+    return;
+  }
+  const service = new OpenRouterService(apiKey);
+  yield* service.streamContent({ contents: prompt, systemInstruction, signal });
 }
