@@ -18,12 +18,12 @@ if %errorlevel% neq 0 (
 
 echo.
 echo === Backend (http://localhost:4000) ===
-start "Soma-Surya-Backend" cmd /c "cd /d "%~dp0backend" && npx tsx src/index.ts"
+pwsh -NoProfile -Command "Start-Process -WindowStyle Normal -FilePath 'npx' -ArgumentList 'tsx src/index.ts' -WorkingDirectory '%~dp0backend'"
 
 timeout /t 3 /nobreak >nul
 
 echo === Frontend (http://localhost:5173) ===
-start "Soma-Surya-Frontend" cmd /c "cd /d "%~dp0frontend" && npx vite --host"
+pwsh -NoProfile -Command "Start-Process -WindowStyle Normal -FilePath 'npx' -ArgumentList 'vite --host' -WorkingDirectory '%~dp0frontend'"
 
 echo.
 echo Backend: http://localhost:4000/api/health
