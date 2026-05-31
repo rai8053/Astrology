@@ -46,13 +46,34 @@ interface BirthPlaceInputProps {
 
 const countries = ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Italy', 'Spain', 'Brazil', 'Mexico', 'Japan', 'China', 'South Korea', 'Singapore', 'Malaysia', 'Indonesia', 'Thailand', 'Vietnam', 'Philippines', 'South Africa', 'Nigeria', 'Egypt', 'Kenya', 'Morocco', 'Saudi Arabia', 'UAE', 'Turkey', 'Russia', 'Ukraine', 'Poland', 'Netherlands', 'Belgium', 'Switzerland', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Portugal', 'Greece', 'Ireland', 'New Zealand', 'Argentina', 'Chile', 'Colombia', 'Peru', 'Pakistan', 'Bangladesh', 'Sri Lanka', 'Nepal', 'Bhutan', 'Myanmar', 'Afghanistan', 'Iran', 'Iraq', 'Israel'].sort();
 
+const COUNTRY_ALIASES: Record<string, string> = {
+  'United Arab Emirates': 'UAE',
+  'Russian Federation': 'Russia',
+  'Republic of Korea': 'South Korea',
+  'Viet Nam': 'Vietnam',
+  'Türkiye': 'Turkey',
+  'United States of America': 'United States',
+  'Iran (Islamic Republic of)': 'Iran',
+};
+
+function normalizeCountry(raw: string): string {
+  if (!raw) return '';
+  if (countries.includes(raw)) return raw;
+  const mapped = COUNTRY_ALIASES[raw];
+  if (mapped) return mapped;
+  const lower = raw.toLowerCase();
+  const match = countries.find((c) => c.toLowerCase() === lower);
+  if (match) return match;
+  return raw;
+}
+
 function extractPlace(r: NominatimResult): Place {
   const a = r.address;
   const village = a.city || a.town || a.village || a.hamlet || a.municipality || '';
   const districtLevels = [a.state_district, a.county, a.district, a.region].filter((x): x is string => !!x);
   const district = districtLevels[0] || village;
   const state = a.state || districtLevels[0] || village;
-  const country = a.country || '';
+  const country = normalizeCountry(a.country || '');
   return { village, district, state, country };
 }
 
@@ -93,8 +114,10 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
   const stateOptions = (() => {
     if (!country) return [];
     const states = (countryStates as Record<string, string[]>)[country];
-    if (states && states.length > 0) return [...states, 'Other'];
-    return ['Other'];
+    const base = states && states.length > 0 ? [...states] : [];
+    if (state && !base.includes(state)) base.unshift(state);
+    base.push('Other');
+    return base;
   })();
 
   const select = (place: Place) => {
@@ -232,7 +255,11 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
             )}
           >
             <option value="" disabled>Select Country</option>
-            {countries.map((c) => (
+            {(() => {
+              const opts = [...countries];
+              if (country && !opts.includes(country)) opts.unshift(country);
+              return opts;
+            })().map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
