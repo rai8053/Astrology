@@ -30,11 +30,17 @@ authRouter.post('/google', asyncHandler(async (req, res) => {
   const { credential } = req.body;
   if (!credential) throw new ValidationError('Google credential is required');
 
-  const ticket = await googleClient.verifyIdToken({
-    idToken: credential,
-    audience: GOOGLE_CLIENT_ID,
-  });
-  const payload = ticket.getPayload();
+  let ticket;
+  try {
+    ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: GOOGLE_CLIENT_ID,
+    });
+  } catch (err) {
+    console.error('[Google Auth] Token verification failed:', err);
+    throw err;
+  }
+  const payload = ticket!.getPayload();
   if (!payload?.email) throw new UnauthorizedError('Invalid Google token');
 
   const { sub: googleId, email, name, picture } = payload;

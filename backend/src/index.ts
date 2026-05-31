@@ -6,6 +6,13 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit';
 import { authRouter } from './routes/auth.js';
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('[FATAL] Unhandled rejection:', err);
+});
 import { astrologyRouter } from './routes/astrology.js';
 import { chatRouter } from './routes/chat.js';
 import { paymentRouter } from './routes/payment.js';
