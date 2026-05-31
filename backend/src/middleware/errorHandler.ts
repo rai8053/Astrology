@@ -2,8 +2,21 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../lib/errors.js';
 
-export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
+export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
   const message = err instanceof Error ? err.message : String(err);
+  const stack = err instanceof Error ? err.stack : '';
+
+  console.error('\n=== ERROR HANDLER ===');
+  console.error('URL:', req.method, req.originalUrl);
+  console.error('Error:', message);
+  console.error('Stack:', stack);
+  console.error('headersSent:', res.headersSent);
+  console.error('======================\n');
+
+  if (res.headersSent) {
+    console.error('[ErrorHandler] Headers already sent, cannot send JSON error response');
+    return;
+  }
 
   try {
     if (err instanceof ZodError) {
@@ -21,15 +34,16 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
       res.status(400).json({ success: false, error: 'Invalid JSON in request body', code: 'INVALID_JSON' });
       return;
     }
-
-    console.error('[ErrorHandler] Unhandled:', message);
   } catch (logErr) {
-    console.error('[ErrorHandler] Logger failed:', logErr);
+    console.error('[ErrorHandler] Error classification failed:', logErr);
   }
 
   try {
     res.status(500).json({ success: false, error: message, code: 'INTERNAL_ERROR' });
-  } catch {
-    res.status(500).end();
+  } catch (jsonErr) {
+    console.error('[ErrorHandler] Failed to send JSON response:', jsonErr);
+    try {
+      res.status(500).end();
+    } catch { /* ignore */ }
   }
 }
