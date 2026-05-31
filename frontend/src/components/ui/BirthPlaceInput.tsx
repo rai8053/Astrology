@@ -82,6 +82,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
 
   const onChangeInput = (v: string) => {
     onChange(v);
+    if (!v.trim()) { setResults([]); setOpen(false); return; }
     setOpen(true);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => search(v), 300);
@@ -149,7 +150,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
           id={id}
           value={value}
           onChange={(e) => onChangeInput(e.target.value)}
-          onFocus={() => { if (results.length > 0) setOpen(true); }}
+          onFocus={() => { if (!value.trim()) { setResults([]); } else if (results.length > 0) setOpen(true); }}
           onKeyDown={handleKeyDown}
           required={required}
           placeholder={placeholder}
