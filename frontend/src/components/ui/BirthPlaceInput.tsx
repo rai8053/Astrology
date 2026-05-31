@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import indianPlaces from '@/data/indian-places.json';
+import countryStates from '@/data/country-states.json';
 
 interface BirthPlaceInputProps {
   label?: string;
@@ -39,16 +40,12 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
       .slice(0, 8);
   }, [value]);
 
-  const allStates = useMemo(() => {
-    const s = new Set((indianPlaces as Place[]).map((p) => p.state));
-    return Array.from(s).sort();
-  }, []);
-
   const stateOptions = useMemo(() => {
     if (!country) return [];
-    if (country === 'India') return [...allStates, 'Other'];
+    const states = (countryStates as Record<string, string[]>)[country];
+    if (states && states.length > 0) return [...states, 'Other'];
     return ['Other'];
-  }, [country, allStates]);
+  }, [country]);
 
   const select = (place: Place) => {
     onChange(`${place.village}, ${place.district}`);
