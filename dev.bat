@@ -18,16 +18,19 @@ if %errorlevel% neq 0 (
 
 echo.
 echo === Backend (http://localhost:4000) ===
-start "Soma-Surya-Backend" /b cmd /c "cd /d "%~dp0backend" && npx tsx src/index.ts" 2>&1
+start /b "" cmd /c "cd /d %~dp0backend && npx tsx src/index.ts"
 
 timeout /t 4 /nobreak >nul
 
 echo === Frontend (http://localhost:5173) ===
-start "Soma-Surya-Frontend" /b cmd /c "cd /d "%~dp0frontend" && npx vite --host" 2>&1
+start /b "" cmd /c "cd /d %~dp0frontend && npx vite --host"
 
 echo.
 echo Backend: http://localhost:4000/api/health
 echo Frontend: http://localhost:5173
 echo.
-echo Press any key to stop both servers...
-pause >nul
+echo Press Ctrl+C to stop both servers.
+echo.
+:wait
+timeout /t 10 /nobreak >nul
+goto wait
