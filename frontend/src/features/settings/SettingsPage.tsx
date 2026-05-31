@@ -17,6 +17,8 @@ export function SettingsPage() {
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [birthPlace, setBirthPlace] = useState('');
+  const [birthState, setBirthState] = useState('');
+  const [birthCountry, setBirthCountry] = useState('');
 
   const updateMutation = useMutation({
     mutationFn: (data: Record<string, string>) => api.patch('/api/user/profile', data),
@@ -52,7 +54,7 @@ export function SettingsPage() {
               <Input label="Birth Date" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
               <div className="grid grid-cols-2 gap-4">
                 <Input label="Birth Time" type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
-                <BirthPlaceInput label="Birth Place" value={birthPlace} onChange={(v) => setBirthPlace(v)} placeholder="e.g., Sadhaura, Yamunanagar" />
+                <BirthPlaceInput label="Birth Place" value={birthPlace} onChange={(v) => setBirthPlace(v)} placeholder="e.g., Sadhaura, Yamunanagar" state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
               </div>
               <PremiumButton onClick={handleSave} loading={updateMutation.isPending} icon={<Save className="w-3.5 h-3.5" />} className="w-full">
                 Save Changes
