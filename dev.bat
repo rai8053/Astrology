@@ -18,14 +18,16 @@ if %errorlevel% neq 0 (
 
 echo.
 echo === Backend (http://localhost:4000) ===
-pwsh -NoProfile -Command "Start-Process -WindowStyle Normal -FilePath 'npx' -ArgumentList 'tsx src/index.ts' -WorkingDirectory '%~dp0backend'"
+start "Soma-Surya-Backend" /b cmd /c "cd /d "%~dp0backend" && npx tsx src/index.ts" 2>&1
 
-timeout /t 3 /nobreak >nul
+timeout /t 4 /nobreak >nul
 
 echo === Frontend (http://localhost:5173) ===
-pwsh -NoProfile -Command "Start-Process -WindowStyle Normal -FilePath 'npx' -ArgumentList 'vite --host' -WorkingDirectory '%~dp0frontend'"
+start "Soma-Surya-Frontend" /b cmd /c "cd /d "%~dp0frontend" && npx vite --host" 2>&1
 
 echo.
 echo Backend: http://localhost:4000/api/health
 echo Frontend: http://localhost:5173
-echo Close this window to stop both servers.
+echo.
+echo Press any key to stop both servers...
+pause >nul
