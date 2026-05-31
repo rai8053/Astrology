@@ -13,6 +13,8 @@ export function KundliPage() {
   const [formData, setFormData] = useState<BirthDetails>({
     name: '', birthDate: '', birthTime: '', birthPlace: '',
   });
+  const [birthState, setBirthState] = useState('');
+  const [birthCountry, setBirthCountry] = useState('');
   const [errors, setErrors] = useState<Partial<Record<keyof BirthDetails, string>>>({});
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -91,7 +93,7 @@ export function KundliPage() {
                 <Input id="k_date" label="Birth Date" type="date" value={formData.birthDate} onChange={(e) => { setFormData({ ...formData, birthDate: e.target.value }); setErrors({ ...errors, birthDate: '' }); }} required error={errors.birthDate} />
                 <Input id="k_time" label="Birth Time" type="time" value={formData.birthTime} onChange={(e) => { setFormData({ ...formData, birthTime: e.target.value }); setErrors({ ...errors, birthTime: '' }); }} required error={errors.birthTime} />
               </div>
-              <BirthPlaceInput id="k_place" label="Birth Place" value={formData.birthPlace} onChange={(v) => { setFormData({ ...formData, birthPlace: v }); setErrors({ ...errors, birthPlace: '' }); }} required placeholder="e.g., Sadhaura, Yamunanagar" error={errors.birthPlace} />
+              <BirthPlaceInput id="k_place" label="Birth Place" value={formData.birthPlace} onChange={(v) => { setFormData({ ...formData, birthPlace: v }); setErrors({ ...errors, birthPlace: '' }); }} required placeholder="e.g., Sadhaura, Yamunanagar" error={errors.birthPlace} state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
               <PremiumButton type="submit" loading={mutation.isPending} icon={<Sparkles className="w-3.5 h-3.5" />} className="w-full">
                 Generate Chart
               </PremiumButton>
