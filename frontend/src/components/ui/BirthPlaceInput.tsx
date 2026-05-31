@@ -12,6 +12,7 @@ interface NominatimAddress {
   municipality?: string;
   state_district?: string;
   county?: string;
+  district?: string;
   region?: string;
   state?: string;
   country?: string;
@@ -48,8 +49,9 @@ const countries = ['India', 'United States', 'United Kingdom', 'Canada', 'Austra
 function extractPlace(r: NominatimResult): Place {
   const a = r.address;
   const village = a.city || a.town || a.village || a.hamlet || a.municipality || '';
-  const state = a.state || a.county || a.state_district || a.region || village;
-  const district = a.state_district || a.county || a.region || state;
+  const districtLevels = [a.state_district, a.county, a.district, a.region].filter((x): x is string => !!x);
+  const district = districtLevels[0] || village;
+  const state = a.state || districtLevels[0] || village;
   const country = a.country || '';
   return { village, district, state, country };
 }
