@@ -63,14 +63,6 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 10 : 50,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: 'Too many login attempts. Try again later.' },
-});
-
 app.use(requestLogger);
 
 app.use('/api/health', healthRouter);
@@ -79,7 +71,7 @@ app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-app.use('/api/auth', authLimiter, authRouter);
+app.use('/api/auth', authRouter);
 
 app.use('/api/astrology', astrologyRouter);
 app.use('/api/chat', chatRouter);

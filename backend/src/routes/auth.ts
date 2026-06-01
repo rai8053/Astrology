@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
+import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../lib/prisma.js';
 import { validate } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
@@ -12,6 +13,14 @@ import { AppError, ValidationError, UnauthorizedError, ConflictError } from '../
 import { logger } from '../lib/logger.js';
 
 export const authRouter = Router();
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 10 : 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many login attempts. Try again later.' },
+});
 
 const JWT_SECRET = (() => {
   if (!process.env.JWT_SECRET) {
@@ -41,7 +50,7 @@ function generateTokens(payload: { userId: string; role: string }) {
   return { accessToken, refreshToken };
 }
 
-authRouter.post('/google', asyncHandler(async (req, res) => {
+authRouter.post('/google', authLimiter, asyncHandler(async (req, res) => {
   const { credential } = req.body;
   if (!credential) {
     res.status(400).json({ success: false, error: 'Google credential is required', code: 'VALIDATION_ERROR' });
@@ -126,7 +135,7 @@ const registerSchema = z.object({
   timezone: z.string().optional(),
 });
 
-authRouter.post('/register', validate(registerSchema), asyncHandler(async (req, res) => {
+authRouter.post('/register', authLimiter, validate(registerSchema), asyncHandler(async (req, res) => {
   const body = req.body as z.infer<typeof registerSchema>;
   const { name, email, password, gender, birthDate, birthTime, birthPlace, country, language, timezone } = body;
 
@@ -224,7 +233,7 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-authRouter.post('/login', validate(loginSchema), asyncHandler(async (req, res) => {
+authRouter.post('/login', authLimiter, validate(loginSchema), asyncHandler(async (req, res) => {
   const { email, password } = req.body as z.infer<typeof loginSchema>;
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -250,7 +259,7 @@ authRouter.post('/login', validate(loginSchema), asyncHandler(async (req, res) =
   });
 }));
 
-authRouter.post('/refresh', asyncHandler(async (req, res) => {
+authRouter.post('/refresh', authLimiter, asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken || req.body?.refreshToken;
   if (!token) throw new UnauthorizedError('No refresh token provided');
 

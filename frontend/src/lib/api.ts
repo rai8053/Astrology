@@ -109,7 +109,9 @@ class ApiClient {
 
       if (!data.success) {
         const errMsg = (data as ApiError).error || apiT('errors.requestFailed');
-        throw new Error(errMsg);
+        const err = new Error(errMsg);
+        (err as any).status = res.status;
+        throw err;
       }
 
       return data as ApiSuccess<T>;
@@ -118,7 +120,7 @@ class ApiClient {
     try {
       return await execute();
     } catch (error) {
-      if (error instanceof Error && !error.message.includes('Session expired')) {
+      if (error instanceof Error && !error.message.includes('Session expired') && (error as any).status !== 429) {
         toast.error(error.message);
       }
       throw error;
