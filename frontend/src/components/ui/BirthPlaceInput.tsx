@@ -87,21 +87,25 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const searchIdRef = useRef(0);
 
   const search = useCallback(async (q: string) => {
     if (!q.trim()) { setResults([]); return; }
+    const id = ++searchIdRef.current;
     setLoading(true);
     try {
       const res = await fetch(`${NOMINATIM_URL}?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=5`, {
         headers: { 'Accept-Language': 'en' },
       });
+      if (id !== searchIdRef.current) return;
       if (!res.ok) { setResults([]); return; }
       const data: NominatimResult[] = await res.json();
+      if (id !== searchIdRef.current) return;
       setResults(data.map(extractPlace).filter(p => p.village));
     } catch {
-      setResults([]);
+      if (id === searchIdRef.current) setResults([]);
     } finally {
-      setLoading(false);
+      if (id === searchIdRef.current) setLoading(false);
     }
   }, []);
 

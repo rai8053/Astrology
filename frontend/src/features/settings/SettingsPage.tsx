@@ -79,6 +79,7 @@ export function SettingsPage() {
   const [birthCountry, setBirthCountry] = useState('');
   const [saveState, setSaveState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initializedRef = useRef(false);
 
   const { data: profileData } = useQuery({
     queryKey: ['user-profile'],
@@ -118,7 +119,8 @@ export function SettingsPage() {
 
   useEffect(() => {
     const p = profileData?.data;
-    if (p) {
+    if (p && !initializedRef.current) {
+      initializedRef.current = true;
       setName(p.name ?? '');
       setBirthDate(p.birthDate ?? '');
       setBirthTime(p.birthTime ?? '');
