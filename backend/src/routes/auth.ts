@@ -8,12 +8,27 @@ import { prisma } from '../lib/prisma.js';
 import { validate } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
-import { ConflictError, UnauthorizedError, ValidationError } from '../lib/errors.js';
+import { AppError, ValidationError, UnauthorizedError, ConflictError } from '../lib/errors.js';
+import { logger } from '../lib/logger.js';
 
 export const authRouter = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-change-in-production';
+const JWT_SECRET = (() => {
+  if (!process.env.JWT_SECRET) {
+    if (process.env.NODE_ENV === 'production') throw new Error('JWT_SECRET is required in production');
+    logger.warn('JWT_SECRET not set — using weak dev default. Set a strong JWT_SECRET in production.');
+    return 'dev-secret-change-in-production';
+  }
+  return process.env.JWT_SECRET;
+})();
+const JWT_REFRESH_SECRET = (() => {
+  if (!process.env.JWT_REFRESH_SECRET) {
+    if (process.env.NODE_ENV === 'production') throw new Error('JWT_REFRESH_SECRET is required in production');
+    logger.warn('JWT_REFRESH_SECRET not set — using weak dev default. Set a strong JWT_REFRESH_SECRET in production.');
+    return 'dev-refresh-secret-change-in-production';
+  }
+  return process.env.JWT_REFRESH_SECRET;
+})();
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
@@ -25,10 +40,6 @@ function generateTokens(payload: { userId: string; role: string }) {
   const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions);
   return { accessToken, refreshToken };
 }
-
-authRouter.get('/google/client-id', asyncHandler(async (_req, res) => {
-  res.json({ success: true, data: { clientId: GOOGLE_CLIENT_ID } });
-}));
 
 authRouter.post('/google', asyncHandler(async (req, res) => {
   const { credential } = req.body;
@@ -106,18 +117,59 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+  gender: z.string().optional(),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD format').optional(),
+  birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format').optional(),
+  birthPlace: z.string().min(1).max(200).optional(),
+  country: z.string().min(2).max(100).optional(),
+  language: z.string().min(2).max(10).optional(),
+  timezone: z.string().optional(),
 });
 
 authRouter.post('/register', validate(registerSchema), asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body as z.infer<typeof registerSchema>;
+  const body = req.body as z.infer<typeof registerSchema>;
+  const { name, email, password, gender, birthDate, birthTime, birthPlace, country, language, timezone } = body;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new ConflictError('An account with this email already exists');
 
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
-    data: { name, email, passwordHash },
+    data: {
+      name, email, passwordHash,
+      ...(gender && { gender }),
+      ...(birthDate && { birthDate }),
+      ...(birthTime && { birthTime }),
+      ...(birthPlace && { birthPlace }),
+      ...(country && { country }),
+      ...(language && { language }),
+      ...(timezone && { timezone }),
+    },
   });
+
+  // Generate astrology profile if birth details provided
+  if (birthDate && birthTime && birthPlace) {
+    try {
+      const { calculateBirthDetails } = await import('../services/astrology/calculator.js');
+      const { RASHI_DATA, NAKSHATRA_LORDS } = await import('../services/astrology/constants.js');
+      const details = calculateBirthDetails(birthDate, birthTime);
+      const rd = RASHI_DATA[details.rashiKey] || RASHI_DATA.Mesh;
+      await prisma.astrologyProfile.create({
+        data: {
+          userId: user.id,
+          rashi: `${details.rashiKey} (${rd.translation})`,
+          nakshatra: details.nakshatraName,
+          nakshatraLord: NAKSHATRA_LORDS[details.nakshatraIndex % 9],
+          lagna: `${details.lagnaKey} (${(RASHI_DATA[details.lagnaKey] || RASHI_DATA.Mesh).translation})`,
+          rashiLord: rd.lord,
+          element: rd.element,
+          doshaDominance: rd.dosha,
+        },
+      });
+    } catch (error) {
+      logger.warn({ error }, 'Failed to create astrology profile on registration');
+    }
+  }
 
   await prisma.subscription.create({
     data: {
@@ -141,10 +193,26 @@ authRouter.post('/register', validate(registerSchema), asyncHandler(async (req, 
     path: '/api/auth',
   });
 
+  // Fetch astrology profile for response
+  const astrologyProfile = await prisma.astrologyProfile.findUnique({ where: { userId: user.id } });
+
   res.status(201).json({
     success: true,
     data: {
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        gender: user.gender,
+        birthDate: user.birthDate,
+        birthTime: user.birthTime,
+        birthPlace: user.birthPlace,
+        country: user.country,
+        language: user.language,
+        timezone: user.timezone,
+        astrologyProfile,
+      },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     },

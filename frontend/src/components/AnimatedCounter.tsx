@@ -19,7 +19,10 @@ export function AnimatedCounter({ from = 0, to, suffix = '', prefix = '', durati
   const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (!ref.current || typeof IntersectionObserver === 'undefined') {
+      animate(count, to, { duration, ease: [0.25, 0.1, 0.25, 1] });
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting && !hasAnimated.current) {

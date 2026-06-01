@@ -18,6 +18,7 @@ import { chatRouter } from './routes/chat.js';
 import { paymentRouter } from './routes/payment.js';
 import { adminRouter } from './routes/admin.js';
 import { userRouter } from './routes/user.js';
+import { locationsRouter } from './routes/locations.js';
 import { healthRouter } from './routes/health.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
@@ -27,14 +28,25 @@ const app = express();
 const rawPort = parseInt(process.env.PORT || '4000', 10);
 const PORT = isNaN(rawPort) || rawPort < 1 ? 4000 : rawPort;
 
+const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim());
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'blob:'],
+      connectSrc: ["'self'", ...corsOrigins],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+    },
+  },
 }));
 app.use(compression());
 app.use(cookieParser());
-
-const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim());
 app.use(cors({
   origin: corsOrigins,
   credentials: true,
@@ -53,7 +65,7 @@ app.use(globalLimiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: process.env.NODE_ENV === 'production' ? 10 : 50,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many login attempts. Try again later.' },
@@ -73,6 +85,7 @@ app.use('/api/astrology', astrologyRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/payments', paymentRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/locations', locationsRouter);
 app.use('/api/user', userRouter);
 
 app.use(errorHandler);

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
+import { useT } from '@/lib/i18n/useT';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -16,13 +17,6 @@ interface ChatSession {
   title: string;
   updatedAt: string;
 }
-
-const suggestedPrompts = [
-  'What is my ruling planet?',
-  'How to balance my dosha?',
-  'Best gemstone for Leo?',
-  'What career suits my chart?',
-];
 
 function TypingIndicator() {
   return (
@@ -93,10 +87,19 @@ function ChatBubble({ message, index }: { message: ChatMessage; index: number })
 }
 
 export function ChatPage() {
+  const { t, language } = useT();
+  const suggestedPrompts = [
+    t('chat.promptRulingPlanet'),
+    t('chat.promptBalanceDosha'),
+    t('chat.promptGemstone'),
+    t('chat.promptCareer'),
+  ];
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [streaming, setStreaming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -107,19 +110,22 @@ export function ChatPage() {
 
   const chatMutation = useMutation({
     mutationFn: (message: string) =>
-      api.post<{ reply: string; sessionId: string }>('/api/chat', { message, sessionId }),
+      api.post<{ reply: string; sessionId: string }>('/api/chat', { message, sessionId, language }),
     onSuccess: (data) => {
       setMessages((prev) => [...prev, { role: 'assistant', content: data.data.reply }]);
       if (data.data.sessionId !== sessionId) setSessionId(data.data.sessionId);
       refetchSessions();
+      setError(null);
     },
+    onError: (err) => setError(err instanceof Error ? err.message : t('chat.failedResponse')),
   });
 
-  const handleSend = () => {
-    if (!input.trim() || streaming) return;
-    setMessages((prev) => [...prev, { role: 'user', content: input }]);
+  const handleSend = (msg?: string) => {
+    const text = msg ?? input;
+    if (!text.trim() || streaming) return;
+    setMessages((prev) => [...prev, { role: 'user', content: text }]);
     setStreaming(true);
-    chatMutation.mutate(input, {
+    chatMutation.mutate(text, {
       onSettled: () => { setStreaming(false); setInput(''); inputRef.current?.focus(); },
     });
   };
@@ -169,19 +175,19 @@ export function ChatPage() {
             <Stars className="w-5 h-5 text-gold" />
           </motion.div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold">AI Astrologer</h1>
-            <p className="text-ink/50 dark:text-parchment/50 mt-0.5 text-sm">Your Vedic guide, always here</p>
+            <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('chat.title')}</h1>
+            <p className="text-ink/50 dark:text-parchment/50 mt-0.5 text-sm">{t('chat.subtitle')}</p>
           </div>
         </div>
         <PremiumButton variant="ghost" size="sm" icon={<Sparkles className="w-4 h-4" />} onClick={newSession}>
-          New Chat
+          {t('chat.newChat')}
         </PremiumButton>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-2">
           <PremiumCard glass className="p-3">
-            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/40 dark:text-parchment/40 mb-3 px-1">History</h3>
+            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/40 dark:text-parchment/40 mb-3 px-1">{t('chat.history')}</h3>
             {sessionsData?.data?.length ? (
               <div className="space-y-1 max-h-[400px] overflow-y-auto">
                 {sessionsData.data.map((s) => (
@@ -195,7 +201,7 @@ export function ChatPage() {
                       onClick={() => loadSession(s.id)}
                       className="flex-1 text-left text-xs p-2 rounded-lg hover:bg-gold/10 dark:hover:bg-white/[0.04] truncate transition-colors text-ink/60 dark:text-parchment/60 hover:text-gold"
                     >
-                      {s.title || 'Chat'}
+                      {s.title || t('chat.title')}
                     </button>
                     <button
                       onClick={() => deleteSession(s.id)}
@@ -207,7 +213,7 @@ export function ChatPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-ink/30 dark:text-parchment/30 px-1">No sessions yet</p>
+              <p className="text-xs text-ink/30 dark:text-parchment/30 px-1">{t('chat.noSessions')}</p>
             )}
           </PremiumCard>
         </div>
@@ -231,7 +237,7 @@ export function ChatPage() {
                       <MessageCircle className="w-8 h-8 text-gold/40" />
                     </motion.div>
                     <p className="text-ink/40 dark:text-parchment/40 text-sm mb-6 max-w-sm mx-auto">
-                      Ask anything about astrology, spirituality, or life guidance
+                      {t('chat.emptyPrompt')}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
                       {suggestedPrompts.map((q, i) => (
@@ -242,7 +248,7 @@ export function ChatPage() {
                           transition={{ delay: i * 0.1 }}
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
-                          onClick={() => { setInput(q); inputRef.current?.focus(); }}
+                          onClick={() => { handleSend(q); }}
                           className="px-4 py-2 text-xs border border-gold/20 rounded-full hover:border-gold/50 hover:bg-gold/5 transition-all text-ink/50 dark:text-parchment/50"
                         >
                           {q}
@@ -261,19 +267,25 @@ export function ChatPage() {
               <div ref={messagesEndRef} />
             </div>
 
+            {error && (
+              <div className="px-4 md:px-5 pt-2">
+                <p className="text-xs text-red-500 flex items-center gap-1"><span>&#9888;</span> {error}</p>
+              </div>
+            )}
             <div className="border-t border-ink/10 dark:border-white/[0.06] p-4 md:p-5">
               <div className="flex gap-3 items-center">
                 <input
                   ref={inputRef}
+                  autoFocus
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                  placeholder="Ask your astrologer..."
+                  placeholder={t('chat.placeholder')}
                   className="flex-1 bg-transparent border-b border-ink/20 dark:border-white/10 outline-none focus:border-gold py-2.5 text-sm font-serif placeholder:text-ink/30 dark:placeholder:text-parchment/30 transition-colors"
                 />
                 <PremiumButton
                   size="sm"
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                   loading={chatMutation.isPending}
                   icon={<Send className="w-4 h-4" />}
                 />

@@ -6,6 +6,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { PremiumButton } from '@/components/PremiumButton';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/lib/store';
+import { useT } from '@/lib/i18n/useT';
 import toast from 'react-hot-toast';
 
 export function LoginPage() {
@@ -13,6 +14,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, loginWithGoogle, isAuthenticated } = useAuthStore();
+  const { t } = useT();
   const navigate = useNavigate();
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
@@ -47,13 +49,13 @@ export function LoginPage() {
           transition={{ delay: 0.1 }}
           className="glass-card p-8 rounded-2xl"
         >
-          <h1 className="font-serif text-3xl font-bold mb-1">Welcome Back</h1>
-          <p className="text-sm text-ink/50 dark:text-parchment/50 mb-7">Sign in to continue your cosmic journey</p>
+          <h1 className="font-serif text-3xl font-bold mb-1">{t('auth.welcomeBack')}</h1>
+          <p className="text-sm text-ink/50 dark:text-parchment/50 mb-7">{t('auth.signInSubtitle')}</p>
           <form onSubmit={handleSubmit} className="space-y-5">
-            <Input id="email" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="your@email.com" />
-            <Input id="password" label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
+            <Input id="email" label={t('auth.email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={t('auth.emailPlaceholder')} />
+            <Input id="password" label={t('auth.password')} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
             <PremiumButton type="submit" loading={loading} icon={<ArrowRight className="w-4 h-4" />} className="w-full">
-              Sign In
+              {t('auth.signIn')}
             </PremiumButton>
           </form>
           <div className="relative my-6">
@@ -61,28 +63,32 @@ export function LoginPage() {
               <div className="w-full border-t border-ink/10 dark:border-parchment/10" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white dark:bg-cosmic-deeper px-2 text-ink/40 dark:text-parchment/40">or continue with</span>
+              <span className="bg-white dark:bg-cosmic-deeper px-2 text-ink/40 dark:text-parchment/40">{t('auth.orContinueWith')}</span>
             </div>
           </div>
           <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={async (credentialResponse) => {
-                if (credentialResponse.credential) {
-                  try {
-                    await loginWithGoogle(credentialResponse.credential);
-                    navigate('/dashboard');
-                  } catch { /* handled by API client */ }
-                }
-              }}
-              onError={() => toast.error('Google sign-in failed')}
-              size="large"
-              shape="pill"
-              text="signin_with"
-            />
+            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  if (credentialResponse.credential) {
+                    try {
+                      await loginWithGoogle(credentialResponse.credential);
+                      navigate('/dashboard');
+                    } catch { /* handled by API client */ }
+                  }
+                }}
+                onError={() => toast.error(t('auth.googleSignInFailed'))}
+                size="large"
+                shape="pill"
+                text="signin_with"
+              />
+            ) : (
+              <p className="text-xs text-ink/40 dark:text-parchment/40">{t('auth.googleUnavailable')}</p>
+            )}
           </div>
           <p className="text-sm text-center mt-6 text-ink/40 dark:text-parchment/40">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-gold hover:underline font-medium">Create one</Link>
+            {t('auth.noAccount')}{' '}
+            <Link to="/register" className="text-gold hover:underline font-medium">{t('auth.createOne')}</Link>
           </p>
         </motion.div>
       </motion.div>

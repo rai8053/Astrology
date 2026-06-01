@@ -4,12 +4,14 @@ import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { TableSkeleton } from '@/components/Skeleton';
 import { formatDate } from '@/lib/utils';
+import { useT } from '@/lib/i18n/useT';
 
 interface UserRow {
   id: string; email: string; name: string; role: string; emailVerified: boolean; createdAt: string;
 }
 
 export function AdminUsers() {
+  const { t } = useT();
   const { data, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: () => api.get<UserRow[]>('/api/admin/users'),
@@ -23,11 +25,11 @@ export function AdminUsers() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-ink/10 dark:border-white/[0.06]">
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Name</th>
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Email</th>
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Role</th>
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Verified</th>
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">Joined</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableName' as any)}</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableEmail' as any)}</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableRole' as any)}</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableVerified' as any)}</th>
+              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableJoined' as any)}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink/5 dark:divide-white/[0.03]">
@@ -52,7 +54,7 @@ export function AdminUsers() {
                   </span>
                 </td>
                 <td className="py-3">{user.emailVerified ? <span className="text-green-400 font-bold">✓</span> : <span className="text-ink/30">—</span>}</td>
-                <td className="py-3 text-ink/50 dark:text-parchment/50 text-xs">{formatDate(user.createdAt)}</td>
+                <td className="py-3 text-ink/50 dark:text-parchment/50 text-xs">{user.createdAt ? formatDate(user.createdAt) : '—'}</td>
               </motion.tr>
             ))}
           </tbody>

@@ -5,12 +5,14 @@ import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { CardSkeleton } from '@/components/Skeleton';
 import { RASHIS } from '@/lib/utils';
+import { useT } from '@/lib/i18n/useT';
 import type { DailyHoroscope } from '@shared/types/api';
 
 const staggerContainer = { animate: { transition: { staggerChildren: 0.03 } } };
 const staggerItem = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 export function HoroscopePage() {
+  const { t } = useT();
   const [selectedRashi, setSelectedRashi] = useState('Mesh');
 
   const { data, isLoading } = useQuery({
@@ -23,8 +25,8 @@ export function HoroscopePage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl md:text-4xl font-serif font-bold">Daily Horoscope</h1>
-        <p className="text-ink/50 dark:text-parchment/50 mt-1">Sidereal Vedic forecasts for your Moon sign</p>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('horoscope.title')}</h1>
+        <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('horoscope.subtitle')}</p>
       </motion.div>
 
       <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
@@ -58,7 +60,7 @@ export function HoroscopePage() {
         >
           <div className="lg:col-span-2 space-y-6">
             <PremiumCard glass glow>
-              <span className="text-[9px] uppercase tracking-[0.2em] font-sans font-bold text-gold">Cosmic Forecast</span>
+              <span className="text-[9px] uppercase tracking-[0.2em] font-sans font-bold text-gold">{t('horoscope.cosmicForecast')}</span>
               <h2 className="text-3xl md:text-4xl font-serif font-bold mt-1">
                 {horoscope.rashi} <span className="text-lg font-normal text-ink/40 dark:text-parchment/40">({horoscope.englishName})</span>
               </h2>
@@ -67,10 +69,10 @@ export function HoroscopePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { label: 'Career', value: horoscope.career, color: 'from-blue-500/10', border: 'border-l-blue-400' },
-                { label: 'Finance', value: horoscope.finance, color: 'from-green-500/10', border: 'border-l-green-400' },
-                { label: 'Love', value: horoscope.love, color: 'from-pink-500/10', border: 'border-l-pink-400' },
-                { label: 'Health', value: horoscope.health, color: 'from-teal-500/10', border: 'border-l-teal-400' },
+                { label: t('horoscope.career'), value: horoscope.career, color: 'from-blue-500/10', border: 'border-l-blue-400' },
+                { label: t('horoscope.finance'), value: horoscope.finance, color: 'from-green-500/10', border: 'border-l-green-400' },
+                { label: t('horoscope.love'), value: horoscope.love, color: 'from-pink-500/10', border: 'border-l-pink-400' },
+                { label: t('horoscope.health'), value: horoscope.health, color: 'from-teal-500/10', border: 'border-l-teal-400' },
               ].map((section, i) => (
                 <motion.div
                   key={i}
@@ -92,9 +94,9 @@ export function HoroscopePage() {
 
           <div className="space-y-6">
             <PremiumCard glass>
-              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-ink/40 dark:text-parchment/40">Energy Level</span>
+              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-ink/40 dark:text-parchment/40">{t('horoscope.energyLevel')}</span>
               <div className="flex items-end justify-between mt-2">
-                <span className="text-sm text-ink/60 dark:text-parchment/60">Vitality</span>
+                <span className="text-sm text-ink/60 dark:text-parchment/60">{t('horoscope.energyVitality')}</span>
                 <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -114,12 +116,12 @@ export function HoroscopePage() {
             </PremiumCard>
 
             <PremiumCard glass>
-              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-ink/40 dark:text-parchment/40">Lucky Attributes</span>
+              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-ink/40 dark:text-parchment/40">{t('horoscope.luckyAttributes')}</span>
               <div className="space-y-3 mt-3">
                 {[
-                  { label: 'Number', value: horoscope.luckyNumber },
-                  { label: 'Color', value: horoscope.luckyColor },
-                  { label: 'Time', value: horoscope.luckyTime },
+                  { label: t('horoscope.number'), value: horoscope.luckyNumber },
+                  { label: t('horoscope.color'), value: horoscope.luckyColor },
+                  { label: t('horoscope.luckyTime'), value: horoscope.luckyTime },
                 ].map((attr, i) => (
                   <motion.div
                     key={i}
@@ -136,7 +138,7 @@ export function HoroscopePage() {
             </PremiumCard>
 
             <PremiumCard glass className="gold-border">
-              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-gold">Remedy</span>
+              <span className="text-[9px] uppercase font-sans font-bold tracking-wider text-gold">{t('horoscope.remedy')}</span>
               <p className="text-sm mt-2 italic text-ink/70 dark:text-parchment/70">{horoscope.remedy}</p>
             </PremiumCard>
           </div>

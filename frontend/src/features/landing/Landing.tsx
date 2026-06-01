@@ -1,13 +1,18 @@
 import { useRef, useState, useEffect } from 'react';
+import { useT } from '@/lib/i18n/useT';
 import { Sparkles, Moon, Heart, Star, Globe, MessageCircle, ArrowRight, Shield, Zap, Users, Check, Quote, ChevronDown, Sun, Menu, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Navbar } from '@/components/Navbar';
+import { getCurrencyForCountry, formatPrice } from '@/lib/pricing';
 import { Footer } from '@/components/Footer';
 import { PremiumButton } from '@/components/PremiumButton';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { useAuthStore } from '@/lib/store';
+import { api } from '@/lib/api';
 import { easeOut } from '@/lib/animations';
+import toast from 'react-hot-toast';
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -59,66 +64,67 @@ function SectionSubtitle({ children }: { children: React.ReactNode }) {
 const features = [
   {
     icon: Star,
-    title: 'AI Birth Chart',
-    desc: 'Instant Vedic birth chart with planetary positions, Nakshatra, and Dosha analysis. AI-enhanced readings with mathematical fallback.',
+    titleKey: 'landing.featureBirthChart',
+    descKey: 'landing.featureBirthChartDesc',
   },
   {
     icon: Moon,
-    title: 'Daily Horoscope',
-    desc: 'Personalized sidereal daily forecasts for all 12 Moon signs. Five categories with energy levels and Vedic remedies.',
+    titleKey: 'landing.featureHoroscope',
+    descKey: 'landing.featureHoroscopeDesc',
   },
   {
     icon: Heart,
-    title: 'Compatibility',
-    desc: 'Ashta Koota Gun Milan analysis — 36-point Vedic matching across 8 dimensions with AI-powered insights.',
+    titleKey: 'landing.featureCompatibility',
+    descKey: 'landing.featureCompatibilityDesc',
   },
   {
     icon: Globe,
-    title: 'Moon Phase Tracker',
-    desc: 'Live Tithi tracking with 30 Vedic lunar days, spiritual significance, and next Purnima/Amavasya dates.',
+    titleKey: 'landing.featureMoon',
+    descKey: 'landing.featureMoonDesc',
   },
   {
     icon: MessageCircle,
-    title: 'AI Astrologer',
-    desc: 'Chat with an intelligent AI astrologer. Context-aware conversations with 7 AI provider fallback.',
+    titleKey: 'landing.featureAiChat',
+    descKey: 'landing.featureAiChatDesc',
   },
   {
     icon: Shield,
-    title: 'Enterprise Security',
-    desc: 'JWT auth with refresh token rotation, bcrypt encryption, rate limiting, and Stripe-powered subscriptions.',
+    titleKey: 'landing.featureSecurity',
+    descKey: 'landing.featureSecurityDesc',
   },
 ];
 
 const testimonials = [
   {
-    name: 'Priya Sharma',
-    text: 'The birth chart analysis was remarkably accurate. It helped me understand my career trajectory in ways I never expected.',
-    role: 'Yoga Teacher',
+    nameKey: 'landing.testimonial1Name' as any,
+    textKey: 'landing.testimonial1Text' as any,
+    roleKey: 'landing.testimonial1Role' as any,
     initials: 'PS',
   },
   {
-    name: 'Rahul Kapoor',
-    text: 'My partner and I used the compatibility matching before our wedding. The insights were profound and helped us communicate better.',
-    role: 'Software Engineer',
+    nameKey: 'landing.testimonial2Name' as any,
+    textKey: 'landing.testimonial2Text' as any,
+    roleKey: 'landing.testimonial2Role' as any,
     initials: 'RK',
   },
   {
-    name: 'Ananya Mehta',
-    text: 'I check my daily horoscope every morning now. The AI chat feature feels like talking to a real astrologer who actually understands.',
-    role: 'Visual Artist',
+    nameKey: 'landing.testimonial3Name' as any,
+    textKey: 'landing.testimonial3Text' as any,
+    roleKey: 'landing.testimonial3Role' as any,
     initials: 'AM',
   },
 ];
 
 const faqs = [
-  { q: 'How accurate is the AI astrology reading?', a: 'Our AI is trained on authentic Vedic astrology texts and uses the sidereal (Lahiri) system. Every reading combines mathematical calculations with AI-generated insights, with automatic fallback to pure calculation if needed.' },
-  { q: 'What is Ashta Koota Gun Milan?', a: 'A traditional Vedic compatibility system scoring relationships out of 36 points across 8 categories: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, and Nadi. Each category examines a different aspect of compatibility.' },
-  { q: 'How does the AI chat work?', a: 'Our AI astrologer uses context-aware conversations — it remembers your last 10 messages. It\'s powered by 7 AI providers with automatic fallback, so you always get a response. Premium users get unlimited chats.' },
-  { q: 'Is my birth data secure?', a: 'Yes. All data is encrypted end-to-end. We use JWT authentication with rotating refresh tokens. Your birth details are never shared with third parties.' },
-  { q: 'Can I switch plans?', a: 'Yes, upgrade or downgrade anytime. Changes take effect immediately. Paid plans come with a 7-day free trial — no credit card required to start.' },
+  { qKey: 'landing.faq1q' as any, aKey: 'landing.faq1a' as any },
+  { qKey: 'landing.faq2q' as any, aKey: 'landing.faq2a' as any },
+  { qKey: 'landing.faq3q' as any, aKey: 'landing.faq3a' as any },
+  { qKey: 'landing.faq4q' as any, aKey: 'landing.faq4a' as any },
+  { qKey: 'landing.faq5q' as any, aKey: 'landing.faq5a' as any },
 ];
 
 function DashboardPreview() {
+  const { t } = useT();
   return (
     <div className="relative w-full max-w-4xl mx-auto">
       <motion.div
@@ -132,23 +138,23 @@ function DashboardPreview() {
           <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
           <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
           <div className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
-          <span className="ml-3 text-[11px] text-text-tertiary dark:text-dark-text-tertiary font-mono">dashboard</span>
+          <span className="ml-3 text-[11px] text-text-tertiary dark:text-dark-text-tertiary font-mono">{t('landing.dashboard' as any)}</span>
         </div>
         <div className="p-5 sm:p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wider font-medium">Good Morning</p>
-              <p className="text-lg font-semibold tracking-tight mt-0.5">Welcome back, seeker</p>
+              <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wider font-medium">{t('landing.goodMorning' as any)}</p>
+              <p className="text-lg font-semibold tracking-tight mt-0.5">{t('landing.welcomeBack' as any)}</p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-[11px] font-medium">Free Plan</div>
+              <div className="px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-[11px] font-medium">{t('billing.free')}</div>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3 mb-6">
             {[
-              { label: 'Reports', value: '12' },
-              { label: 'Chat Sessions', value: '48' },
-              { label: 'Active Plan', value: 'Free' },
+              { label: t('landing.dashboardReports' as any), value: '12' },
+              { label: t('landing.dashboardChatSessions' as any), value: '48' },
+              { label: t('landing.dashboardActivePlan' as any), value: t('billing.free') },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -164,7 +170,7 @@ function DashboardPreview() {
             ))}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {['Daily Horoscope', 'Birth Chart', 'Compatibility', 'AI Chat'].map((item, i) => (
+            {[t('landing.featureHoroscope'), t('landing.featureBirthChart'), t('landing.featureCompatibility'), t('landing.featureAiChat')].map((item, i) => (
               <motion.div
                 key={item}
                 initial={{ opacity: 0, y: 10 }}
@@ -174,7 +180,7 @@ function DashboardPreview() {
                 className="rounded-xl card-border bg-bg-primary dark:bg-dark-bg-secondary p-4 hover:border-accent/20 transition-colors cursor-default"
               >
                 <p className="text-[13px] font-medium">{item}</p>
-                <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary mt-0.5">Get started</p>
+                <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary mt-0.5">{t('landing.startFree')}</p>
               </motion.div>
             ))}
           </div>
@@ -185,6 +191,7 @@ function DashboardPreview() {
 }
 
 export function Landing() {
+  const { t } = useT();
   const { isAuthenticated } = useAuthStore();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -220,37 +227,36 @@ export function Landing() {
               transition={{ duration: 0.5, delay: 0.15 }}
               className="tag mb-8 inline-block"
             >
-              AI-Powered Vedic Astrology
+              {t('landing.heroTag')}
             </motion.span>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-sans font-bold tracking-[-0.03em] leading-[0.92] mb-5 text-balance">
-              Discover Your
+            <h1 className="text-[2rem] sm:text-5xl md:text-7xl lg:text-8xl font-sans font-bold tracking-[-0.03em] leading-[0.92] mb-5 text-balance">
+              {t('landing.heroTitle1')}
               <br />
-              <span className="accent-gradient inline-block mt-2">Cosmic Blueprint</span>
+              <span className="accent-gradient inline-block mt-2">{t('landing.heroTitle2')}</span>
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-text-secondary dark:text-dark-text-secondary max-w-2xl mx-auto mb-10 text-balance leading-relaxed">
-              Ancient Vedic wisdom meets modern AI. Get personalized birth charts, daily horoscopes,
-              compatibility analysis, and chat with an AI astrologer.
+              {t('landing.heroDesc')}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
               {isAuthenticated ? (
                 <Link to="/dashboard">
                   <PremiumButton size="lg" icon={<ArrowRight className="w-4 h-4" />}>
-                    Go to Dashboard
+                    {t('landing.goDashboard')}
                   </PremiumButton>
                 </Link>
               ) : (
                 <>
                   <Link to="/register">
                     <PremiumButton size="lg" icon={<Sparkles className="w-4 h-4" />}>
-                      Start Free
+                      {t('landing.startFree')}
                     </PremiumButton>
                   </Link>
                   <Link to="/login">
                     <PremiumButton variant="secondary" size="lg">
-                      Sign In
+                      {t('auth.signIn')}
                     </PremiumButton>
                   </Link>
                 </>
@@ -263,9 +269,9 @@ export function Landing() {
               transition={{ delay: 1, duration: 0.6 }}
               className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-text-tertiary dark:text-dark-text-tertiary"
             >
-              <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> Encrypted</span>
-              <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Instant</span>
-              <span className="flex items-center gap-1.5"><Users className="w-3 h-3" /> 1,250+ Users</span>
+              <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> {t('landing.trustEncrypted')}</span>
+              <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> {t('landing.trustRealtime')}</span>
+              <span className="flex items-center gap-1.5"><Users className="w-3 h-3" /> {t('landing.trustUsers')}</span>
             </motion.div>
           </motion.div>
         </div>
@@ -279,15 +285,34 @@ export function Landing() {
         </motion.div>
       </section>
 
+      {/* ===== TRUST BAR ===== */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="py-8 border-b border-border-primary dark:border-dark-border-primary bg-bg-secondary/50 dark:bg-dark-bg-secondary/30"
+      >
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[11px] text-text-tertiary dark:text-dark-text-tertiary">
+            <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> {t('landing.trustEncrypted')}</span>
+            <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> {t('landing.trustRealtime')}</span>
+            <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {t('landing.trustUsers')}</span>
+            <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> {t('landing.trustRating')}</span>
+            <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> {t('landing.trustLanguages')}</span>
+            <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> {t('landing.trustAiPowered')}</span>
+          </div>
+        </div>
+      </motion.section>
+
       {/* ===== METRICS ===== */}
       <section className="py-20 border-y border-border-primary dark:border-dark-border-primary">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
-              { value: 1250, suffix: '+', label: 'Birth Charts Generated' },
-              { value: 8400, suffix: '+', label: 'AI Conversations' },
-              { value: 3600, suffix: '+', label: 'Compatibility Checks' },
-              { value: 98, suffix: '%', label: 'Satisfaction Rate' },
+              { value: 1250, suffix: '+', label: t('landing.metricsBirthCharts') },
+              { value: 8400, suffix: '+', label: t('landing.metricsAiConversations') },
+              { value: 3600, suffix: '+', label: t('landing.metricsCompatibility') },
+              { value: 98, suffix: '%', label: t('landing.metricsSatisfaction') },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -313,10 +338,10 @@ export function Landing() {
       <section id="features" className="section-padding">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-16 md:mb-20">
-            <SectionTag>Features</SectionTag>
-            <SectionHeading>Everything You Need</SectionHeading>
+            <SectionTag>{t('landing.features')}</SectionTag>
+            <SectionHeading>{t('landing.featuresTitle')}</SectionHeading>
             <SectionSubtitle>
-              From birth charts to AI chat &mdash; the complete Vedic astrology toolkit in one platform.
+              {t('landing.featuresDesc')}
             </SectionSubtitle>
           </motion.div>
 
@@ -330,8 +355,35 @@ export function Landing() {
                 <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
                   <f.icon className="w-4.5 h-4.5 text-accent" />
                 </div>
-                <h3 className="text-base font-semibold tracking-tight mb-2">{f.title}</h3>
-                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">{f.desc}</p>
+                <h3 className="text-base font-semibold tracking-tight mb-2">{t(f.titleKey as any)}</h3>
+                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">{t(f.descKey as any)}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== TRUST & SECURITY ===== */}
+      <section className="section-padding bg-bg-primary dark:bg-dark-bg-primary">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8">
+          <motion.div {...fadeUp} className="text-center mb-14">
+            <SectionTag>{t('landing.security' as any)}</SectionTag>
+            <SectionHeading>{t('landing.securityTitle')}</SectionHeading>
+            <SectionSubtitle>{t('landing.securityDesc')}</SectionSubtitle>
+          </motion.div>
+          <motion.div {...stagger} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {[
+              { icon: Shield, titleKey: 'landing.securityEncryption' as const, descKey: 'landing.securityEncryptionDesc' as const },
+              { icon: Users, titleKey: 'landing.securityNoSharing' as const, descKey: 'landing.securityNoSharingDesc' as const },
+              { icon: Zap, titleKey: 'landing.securityAutoCleanup' as const, descKey: 'landing.securityAutoCleanupDesc' as const },
+              { icon: Globe, titleKey: 'landing.securityGdpr' as const, descKey: 'landing.securityGdprDesc' as const },
+            ].map((item, i) => (
+              <motion.div key={i} variants={staggerItem} className="card-border rounded-xl p-5 bg-bg-primary dark:bg-dark-bg-secondary text-center">
+                <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <item.icon className="w-5 h-5 text-accent" />
+                </div>
+                <h3 className="text-sm font-semibold mb-1">{t(item.titleKey)}</h3>
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary leading-relaxed">{t(item.descKey)}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -342,10 +394,10 @@ export function Landing() {
       <section className="section-padding bg-bg-secondary dark:bg-dark-bg-secondary/50 border-y border-border-primary dark:border-dark-border-primary">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-16">
-            <SectionTag>Dashboard</SectionTag>
-            <SectionHeading>Beautiful by Design</SectionHeading>
+            <SectionTag>{t('landing.dashboard' as any)}</SectionTag>
+            <SectionHeading>{t('landing.dashboardTitle' as any)}</SectionHeading>
             <SectionSubtitle>
-              A cinematic experience crafted for clarity and joy. Dark mode included.
+              {t('landing.dashboardDesc' as any)}
             </SectionSubtitle>
           </motion.div>
 
@@ -357,15 +409,15 @@ export function Landing() {
       <section className="section-padding">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-16 md:mb-20">
-            <SectionTag>Testimonials</SectionTag>
-            <SectionHeading>Trusted by Seekers</SectionHeading>
+            <SectionTag>{t('landing.testimonials')}</SectionTag>
+            <SectionHeading>{t('landing.testimonialsTitle')}</SectionHeading>
             <SectionSubtitle>
-              Join thousands who have found clarity through ancient Vedic wisdom.
+              {t('landing.testimonialsDesc')}
             </SectionSubtitle>
           </motion.div>
 
           <motion.div {...stagger} className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            {testimonials.map((t, i) => (
+            {testimonials.map((item, i) => (
               <motion.div
                 key={i}
                 variants={staggerItem}
@@ -373,15 +425,15 @@ export function Landing() {
               >
                 <Quote className="w-5 h-5 text-accent/40 mb-3" />
                 <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed mb-5">
-                  &ldquo;{t.text}&rdquo;
+                  &ldquo;{t(item.textKey)}&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-semibold text-accent">
-                    {t.initials}
+                    {item.initials}
                   </div>
                   <div>
-                    <p className="text-sm font-medium leading-tight">{t.name}</p>
-                    <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">{t.role}</p>
+                    <p className="text-sm font-medium leading-tight">{t(item.nameKey)}</p>
+                    <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">{t(item.roleKey)}</p>
                   </div>
                 </div>
               </motion.div>
@@ -393,20 +445,43 @@ export function Landing() {
       {/* ===== PRICING ===== */}
       <PricingSection />
 
+      {/* ===== PRESS MENTIONS ===== */}
+      <section className="section-padding bg-bg-primary dark:bg-dark-bg-primary">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 text-center">
+          <motion.div {...fadeUp}>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-text-tertiary dark:text-dark-text-tertiary font-bold mb-8">{t('landing.pressAsFeatured')}</p>
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+              {['Astrology Today', 'Vedic Wisdom', 'TechCrunch', 'Product Hunt', 'Spiritual AI'].map((name, i) => (
+                <motion.div
+                  key={name}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="text-base sm:text-lg font-bold tracking-tight text-text-tertiary/40 dark:text-dark-text-tertiary/40 hover:text-text-tertiary/60 dark:hover:text-dark-text-tertiary/60 transition-colors cursor-default"
+                >
+                  {name}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ===== FAQ ===== */}
       <section id="faq" className="section-padding bg-bg-secondary dark:bg-dark-bg-secondary/50 border-y border-border-primary dark:border-dark-border-primary">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-16">
-            <SectionTag>FAQ</SectionTag>
-            <SectionHeading>Frequently Asked Questions</SectionHeading>
+            <SectionTag>{t('landing.faq')}</SectionTag>
+            <SectionHeading>{t('landing.faqTitle')}</SectionHeading>
             <SectionSubtitle>
-              Everything you need to know about Soma &amp; Surya.
+              {t('landing.faqDesc')}
             </SectionSubtitle>
           </motion.div>
 
           <div className="divide-y divide-border-primary dark:divide-dark-border-primary">
             {faqs.map((item, i) => (
-              <FaqItem key={i} question={item.q} answer={item.a} index={i} />
+              <FaqItem key={i} question={t(item.qKey)} answer={t(item.aKey)} index={i} />
             ))}
           </div>
         </div>
@@ -416,25 +491,57 @@ export function Landing() {
       <section className="section-padding">
         <div className="max-w-2xl mx-auto px-5 sm:px-8 text-center">
           <motion.div {...fadeUp}>
-            <SectionTag>Get Started</SectionTag>
-            <SectionHeading className="mb-4">Ready to Discover Your Path?</SectionHeading>
+            <SectionTag>{t('landing.startFree')}</SectionTag>
+            <SectionHeading className="mb-4">{t('landing.ctaTitle')}</SectionHeading>
             <p className="text-base sm:text-lg text-text-secondary dark:text-dark-text-secondary mb-8 max-w-md mx-auto text-balance">
-              Join thousands who have found clarity through ancient Vedic wisdom and modern AI.
+              {t('landing.ctaDesc')}
             </p>
             {isAuthenticated ? (
               <Link to="/dashboard">
                 <PremiumButton size="lg" icon={<ArrowRight className="w-4 h-4" />}>
-                  Go to Dashboard
+                  {t('landing.goDashboard')}
                 </PremiumButton>
               </Link>
             ) : (
               <Link to="/register">
                 <PremiumButton size="lg" icon={<Sparkles className="w-4 h-4" />}>
-                  Start Free &mdash; No Credit Card
+                  {t('landing.ctaStartFree')}
                 </PremiumButton>
               </Link>
             )}
           </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-24 relative" {...fadeUp}>
+        <div className="max-w-6xl mx-auto px-5">
+          <div className="text-center mb-14">
+            <span className="text-accent text-[11px] font-bold uppercase tracking-[0.2em]">{t('landing.testimonials')}</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold mt-3 mb-4">{t('landing.testimonials2Title' as any)}</h2>
+            <p className="text-text-secondary dark:text-dark-text-secondary text-sm max-w-xl mx-auto">{t('landing.testimonials2Desc' as any)}</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6" {...stagger}>
+            {[
+              { nameKey: 'landing.testimonial4Name' as any, roleKey: 'landing.testimonial4Role' as any, locationKey: 'landing.testimonial4Location' as any, textKey: 'landing.testimonial4Text' as any, rating: 5 },
+              { nameKey: 'landing.testimonial5Name' as any, roleKey: 'landing.testimonial5Role' as any, locationKey: 'landing.testimonial5Location' as any, textKey: 'landing.testimonial5Text' as any, rating: 5 },
+              { nameKey: 'landing.testimonial6Name' as any, roleKey: 'landing.testimonial6Role' as any, locationKey: 'landing.testimonial6Location' as any, textKey: 'landing.testimonial6Text' as any, rating: 5 },
+              { nameKey: 'landing.testimonial7Name' as any, roleKey: 'landing.testimonial7Role' as any, locationKey: 'landing.testimonial7Location' as any, textKey: 'landing.testimonial7Text' as any, rating: 5 },
+              { nameKey: 'landing.testimonial8Name' as any, roleKey: 'landing.testimonial8Role' as any, locationKey: 'landing.testimonial8Location' as any, textKey: 'landing.testimonial8Text' as any, rating: 5 },
+              { nameKey: 'landing.testimonial9Name' as any, roleKey: 'landing.testimonial9Role' as any, locationKey: 'landing.testimonial9Location' as any, textKey: 'landing.testimonial9Text' as any, rating: 5 },
+            ].map((item, i) => (
+              <motion.div key={i} variants={staggerItem} className="p-6 rounded-2xl border border-border-primary dark:border-dark-border-primary bg-bg-primary dark:bg-dark-bg-primary">
+                <div className="flex gap-1 mb-3">
+                  {[...Array(item.rating)].map((_, j) => (<Star key={j} className="w-3.5 h-3.5 fill-accent text-accent" />))}
+                </div>
+                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed mb-4">"{t(item.textKey)}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-semibold text-accent">{t(item.nameKey).split(' ').map((n: string) => n[0]).join('')}</div>
+                  <div><p className="text-sm font-medium">{t(item.nameKey)}</p><p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">{t(item.roleKey)} · {t(item.locationKey)}</p></div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -482,39 +589,52 @@ function FaqItem({ question, answer, index }: { question: string; answer: string
 }
 
 function PricingSection() {
+  const { t } = useT();
   const [yearly, setYearly] = useState(false);
+  const { isAuthenticated, user } = useAuthStore();
+  const navigate = useNavigate();
 
-  const plans = [
-    {
-      name: 'Free', price: 0, desc: 'Get started with daily guidance',
-      features: ['Daily horoscope', 'Basic birth chart', 'Moon phase tracker', '5 AI chat credits'],
-      cta: 'Get Started', highlighted: false,
+  const { data: plansData } = useQuery({
+    queryKey: ['plans', user?.country],
+    queryFn: () => api.get<any[]>('/api/payments/plans' + (user?.country ? `?country=${encodeURIComponent(user.country)}` : '')),
+    staleTime: 300000,
+  });
+
+  const checkoutMutation = useMutation({
+    mutationFn: (planId: string) => api.post<{ url: string }>('/api/payments/create-checkout', { plan: planId, currency: user?.country ? undefined : 'USD' }),
+    onSuccess: (data) => {
+      if (data.data?.url?.startsWith('https://')) window.location.href = data.data.url;
+      else toast.error(t('errors.invalidCheckoutUrl' as any));
     },
-    {
-      name: 'Pro', price: 9.99, desc: 'For serious seekers of cosmic wisdom',
-      features: ['Everything in Free', 'AI chat astrologer', 'Compatibility analysis', 'Detailed birth chart', 'Weekly predictions'],
-      cta: 'Subscribe', highlighted: true,
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : t('errors.paymentUnavailable' as any));
     },
-    {
-      name: 'Premium', price: 19.99, desc: 'The complete spiritual companion',
-      features: ['Everything in Pro', 'Unlimited AI chats', 'Numerology report', 'Tarot readings', 'Priority support'],
-      cta: 'Subscribe', highlighted: false,
-    },
-    {
-      name: 'Enterprise', price: 49.99, desc: 'For studios and professionals',
-      features: ['Everything in Premium', 'API access', 'White-label reports', 'Dedicated support', 'Custom integrations'],
-      cta: 'Contact Us', highlighted: false,
-    },
+  });
+
+  const handleSubscribe = (planName: string) => {
+    if (!isAuthenticated) {
+      navigate(`/register?plan=${planName.toLowerCase()}`);
+      return;
+    }
+    checkoutMutation.mutate(planName);
+  };
+
+  const currencyInfo = user?.country ? getCurrencyForCountry(user.country) : { code: 'USD', symbol: '$', locale: 'en-US' };
+  const plans = plansData?.data || [
+    { id: 'FREE', name: 'Free', price: 0, currency: 'USD', interval: 'month', features: [t('pricing.freeFeature1' as any), t('pricing.freeFeature2' as any), t('pricing.freeFeature3' as any), t('pricing.freeFeature4' as any)], highlighted: false },
+    { id: 'PRO', name: 'Pro', price: 9.99, currency: 'USD', interval: 'month', features: [t('pricing.proFeature1' as any), t('pricing.proFeature2' as any), t('pricing.proFeature3' as any), t('pricing.proFeature4' as any), t('pricing.proFeature5' as any)], highlighted: true },
+    { id: 'PREMIUM', name: 'Premium', price: 19.99, currency: 'USD', interval: 'month', features: [t('pricing.premiumFeature1' as any), t('pricing.premiumFeature2' as any), t('pricing.premiumFeature3' as any), t('pricing.premiumFeature4' as any), t('pricing.premiumFeature5' as any)], highlighted: false },
+    { id: 'ENTERPRISE', name: 'Enterprise', price: 49.99, currency: 'USD', interval: 'month', features: [t('pricing.enterpriseFeature1' as any), t('pricing.enterpriseFeature2' as any), t('pricing.enterpriseFeature3' as any), t('pricing.enterpriseFeature4' as any), t('pricing.enterpriseFeature5' as any)], highlighted: false },
   ];
 
   return (
     <section id="pricing" className="section-padding">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <motion.div {...fadeUp} className="text-center mb-16">
-          <SectionTag>Pricing</SectionTag>
-          <SectionHeading>Simple, Transparent Pricing</SectionHeading>
+          <SectionTag>{t('landing.pricing')}</SectionTag>
+          <SectionHeading>{t('pricing.title')}</SectionHeading>
           <SectionSubtitle>
-            Start free. Upgrade when you need more.
+            {t('pricing.subtitle')}
           </SectionSubtitle>
         </motion.div>
 
@@ -523,7 +643,7 @@ function PricingSection() {
             animate={{ color: yearly ? 'var(--tw-text-tertiary)' : 'var(--tw-text-primary)' }}
             className="text-sm text-text-primary dark:text-dark-text-primary font-medium"
           >
-            Monthly
+            {t('pricing.monthly')}
           </motion.span>
           <button
             onClick={() => setYearly(!yearly)}
@@ -536,16 +656,17 @@ function PricingSection() {
             />
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-text-primary dark:text-dark-text-primary font-medium">Yearly</span>
+            <span className="text-sm text-text-primary dark:text-dark-text-primary font-medium">{t('pricing.yearly')}</span>
             <span className="px-2 py-0.5 text-[10px] font-medium bg-accent/10 text-accent border border-accent/20 rounded-full">
-              Save ~17%
+              {t('pricing.savePercent')}
             </span>
           </div>
         </div>
 
         <div className="grid md:grid-cols-4 gap-4 max-w-6xl mx-auto">
-          {plans.map((plan, i) => {
-            const displayPrice = yearly ? (plan.price * 10).toFixed(2) : plan.price.toFixed(2);
+          {plans.map((plan: any, i) => {
+            const monthlyPrice = plan.price;
+            const displayPrice = yearly ? monthlyPrice * 10 : monthlyPrice;
             return (
               <motion.div
                 key={`${plan.name}-${yearly}`}
@@ -566,12 +687,12 @@ function PricingSection() {
                     animate={{ scale: 1 }}
                     className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-accent text-white text-[10px] font-medium rounded-full whitespace-nowrap shadow-sm"
                   >
-                    Most Popular
+                    {t('pricing.mostPopular')}
                   </motion.span>
                 )}
 
-                <h3 className="text-lg font-semibold tracking-tight mb-1">{plan.name}</h3>
-                <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary mb-5 min-h-[2rem]">{plan.desc}</p>
+                <h3 className="text-lg font-semibold tracking-tight mb-1">{t('billing.' + plan.name.toLowerCase() as any)}</h3>
+                <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary mb-5 min-h-[2rem]">{plan.desc || t('pricing.planDescription' as any)}</p>
 
                 <div className="mb-5">
                   <AnimatePresence mode="wait">
@@ -584,11 +705,11 @@ function PricingSection() {
                       className="flex items-baseline gap-0.5"
                     >
                       <span className="text-3xl sm:text-4xl font-bold tracking-tight">
-                        {plan.price === 0 ? 'Free' : `$${displayPrice}`}
+                        {monthlyPrice === 0 ? t('billing.free') : formatPrice(displayPrice, plan.currency, currencyInfo.locale)}
                       </span>
-                      {plan.price > 0 && (
+                      {monthlyPrice > 0 && (
                         <span className="text-xs text-text-tertiary dark:text-dark-text-tertiary ml-1">
-                          /{yearly ? 'yr' : 'mo'}
+                          /{yearly ? t('pricing.perYear' as any) : t('pricing.perMonth' as any)}
                         </span>
                       )}
                     </motion.div>
@@ -596,7 +717,7 @@ function PricingSection() {
                 </div>
 
                 <ul className="flex-1 space-y-2.5 mb-6">
-                  {plan.features.map((f, j) => (
+                  {(plan.features || []).map((f: string, j: number) => (
                     <li key={j} className="flex items-start gap-2 text-xs sm:text-sm">
                       <Check className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
                       <span className="text-text-secondary dark:text-dark-text-secondary">{f}</span>
@@ -604,14 +725,22 @@ function PricingSection() {
                   ))}
                 </ul>
 
-                <Link to={plan.price === 0 ? '/register' : '/register?plan=' + plan.name.toLowerCase()}>
+                {monthlyPrice === 0 ? (
+                  <Link to="/register">
+                    <PremiumButton variant="secondary" className="w-full">
+                      {t('pricing.getStarted')}
+                    </PremiumButton>
+                  </Link>
+                ) : (
                   <PremiumButton
-                    variant={plan.highlighted ? 'primary' : plan.price === 0 ? 'secondary' : 'ghost'}
+                    variant={plan.highlighted ? 'primary' : 'ghost'}
                     className="w-full"
+                    onClick={() => handleSubscribe(plan.name)}
+                    loading={checkoutMutation.isPending}
                   >
-                    {plan.cta}
+                    {checkoutMutation.isPending ? t('common.loading') : t('pricing.subscribe')}
                   </PremiumButton>
-                </Link>
+                )}
               </motion.div>
             );
           })}

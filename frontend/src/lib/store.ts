@@ -1,13 +1,39 @@
 import { create } from 'zustand';
 import { api } from './api';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
   role: string;
   plan?: string;
   avatar?: string;
+  gender?: string;
+  birthDate?: string;
+  birthTime?: string;
+  birthPlace?: string;
+  country?: string;
+  language?: string;
+  timezone?: string;
+  astrologyProfile?: {
+    rashi?: string;
+    nakshatra?: string;
+    nakshatraLord?: string;
+    lagna?: string;
+    rashiLord?: string;
+    element?: string;
+    doshaDominance?: string;
+  };
+}
+
+interface RegisterOptions {
+  gender?: string;
+  birthDate?: string;
+  birthTime?: string;
+  birthPlace?: string;
+  country?: string;
+  language?: string;
+  timezone?: string;
 }
 
 interface AuthState {
@@ -16,7 +42,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, options?: RegisterOptions) => Promise<void>;
   loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -36,8 +62,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user, accessToken, isAuthenticated: true });
   },
 
-  register: async (name, email, password) => {
-    const res = await api.post<{ user: User; accessToken: string }>('/api/auth/register', { name, email, password });
+  register: async (name, email, password, options = {}) => {
+    const res = await api.post<{ user: User; accessToken: string }>('/api/auth/register', { name, email, password, ...options });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
     set({ user, accessToken, isAuthenticated: true });

@@ -12,16 +12,38 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-04-15' as Stripe.LatestApiVersion })
   : null;
 
+const CURRENCY_RATES: Record<string, number> = {
+  USD: 1, INR: 83, GBP: 0.79, EUR: 0.92, BDT: 109, JPY: 149, CNY: 7.24, AED: 3.67, AUD: 1.53, CAD: 1.36, BRL: 5.05,
+};
+
+const COUNTRY_CURRENCY: Record<string, string> = {
+  india: 'INR', 'united states': 'USD', usa: 'USD', 'united kingdom': 'GBP', uk: 'GBP', germany: 'EUR',
+  france: 'EUR', spain: 'EUR', italy: 'EUR', netherlands: 'EUR', bangladesh: 'BDT', japan: 'JPY',
+  china: 'CNY', 'united arab emirates': 'AED', uae: 'AED', australia: 'AUD', canada: 'CAD', brazil: 'BRL',
+};
+
+function getCurrencyForCountry(country?: string | null): string {
+  if (!country) return 'USD';
+  const key = country.toLowerCase().trim();
+  return COUNTRY_CURRENCY[key] || 'USD';
+}
+
+function convertPrice(priceUSD: number, currency: string): number {
+  const rate = CURRENCY_RATES[currency] || 1;
+  const converted = priceUSD * rate;
+  return currency === 'JPY' ? Math.round(converted) : Math.round(converted * 100) / 100;
+}
+
 paymentRouter.get('/plans', (_req, res) => {
-  res.json({
-    success: true,
-    data: [
-      { id: 'FREE', name: 'Free', price: 0, currency: 'usd', interval: 'month', features: ['Daily horoscope', 'Basic birth chart', 'Moon phase tracker'], highlighted: false },
-      { id: 'PRO', name: 'Pro', price: 9.99, currency: 'usd', interval: 'month', features: ['Everything in Free', 'AI chat astrologer', 'Compatibility analysis', 'Detailed birth chart', 'Weekly predictions'], highlighted: true },
-      { id: 'PREMIUM', name: 'Premium', price: 19.99, currency: 'usd', interval: 'month', features: ['Everything in Pro', 'Unlimited AI chats', 'Numerology report', 'Tarot readings', 'Priority support', 'Ad-free'], highlighted: false },
-      { id: 'ENTERPRISE', name: 'Enterprise', price: 49.99, currency: 'usd', interval: 'month', features: ['Everything in Premium', 'API access', 'White-label reports', 'Dedicated astrologer', 'Custom integrations', 'SLA guarantee'], highlighted: false },
-    ],
-  });
+  const currency = getCurrencyForCountry(_req.query.country as string);
+  const basePlans = [
+    { id: 'FREE', name: 'Free', price: 0, currency, interval: 'month', features: ['Daily horoscope', 'Basic birth chart', 'Moon phase tracker'], highlighted: false },
+    { id: 'PRO', name: 'Pro', price: 9.99, currency, interval: 'month', features: ['Everything in Free', 'AI chat astrologer', 'Compatibility analysis', 'Detailed birth chart', 'Weekly predictions'], highlighted: true },
+    { id: 'PREMIUM', name: 'Premium', price: 19.99, currency, interval: 'month', features: ['Everything in Pro', 'Unlimited AI chats', 'Numerology report', 'Tarot readings', 'Priority support', 'Ad-free'], highlighted: false },
+    { id: 'ENTERPRISE', name: 'Enterprise', price: 49.99, currency, interval: 'month', features: ['Everything in Premium', 'API access', 'White-label reports', 'Dedicated astrologer', 'Custom integrations', 'SLA guarantee'], highlighted: false },
+  ];
+  const data = basePlans.map((p) => ({ ...p, price: convertPrice(p.price, currency), displayPrice: p.price === 0 ? 0 : convertPrice(p.price, currency) }));
+  res.json({ success: true, data });
 });
 
 paymentRouter.get('/subscription', authenticate, asyncHandler(async (req, res) => {
@@ -32,7 +54,7 @@ paymentRouter.get('/subscription', authenticate, asyncHandler(async (req, res) =
 paymentRouter.post('/create-checkout', authenticate, asyncHandler(async (req, res) => {
   if (!stripe) throw new AppError(503, 'Payment system is not configured');
 
-  const { plan } = req.body;
+  const { plan, currency: reqCurrency } = req.body;
   const validPlans = ['PRO', 'PREMIUM', 'ENTERPRISE'];
   if (!validPlans.includes(plan)) throw new AppError(400, 'Invalid plan selected');
 
@@ -52,13 +74,15 @@ paymentRouter.post('/create-checkout', authenticate, asyncHandler(async (req, re
   const priceId = process.env[priceEnvKey];
   if (!priceId) throw new AppError(500, `Payment configuration missing for ${plan} plan`);
 
+  const userCurrency = reqCurrency || getCurrencyForCountry(user.country);
   const session = await stripe.checkout.sessions.create({
     customer: stripeCustomerId,
     mode: 'subscription',
     line_items: [{ price: priceId, quantity: 1 }],
+    currency: userCurrency.toLowerCase(),
     success_url: `${process.env.APP_URL || 'http://localhost:4000'}/dashboard?payment=success`,
     cancel_url: `${process.env.APP_URL || 'http://localhost:4000'}/pricing?payment=canceled`,
-    metadata: { userId: user.id, plan },
+    metadata: { userId: user.id, plan, currency: userCurrency },
   });
 
   res.json({ success: true, data: { url: session.url } });

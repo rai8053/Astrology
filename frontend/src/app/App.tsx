@@ -1,28 +1,34 @@
-import { useEffect, useState } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
-import { api } from '@/lib/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CosmicBackground } from '@/components/CosmicBackground';
 import { Landing } from '@/features/landing/Landing';
-import { DashboardLayout } from '@/features/dashboard/DashboardLayout';
-import { DashboardHome } from '@/features/dashboard/DashboardHome';
-import { HoroscopePage } from '@/features/horoscope/HoroscopePage';
-import { KundliPage } from '@/features/kundli/KundliPage';
-import { CompatibilityPage } from '@/features/compatibility/CompatibilityPage';
-import { MoonPage } from '@/features/moon/MoonPage';
-import { ChatPage } from '@/features/chat/ChatPage';
-import { SettingsPage } from '@/features/settings/SettingsPage';
-import { AdminLayout } from '@/features/admin/AdminLayout';
-import { AdminDashboard } from '@/features/admin/AdminDashboard';
-import { AdminUsers } from '@/features/admin/AdminUsers';
-import { AdminAnalytics } from '@/features/admin/AdminAnalytics';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
-import { PricingPage } from '@/features/landing/PricingPage';
+
+const DashboardLayout = lazy(() => import('@/features/dashboard/DashboardLayout').then(m => ({ default: m.DashboardLayout })));
+const DashboardHome = lazy(() => import('@/features/dashboard/DashboardHome').then(m => ({ default: m.DashboardHome })));
+const HoroscopePage = lazy(() => import('@/features/horoscope/HoroscopePage').then(m => ({ default: m.HoroscopePage })));
+const KundliPage = lazy(() => import('@/features/kundli/KundliPage').then(m => ({ default: m.KundliPage })));
+const CompatibilityPage = lazy(() => import('@/features/compatibility/CompatibilityPage').then(m => ({ default: m.CompatibilityPage })));
+const MoonPage = lazy(() => import('@/features/moon/MoonPage').then(m => ({ default: m.MoonPage })));
+const ChatPage = lazy(() => import('@/features/chat/ChatPage').then(m => ({ default: m.ChatPage })));
+const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const AdminLayout = lazy(() => import('@/features/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = lazy(() => import('@/features/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminUsers = lazy(() => import('@/features/admin/AdminUsers').then(m => ({ default: m.AdminUsers })));
+const AdminAnalytics = lazy(() => import('@/features/admin/AdminAnalytics').then(m => ({ default: m.AdminAnalytics })));
+const PricingPage = lazy(() => import('@/features/landing/PricingPage').then(m => ({ default: m.PricingPage })));
+const AboutPage = lazy(() => import('@/pages/AboutPage').then(m => ({ default: m.AboutPage })));
+const ContactPage = lazy(() => import('@/pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const FAQPage = lazy(() => import('@/pages/FAQPage').then(m => ({ default: m.FAQPage })));
+const PrivacyPage = lazy(() => import('@/pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const TermsPage = lazy(() => import('@/pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const RefundPage = lazy(() => import('@/pages/RefundPage').then(m => ({ default: m.RefundPage })));
 
 const easeOut = [0.25, 0.1, 0.25, 1] as const;
 const pageVariants = {
@@ -49,7 +55,6 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
 }
 
 export default function App() {
-  const [googleClientId, setGoogleClientId] = useState<string | null>(null);
   const checkAuth = useAuthStore((s) => s.checkAuth);
   const logout = useAuthStore((s) => s.logout);
   const location = useLocation();
@@ -64,15 +69,12 @@ export default function App() {
     return () => window.removeEventListener('session-expired', handler);
   }, [logout]);
 
-  useEffect(() => {
-    api.get<{ clientId: string }>('/api/auth/google/client-id')
-      .then((res) => setGoogleClientId(res.data.clientId))
-      .catch(() => {});
-  }, []);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
   const content = (
     <ErrorBoundary>
       <AnimatePresence mode="wait">
+        <Suspense fallback={<LoadingScreen />}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageWrap cosmic><Landing /></PageWrap>} />
           <Route path="/pricing" element={<PageWrap cosmic><PricingPage /></PageWrap>} />
@@ -92,15 +94,18 @@ export default function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="analytics" element={<AdminAnalytics />} />
           </Route>
+          <Route path="/about" element={<PageWrap cosmic><AboutPage /></PageWrap>} />
+          <Route path="/contact" element={<PageWrap><ContactPage /></PageWrap>} />
+          <Route path="/faq" element={<PageWrap cosmic><FAQPage /></PageWrap>} />
+          <Route path="/privacy" element={<PageWrap><PrivacyPage /></PageWrap>} />
+          <Route path="/terms" element={<PageWrap><TermsPage /></PageWrap>} />
+          <Route path="/refund" element={<PageWrap><RefundPage /></PageWrap>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </AnimatePresence>
     </ErrorBoundary>
   );
 
-  if (googleClientId) {
-    return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>;
-  }
-
-  return content;
+  return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>;
 }

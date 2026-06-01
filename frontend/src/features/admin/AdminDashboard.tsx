@@ -4,18 +4,20 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { StatsSkeleton } from '@/components/Skeleton';
+import { useT } from '@/lib/i18n/useT';
 
 export function AdminDashboard() {
+  const { t } = useT();
   const { data: analytics, isLoading } = useQuery({
     queryKey: ['admin-analytics'],
     queryFn: () => api.get<{ totalUsers: number; activeSubscriptions: number; reportsThisMonth: number; revenueThisMonth: number }>('/api/admin/analytics'),
   });
 
   const stats = [
-    { label: 'Total Users', value: analytics?.data?.totalUsers ?? 0, icon: Users, color: 'text-blue-400', gradient: 'from-blue-500/20' },
-    { label: 'Active Subscriptions', value: analytics?.data?.activeSubscriptions ?? 0, icon: CreditCard, color: 'text-green-400', gradient: 'from-green-500/20' },
-    { label: 'Reports This Month', value: analytics?.data?.reportsThisMonth ?? 0, icon: FileText, color: 'text-purple-400', gradient: 'from-purple-500/20' },
-    { label: 'Revenue (est.)', value: `$${(analytics?.data?.revenueThisMonth ?? 0).toFixed(2)}`, icon: TrendingUp, color: 'text-gold', gradient: 'from-gold/20' },
+    { label: t('admin.statTotalUsers' as any), value: analytics?.data?.totalUsers ?? 0, icon: Users, color: 'text-blue-400', gradient: 'from-blue-500/20' },
+    { label: t('admin.statActiveSubscriptions' as any), value: analytics?.data?.activeSubscriptions ?? 0, icon: CreditCard, color: 'text-green-400', gradient: 'from-green-500/20' },
+    { label: t('admin.statReportsThisMonth' as any), value: analytics?.data?.reportsThisMonth ?? 0, icon: FileText, color: 'text-purple-400', gradient: 'from-purple-500/20' },
+    { label: t('admin.statRevenue' as any), value: `$${(analytics?.data?.revenueThisMonth ?? 0).toFixed(2)}`, icon: TrendingUp, color: 'text-gold', gradient: 'from-gold/20' },
   ];
 
   if (isLoading) return <StatsSkeleton />;

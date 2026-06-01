@@ -3,7 +3,9 @@ import { Sparkles, Menu, X, Sun, Moon, User, Settings, Shield, LogOut, Crown, Ch
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumButton } from './PremiumButton';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAuthStore, useThemeStore } from '@/lib/store';
+import { useT } from '@/lib/i18n/useT';
 import { cn } from '@/lib/utils';
 
 function useMediaQuery(query: string) {
@@ -27,6 +29,7 @@ export function Navbar() {
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
   const { setTheme, resolved } = useThemeStore();
+  const { t } = useT();
   const isLanding = location.pathname === '/';
   const userMenuRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -51,9 +54,9 @@ export function Navbar() {
   }, [location.pathname]);
 
   const links = isLanding ? [
-    { label: 'Features', href: '#features' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'FAQ', href: '#faq' },
+    { label: t('nav.features'), href: '#features' },
+    { label: t('nav.pricing'), href: '#pricing' },
+    { label: t('nav.faq'), href: '#faq' },
   ] : [];
 
   const initials = user?.name
@@ -101,10 +104,12 @@ export function Navbar() {
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
                 className="p-2 rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary transition-colors"
-                aria-label="Toggle theme"
+                aria-label={t('nav.themeAria')}
               >
                 {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </motion.button>
+
+              <LanguageSwitcher />
 
               {isAuthenticated ? (
                 <div className="relative" ref={userMenuRef}>
@@ -135,9 +140,9 @@ export function Navbar() {
                         </div>
                         <div className="p-1.5">
                           {[
-                            { to: '/dashboard', icon: User, label: 'Dashboard' },
-                            { to: '/dashboard/settings', icon: Settings, label: 'Settings' },
-                            { to: '/pricing', icon: Crown, label: 'Upgrade Plan' },
+                            { to: '/dashboard', icon: User, label: t('nav.userDashboard') },
+                            { to: '/dashboard/settings', icon: Settings, label: t('nav.userSettings') },
+                            { to: '/pricing', icon: Crown, label: t('nav.upgradePlan') },
                           ].map(item => (
                             <Link
                               key={item.to}
@@ -158,7 +163,7 @@ export function Navbar() {
                               className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
                             >
                               <Shield className="w-3.5 h-3.5" />
-                              Admin Panel
+                              {t('nav.adminPanel')}
                             </Link>
                           </>
                           )}
@@ -168,7 +173,7 @@ export function Navbar() {
                             className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
                           >
                             <LogOut className="w-3.5 h-3.5" />
-                            Sign Out
+                            {t('nav.signOut')}
                           </button>
                         </div>
                       </motion.div>
@@ -177,8 +182,8 @@ export function Navbar() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Link to="/login"><PremiumButton variant="ghost" size="sm">Sign In</PremiumButton></Link>
-                  <Link to="/register"><PremiumButton size="sm">Get Started</PremiumButton></Link>
+                  <Link to="/login"><PremiumButton variant="ghost" size="sm">{t('nav.login')}</PremiumButton></Link>
+                  <Link to="/register"><PremiumButton size="sm">{t('landing.startFree')}</PremiumButton></Link>
                 </div>
               )}
             </div>
@@ -188,7 +193,7 @@ export function Navbar() {
             whileTap={{ scale: 0.9 }}
             className="md:hidden p-2 -mr-2"
             onClick={() => setOpen(!open)}
-            aria-label="Menu"
+            aria-label={t('nav.menu')}
           >
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </motion.button>
@@ -231,28 +236,31 @@ export function Navbar() {
                 className="flex items-center gap-3 w-full text-sm py-2 px-3 rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary transition-colors"
               >
                 {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                {resolved === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                {resolved === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}
               </motion.button>
+              <div className="px-3 py-2">
+                <LanguageSwitcher />
+              </div>
               <div className="pt-2 space-y-2">
                 {isAuthenticated ? (
                   <>
                     <Link to="/dashboard" onClick={() => setOpen(false)}>
-                      <PremiumButton className="w-full">Dashboard</PremiumButton>
+                      <PremiumButton className="w-full">{t('nav.dashboard')}</PremiumButton>
                     </Link>
                     {isAdmin && (
                       <Link to="/admin" onClick={() => setOpen(false)}>
-                        <PremiumButton variant="ghost" className="w-full">Admin Panel</PremiumButton>
+                        <PremiumButton variant="ghost" className="w-full">{t('nav.adminPanel')}</PremiumButton>
                       </Link>
                     )}
-                    <PremiumButton variant="ghost" className="w-full" onClick={logout}>Sign Out</PremiumButton>
+                    <PremiumButton variant="ghost" className="w-full" onClick={logout}>{t('nav.signOut')}</PremiumButton>
                   </>
                 ) : (
                   <>
                     <Link to="/login" onClick={() => setOpen(false)}>
-                      <PremiumButton variant="secondary" className="w-full">Sign In</PremiumButton>
+                      <PremiumButton variant="secondary" className="w-full">{t('nav.login')}</PremiumButton>
                     </Link>
                     <Link to="/register" onClick={() => setOpen(false)}>
-                      <PremiumButton className="w-full">Get Started</PremiumButton>
+                      <PremiumButton className="w-full">{t('landing.startFree')}</PremiumButton>
                     </Link>
                   </>
                 )}

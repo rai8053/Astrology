@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
+import { useT } from '@/lib/i18n/useT';
 
 export function LoadingScreen() {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -31,7 +33,7 @@ export function LoadingScreen() {
         transition={{ delay: 0.3 }}
         className="mt-6 text-sm font-serif text-ink/40 dark:text-parchment/40 italic"
       >
-        Loading cosmic data...
+        {t('common.loadingCosmic')}
       </motion.p>
     </motion.div>
   );

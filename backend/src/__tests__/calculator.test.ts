@@ -4,38 +4,34 @@ import { RASHI_KEYS, NAKSHATRAS } from '../services/astrology/constants.js';
 
 describe('calculateRashiIndex', () => {
   it('returns a number between 0 and 11', () => {
-    const date = new Date('1998-06-15T08:30:00');
-    const idx = calculateRashiIndex(date);
+    const idx = calculateRashiIndex('1998-06-15', '08:30');
     expect(idx).toBeGreaterThanOrEqual(0);
     expect(idx).toBeLessThanOrEqual(11);
   });
 
   it('maps to a valid RASHI key', () => {
-    const date = new Date('1998-06-15T08:30:00');
-    const idx = calculateRashiIndex(date);
+    const idx = calculateRashiIndex('1998-06-15', '08:30');
     expect(RASHI_KEYS[idx]).toBeDefined();
   });
 });
 
 describe('calculateNakshatraIndex', () => {
   it('returns a number between 0 and 26', () => {
-    const date = new Date('1998-06-15T08:30:00');
-    const idx = calculateNakshatraIndex(date);
+    const idx = calculateNakshatraIndex('1998-06-15', '08:30');
     expect(idx).toBeGreaterThanOrEqual(0);
     expect(idx).toBeLessThanOrEqual(26);
   });
 
   it('maps to a valid Nakshatra name', () => {
-    const date = new Date('1998-06-15T08:30:00');
-    const idx = calculateNakshatraIndex(date);
+    const idx = calculateNakshatraIndex('1998-06-15', '08:30');
     expect(NAKSHATRAS[idx]).toBeDefined();
   });
 });
 
 describe('calculateLagnaIndex', () => {
   it('returns a number between 0 and 11', () => {
-    expect(calculateLagnaIndex(new Date('2024-01-01T00:00:00'))).toBeGreaterThanOrEqual(0);
-    expect(calculateLagnaIndex(new Date('2024-01-01T23:59:00'))).toBeLessThanOrEqual(11);
+    expect(calculateLagnaIndex('2024-01-01', '00:00')).toBeGreaterThanOrEqual(0);
+    expect(calculateLagnaIndex('2024-01-01', '23:59')).toBeLessThanOrEqual(11);
   });
 });
 
@@ -49,6 +45,14 @@ describe('calculateBirthDetails', () => {
     expect(RASHI_KEYS).toContain(result.rashiKey);
     expect(NAKSHATRAS).toContain(result.nakshatraName);
     expect(RASHI_KEYS).toContain(result.lagnaKey);
+  });
+
+  it('returns deterministic results for same input', () => {
+    const a = calculateBirthDetails('1998-06-15', '08:30');
+    const b = calculateBirthDetails('1998-06-15', '08:30');
+    expect(a.rashiKey).toBe(b.rashiKey);
+    expect(a.nakshatraName).toBe(b.nakshatraName);
+    expect(a.lagnaKey).toBe(b.lagnaKey);
   });
 });
 

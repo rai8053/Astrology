@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate } from '../middleware/auth.js';
+import { requirePremium } from '../middleware/subscription.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
 import { generateAIResponse } from '../lib/ai.js';
@@ -12,10 +13,11 @@ export const chatRouter = Router();
 const chatSchema = z.object({
   message: z.string().min(1, 'Message is required').max(5000, 'Message too long (max 5000 chars)'),
   sessionId: z.string().optional(),
+  language: z.string().optional(),
 });
 
-chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req, res) => {
-  const { message, sessionId } = req.body as z.infer<typeof chatSchema>;
+chatRouter.post('/', authenticate, requirePremium, validate(chatSchema), asyncHandler(async (req, res) => {
+  const { message, sessionId, language } = req.body as z.infer<typeof chatSchema>;
   const userId = req.user!.userId;
 
   let session = sessionId
@@ -35,7 +37,7 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
   try {
     const aiResponse = await generateAIResponse(
       prompt,
-      'You are a wise Vedic astrologer and spiritual guide. Provide compassionate, insightful answers about astrology, numerology, and spiritual matters. Keep responses helpful, grounded, and respectful.',
+      `You are a wise Vedic astrologer and spiritual guide. Provide compassionate, insightful answers about astrology, numerology, and spiritual matters. Keep responses helpful, grounded, and respectful.${language ? ` Respond in the user's selected language: ${language}.` : ''}`,
     );
 
     const updatedMessages = [

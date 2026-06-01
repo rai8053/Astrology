@@ -38,6 +38,10 @@ model User {
   avatar        String?
   timezone      String   @default("UTC")
   language      String   @default("en")
+  locale        String   @default("en-US")
+  country       String   @default("US")
+  currency      String   @default("USD")
+  gender        String?
   emailVerified Boolean  @default(false)
   birthDate     String?
   birthTime     String?
@@ -46,18 +50,38 @@ model User {
   googleId      String?  @unique
   githubId      String?  @unique
 
-  subscription   Subscription?
-  reports        AstrologyReport[]
-  chatSessions   ChatSession[]
-  usageRecords   UsageRecord[]
-  paymentMethods PaymentMethod[]
-  invoices       Invoice[]
+  subscription     Subscription?
+  reports          AstrologyReport[]
+  chatSessions     ChatSession[]
+  usageRecords     UsageRecord[]
+  paymentMethods   PaymentMethod[]
+  invoices         Invoice[]
+  astrologyProfile AstrologyProfile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([email])
   @@index([role])
+}
+
+model AstrologyProfile {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  rashi          String?
+  nakshatra      String?
+  nakshatraLord  String?
+  lagna          String?
+  rashiLord      String?
+  element        String?
+  doshaDominance String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Subscription {

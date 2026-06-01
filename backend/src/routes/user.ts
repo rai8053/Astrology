@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
 import { prisma } from '../lib/prisma.js';
+import { logger } from '../lib/logger.js';
 
 export const userRouter = Router();
 
@@ -59,12 +60,17 @@ const profileSchema = z.object({
 userRouter.patch('/profile', validate(profileSchema), asyncHandler(async (req, res) => {
   const data = req.body as z.infer<typeof profileSchema>;
   const cleaned = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined && v !== ''));
-  const user = await prisma.user.update({
+  const updated = await prisma.user.update({
     where: { id: req.user!.userId },
     data: cleaned,
     select: { id: true, email: true, name: true, role: true, timezone: true, language: true, birthDate: true, birthTime: true, birthPlace: true },
   });
-  res.json({ success: true, data: user });
+
+  prisma.usageRecord.create({
+    data: { userId: req.user!.userId, feature: 'settings_saved', tokensIn: 0, tokensOut: 0, cost: 0 },
+  }).catch((err) => logger.warn({ err }, 'Failed to log settings_saved usage'));
+
+  res.json({ success: true, message: 'Profile updated successfully', data: updated });
 }));
 
 userRouter.get('/analytics', asyncHandler(async (req, res) => {

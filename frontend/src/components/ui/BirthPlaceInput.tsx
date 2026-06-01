@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { useT } from '@/lib/i18n/useT';
+import indianPlaces from '@/data/indian-places.json';
 import countryStates from '@/data/country-states.json';
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
@@ -78,6 +80,7 @@ function extractPlace(r: NominatimResult): Place {
 }
 
 export function BirthPlaceInput({ label, id, value, onChange, required, placeholder, error, state, onStateChange, country, onCountryChange }: BirthPlaceInputProps) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
   const [results, setResults] = useState<Place[]>([]);
@@ -222,7 +225,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div className="space-y-1">
           <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-ink/60 dark:text-parchment/60">
-            State Name
+            {t('common.stateName' as any)}
           </label>
           <select
             value={state}
@@ -235,7 +238,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
               !country && 'opacity-40 cursor-not-allowed',
             )}
           >
-            <option value="" disabled>Select State</option>
+            <option value="" disabled>{t('common.selectState' as any)}</option>
             {stateOptions.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -243,7 +246,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
         </div>
         <div className="space-y-1">
           <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-ink/60 dark:text-parchment/60">
-            Country
+            {t('common.country' as any)}
           </label>
           <select
             value={country}
@@ -254,7 +257,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
               'border-ink/20 dark:border-parchment/20',
             )}
           >
-            <option value="" disabled>Select Country</option>
+            <option value="" disabled>{t('common.selectCountry' as any)}</option>
             {(() => {
               const opts = [...countries];
               if (country && !opts.includes(country)) opts.unshift(country);

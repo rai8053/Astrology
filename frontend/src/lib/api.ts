@@ -1,4 +1,11 @@
 import toast from 'react-hot-toast';
+import { translations } from './i18n/translations';
+
+function apiT(key: string): string {
+  const lang = (() => { try { return JSON.parse(localStorage.getItem('lang') || '"en"'); } catch { return 'en'; } })();
+  const val = (translations as any)[lang]?.[key] || (translations as any).en?.[key];
+  return typeof val === 'string' ? val : key;
+}
 
 const SESSION_EXPIRED_EVENT = 'session-expired';
 
@@ -82,21 +89,26 @@ class ApiClient {
             body: body ? JSON.stringify(body) : undefined,
             credentials: 'include',
           });
-          const retryData = await retryRes.json() as ApiResponse<T>;
+          let retryData: ApiResponse<T>;
+          try {
+            retryData = await retryRes.json() as ApiResponse<T>;
+          } catch {
+            throw new Error(apiT('errors.tokenRefresh'));
+          }
           if (!retryData.success) {
             localStorage.removeItem('accessToken');
             window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
-            throw new Error((retryData as ApiError).error || 'Session expired');
+            throw new Error((retryData as ApiError).error || apiT('errors.sessionExpired'));
           }
           return retryData as ApiSuccess<T>;
         }
         localStorage.removeItem('accessToken');
         window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
-        throw new Error('Session expired');
+        throw new Error(apiT('errors.sessionExpired'));
       }
 
       if (!data.success) {
-        const errMsg = (data as ApiError).error || 'Request failed';
+        const errMsg = (data as ApiError).error || apiT('errors.requestFailed');
         throw new Error(errMsg);
       }
 

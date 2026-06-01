@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from 'react';
+import { type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -9,13 +9,12 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: ReactNode;
 }
 
-export const PremiumButton = forwardRef<HTMLButtonElement, Props>(
-  ({ className, variant = 'primary', size = 'md', loading, icon, children, disabled, ...props }, ref) => (
+export function PremiumButton({ className, variant = 'primary', size = 'md', loading, icon, children, disabled, ...props }: Props) {
+  const isDisabled = disabled || loading;
+  return (
     <motion.button
-      ref={ref}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.97 }}
-      disabled={disabled || loading}
+      type="button"
+      disabled={isDisabled}
       className={cn(
         'relative inline-flex items-center justify-center gap-2 font-sans font-medium overflow-hidden rounded-lg transition-all duration-200',
         variant === 'primary' && 'bg-accent text-white shadow-sm shadow-accent/20 hover:shadow-md hover:shadow-accent/25 hover:bg-accent-hover',
@@ -26,9 +25,10 @@ export const PremiumButton = forwardRef<HTMLButtonElement, Props>(
         size === 'md' && 'px-6 py-2.5 text-[13px]',
         size === 'lg' && 'px-8 py-3 text-sm',
         loading && 'cursor-wait',
-        disabled && 'opacity-50 cursor-not-allowed',
+        isDisabled && 'opacity-50 cursor-not-allowed',
         className,
       )}
+      {...(props as any)}
     >
       {loading && (
         <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
@@ -39,7 +39,5 @@ export const PremiumButton = forwardRef<HTMLButtonElement, Props>(
       {icon && <span className="relative z-[1]">{icon}</span>}
       {children && <span className="relative z-[1]">{children}</span>}
     </motion.button>
-  ),
-);
-
-PremiumButton.displayName = 'PremiumButton';
+  );
+}

@@ -18,6 +18,34 @@ export interface BirthDetails {
   birthPlace: string;
 }
 
+export interface PlanetaryPlacement {
+  planet: string;
+  sign: string;
+  house: number;
+  description: string;
+}
+
+export interface AstroInsight {
+  title: string;
+  content: string;
+  score: number;
+  color: string;
+}
+
+export interface Remedy {
+  type: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface TransitEvent {
+  date: string;
+  title: string;
+  description: string;
+  impact: 'positive' | 'neutral' | 'challenging';
+}
+
 export interface VedicProfile {
   name: string;
   birthDate: string;
@@ -37,12 +65,10 @@ export interface VedicProfile {
   luckyNumber: number;
   luckyColor: string;
   gemstone: string;
-  planetaryPlacements: {
-    planet: string;
-    sign: string;
-    house: number;
-    description: string;
-  }[];
+  planetaryPlacements: PlanetaryPlacement[];
+  insights: AstroInsight[];
+  remedies: Remedy[];
+  transitTimeline: TransitEvent[];
 }
 
 export interface DailyHoroscope {
@@ -85,6 +111,48 @@ export interface CompatibilityResult {
   challenges: string;
   remedy: string;
   detailedAnalysis: string;
+}
+
+export interface AstrologySnapshot {
+  ascendant: string;
+  moonRashi: string;
+  nakshatra: string;
+  nakshatraLord: string;
+  rashiLord: string;
+  element: string;
+  doshaDominance: string;
+}
+
+export interface PersonalHoroscope {
+  moonRashi: string;
+  prediction: string;
+  love: number;
+  career: number;
+  health: number;
+  finance: number;
+  luckyNumber: number;
+  luckyColor: string;
+  dailyAdvice: string;
+}
+
+export interface CosmicEnergy {
+  score: number;
+  level: string;
+  description: string;
+}
+
+export interface TransitAlert {
+  date: string;
+  event: string;
+  description: string;
+  impact: 'positive' | 'neutral' | 'challenging';
+}
+
+export interface PersonalDashboardData {
+  snapshot: AstrologySnapshot;
+  horoscope: PersonalHoroscope;
+  cosmicEnergy: CosmicEnergy;
+  transitAlerts: TransitAlert[];
 }
 
 export interface MoonPhaseInfo {

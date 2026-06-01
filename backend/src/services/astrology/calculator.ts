@@ -1,44 +1,56 @@
-import { RASHI_KEYS, NAKSHATRAS, REF_NEW_MOON, SYNODIC_MONTH } from './constants.js';
+import { calculateEphemeris, getRashiKey, getElement, getDosha, getLord, getTranslation } from './ephemeris.js';
+import { RASHI_DATA as CONST_RASHI_DATA, NAKSHATRA_LORDS as CONST_NAKSHATRA_LORDS } from './constants.js';
 
-export function calculateRashiIndex(dateObj: Date): number {
-  return Math.floor((dateObj.getFullYear() + dateObj.getMonth() * 3 + dateObj.getDate() + dateObj.getHours()) % 12);
+export function calculateRashiIndex(dateStr: string, timeStr: string): number {
+  const eph = calculateEphemeris(dateStr, timeStr);
+  return eph.moon.signIndex;
 }
 
-export function calculateNakshatraIndex(dateObj: Date): number {
-  return Math.floor((dateObj.getFullYear() + dateObj.getDate() * 1.5 + dateObj.getHours() + dateObj.getMinutes()) % 27);
+export function calculateNakshatraIndex(dateStr: string, timeStr: string): number {
+  const eph = calculateEphemeris(dateStr, timeStr);
+  return eph.moon.nakshatraIndex;
 }
 
-export function calculateLagnaIndex(dateObj: Date): number {
-  return Math.floor((dateObj.getHours() + 1) / 2) % 12;
+export function calculateLagnaIndex(dateStr: string, timeStr: string): number {
+  const eph = calculateEphemeris(dateStr, timeStr);
+  return eph.ascendant.signIndex;
 }
 
 export function calculateBirthDetails(dateStr: string, timeStr: string) {
-  const dateObj = new Date(`${dateStr}T${timeStr}:00`);
-  const rashiIndex = calculateRashiIndex(dateObj);
-  const nakshatraIndex = calculateNakshatraIndex(dateObj);
-  const lagnaIndex = calculateLagnaIndex(dateObj);
+  const eph = calculateEphemeris(dateStr, timeStr);
+  const rashiIndex = eph.moon.signIndex;
+  const nakshatraIndex = eph.moon.nakshatraIndex;
+  const lagnaIndex = eph.ascendant.signIndex;
+
+  const rashiKey = getRashiKey(rashiIndex);
+  const lagnaKey = getRashiKey(lagnaIndex);
 
   return {
-    dateObj,
+    dateObj: new Date(`${dateStr}T${timeStr}:00`),
     rashiIndex,
-    rashiKey: RASHI_KEYS[rashiIndex],
+    rashiKey,
     nakshatraIndex,
-    nakshatraName: NAKSHATRAS[nakshatraIndex],
+    nakshatraName: eph.moon.nakshatraName,
     lagnaIndex,
-    lagnaKey: RASHI_KEYS[lagnaIndex],
+    lagnaKey,
+    tithi: eph.tithi,
+    yoga: eph.yoga,
+    karana: eph.karana,
+    ascendant: eph.ascendant,
+    moonNakshatraLord: eph.moonNakshatraLord,
+    lagnaLord: eph.lagnaLord,
   };
 }
 
 export function getMoonPhase(targetDate: Date) {
-  const diffTime = targetDate.getTime() - REF_NEW_MOON.getTime();
-  const diffDays = diffTime / (1000 * 60 * 60 * 24);
-  let age = diffDays % SYNODIC_MONTH;
-  if (age < 0) age += SYNODIC_MONTH;
-
-  const phaseValue = age / SYNODIC_MONTH;
-  const illumination = 50 * (1 - Math.cos(2 * Math.PI * phaseValue));
+  const dateStr = targetDate.toISOString().split('T')[0];
+  const timeStr = '12:00';
+  const eph = calculateEphemeris(dateStr, timeStr);
+  const age = eph.tithi.index * 0.965; // approximate days into lunar cycle
+  const illumination = 50 * (1 - Math.cos(2 * Math.PI * (eph.tithi.index / 30)));
 
   let phaseName = '';
+  const phaseValue = eph.tithi.index / 30;
   if (phaseValue < 0.03 || phaseValue > 0.97) phaseName = 'New Moon (Amavasya)';
   else if (phaseValue >= 0.03 && phaseValue < 0.22) phaseName = 'Waxing Crescent';
   else if (phaseValue >= 0.22 && phaseValue < 0.28) phaseName = 'First Quarter';
@@ -48,23 +60,13 @@ export function getMoonPhase(targetDate: Date) {
   else if (phaseValue >= 0.72 && phaseValue < 0.78) phaseName = 'Third Quarter';
   else phaseName = 'Waning Crescent';
 
-  const tithiNum = Math.floor(phaseValue * 30) + 1;
-  const tithiType = tithiNum <= 15 ? 'Shukla Paksha' as const : 'Krishna Paksha' as const;
-
-  const tithiNames = [
-    'Prathama (Pratipat)', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami',
-    'Shashti', 'Saptami', 'Ashtami', 'Navami', 'Dashami',
-    'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi', 'Purnima',
-    'Prathama (Pratipat)', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami',
-    'Shashti', 'Saptami', 'Ashtami', 'Navami', 'Dashami',
-    'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi', 'Amavasya',
-  ];
-
-  const tithiName = tithiNames[Math.min(29, Math.max(0, tithiNum - 1))] || 'Unknown';
-
-  const daysToPurnima = 14.765 - age < 0 ? 14.765 - age + SYNODIC_MONTH : 14.765 - age;
+  const tithiNum = eph.tithi.index;
+  const SYNODIC_MONTH = 29.53058867;
+  const daysToPurnima = (15 - tithiNum) * 0.965;
+  const daysToAmavasya = tithiNum <= 15
+    ? (30 - tithiNum) * 0.965
+    : (30 - tithiNum + 15) * 0.965;
   const purnimaDate = new Date(targetDate.getTime() + daysToPurnima * 24 * 60 * 60 * 1000);
-  const daysToAmavasya = SYNODIC_MONTH - age < 0 ? SYNODIC_MONTH - age + SYNODIC_MONTH : SYNODIC_MONTH - age;
   const amavasyaDate = new Date(targetDate.getTime() + daysToAmavasya * 24 * 60 * 60 * 1000);
 
   return {
@@ -73,10 +75,13 @@ export function getMoonPhase(targetDate: Date) {
     phaseName,
     phaseValue,
     tithiNum,
-    tithiName,
-    tithiType,
+    tithiName: eph.tithi.name,
+    tithiType: eph.tithi.paksha as 'Shukla Paksha' | 'Krishna Paksha',
     distance: Math.round(356400 + (1 - Math.sin(phaseValue * Math.PI * 2)) * 50000),
     nextPurnima: purnimaDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }),
     nextAmavasya: amavasyaDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }),
   };
 }
+
+export { CONST_RASHI_DATA as RASHI_DATA, CONST_NAKSHATRA_LORDS as NAKSHATRA_LORDS };
+export { getElement, getDosha, getLord, getTranslation, getRashiKey };
