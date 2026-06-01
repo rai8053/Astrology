@@ -225,7 +225,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div className="space-y-1">
           <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-ink/60 dark:text-parchment/60">
-            {t('common.stateName' as any)}
+            {t('common.stateName')}
           </label>
           <select
             value={state}
@@ -238,7 +238,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
               !country && 'opacity-40 cursor-not-allowed',
             )}
           >
-            <option value="" disabled>{t('common.selectState' as any)}</option>
+            <option value="" disabled>{t('common.selectState')}</option>
             {stateOptions.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -246,7 +246,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
         </div>
         <div className="space-y-1">
           <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-ink/60 dark:text-parchment/60">
-            {t('common.country' as any)}
+            {t('common.country')}
           </label>
           <select
             value={country}
@@ -257,7 +257,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
               'border-ink/20 dark:border-parchment/20',
             )}
           >
-            <option value="" disabled>{t('common.selectCountry' as any)}</option>
+            <option value="" disabled>{t('common.selectCountry')}</option>
             {(() => {
               const opts = [...countries];
               if (country && !opts.includes(country)) opts.unshift(country);

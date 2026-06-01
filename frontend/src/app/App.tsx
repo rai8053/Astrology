@@ -1,5 +1,6 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
@@ -37,9 +38,52 @@ const pageVariants = {
   exit: { opacity: 0, y: -8, transition: { duration: 0.25 } },
 };
 
+const pageTitles: Record<string, string> = {
+  '/': 'Home',
+  '/pricing': 'Pricing',
+  '/login': 'Sign In',
+  '/register': 'Create Account',
+  '/about': 'About',
+  '/contact': 'Contact',
+  '/faq': 'FAQ',
+  '/privacy': 'Privacy Policy',
+  '/terms': 'Terms of Service',
+  '/refund': 'Refund Policy',
+  '/dashboard': 'Dashboard',
+  '/dashboard/horoscope': 'Horoscope',
+  '/dashboard/kundli': 'Kundli',
+  '/dashboard/compatibility': 'Compatibility',
+  '/dashboard/moon': 'Moon Phases',
+  '/dashboard/chat': 'AI Astrologer',
+  '/dashboard/settings': 'Settings',
+  '/admin': 'Admin',
+  '/admin/users': 'Users',
+  '/admin/analytics': 'Analytics',
+};
+
+const pageDescriptions: Record<string, string> = {
+  '/': 'AI-powered Vedic astrology platform with personalized birth charts, daily horoscopes, and compatibility analysis.',
+  '/pricing': 'Choose your plan — Free, Pro, Premium, or Enterprise. Unlock AI astrologer chat, detailed birth charts, and more.',
+  '/about': 'Learn about Soma & Surya — where ancient Vedic wisdom meets modern AI technology.',
+  '/faq': 'Frequently asked questions about Vedic astrology, birth charts, compatibility, and our AI-powered platform.',
+  '/dashboard': 'Your personal astrology dashboard with daily horoscopes, cosmic energy score, transit alerts, and more.',
+};
+
 function PageWrap({ children, cosmic = false }: { children: React.ReactNode; cosmic?: boolean }) {
+  const loc = useLocation();
+  const pathKey = Object.keys(pageTitles).find(k => loc.pathname === k || loc.pathname.startsWith(k + '/')) || '/';
+  const title = pageTitles[pathKey] ? `${pageTitles[pathKey]} — Soma & Surya` : 'Soma & Surya — AI-Powered Vedic Astrology';
+  const description = pageDescriptions[pathKey] || 'AI-powered Vedic astrology platform for personalized readings and spiritual guidance.';
   return (
     <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
+      <Helmet>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={`https://somasurya.com${loc.pathname}`} />
+        <link rel="canonical" href={`https://somasurya.com${loc.pathname}`} />
+      </Helmet>
       {cosmic && <CosmicBackground intensity={0.6} interactive />}
       {children}
     </motion.div>
@@ -107,5 +151,9 @@ export default function App() {
     </ErrorBoundary>
   );
 
-  return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>;
+  return (
+    <HelmetProvider>
+      <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>
+    </HelmetProvider>
+  );
 }

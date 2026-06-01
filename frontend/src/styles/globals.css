@@ -169,19 +169,15 @@
 ::-webkit-scrollbar-thumb { @apply bg-accent/20 rounded-full; }
 ::-webkit-scrollbar-thumb:hover { @apply bg-accent/40; }
 
-/* Legacy compatibility — used by dashboard, auth, admin pages */
-.glass-card {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.04);
-}
-.dark .glass-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: none;
-}
+/* RTL Support */
+[dir="rtl"] .glass-nav { border-left: none; border-right: 1px solid var(--border-primary); }
+[dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: 0; margin-left: auto; }
+[dir="rtl"] .left-0 { left: auto; right: 0; }
+[dir="rtl"] .right-0 { right: auto; left: 0; }
+[dir="rtl"] .-translate-x-1\/2 { transform: translateX(50%); }
+[dir="rtl"] .translate-x-1\/2 { transform: translateX(-50%); }
+[dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
 .cosmic-glow {
   box-shadow: 0 0 30px rgba(212, 175, 55, 0.12), 0 0 60px rgba(212, 175, 55, 0.05);
 }

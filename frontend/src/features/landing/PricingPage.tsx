@@ -36,7 +36,7 @@ export function PricingPage() {
     mutationFn: (planId: string) => api.post<{ url: string }>('/api/payments/create-checkout', { plan: planId, currency: user?.country ? undefined : 'USD' }),
     onSuccess: (data) => {
       if (data.data?.url?.startsWith('https://')) window.location.href = data.data.url;
-      else toast.error(t('pricing.invalidUrl' as any));
+       else toast.error(t('pricing.invalidUrl'));
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : t('common.error'));

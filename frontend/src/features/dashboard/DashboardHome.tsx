@@ -20,9 +20,9 @@ import { TransitAlertsCard } from './components/TransitAlerts';
 
 function getGreeting() {
   const h = new Date().getHours();
-  if (h < 12) return { key: 'dashboard.greetingMorning', icon: Sun };
-  if (h < 17) return { key: 'dashboard.greetingAfternoon', icon: Sun };
-  return { key: 'dashboard.greetingEvening', icon: Moon };
+  if (h < 12) return { key: 'dashboard.greetingMorning' as const, icon: Sun };
+  if (h < 17) return { key: 'dashboard.greetingAfternoon' as const, icon: Sun };
+  return { key: 'dashboard.greetingEvening' as const, icon: Moon };
 }
 
 export function DashboardHome() {
@@ -66,7 +66,7 @@ export function DashboardHome() {
           <greeting.icon className="w-6 h-6 text-gold" />
         </motion.div>
         <div>
-          <h1 className="text-3xl md:text-4xl font-serif font-bold">{t(greeting.key as any)}, <span className="text-gradient">{user?.name?.split(' ')[0] ?? t('common.seekerFallback' as any)}</span></h1>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold">{t(greeting.key)}, <span className="text-gradient">{user?.name?.split(' ')[0] ?? t('common.seekerFallback')}</span></h1>
           <p className="text-ink/50 dark:text-parchment/50 mt-1 flex items-center gap-2">
             <span>{t('dashboard.subtitle')}</span>
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
@@ -87,7 +87,7 @@ export function DashboardHome() {
           </p>
           {dashError.includes('Birth details') && (
             <Link to="/dashboard/settings" className="text-xs text-gold hover:underline mt-2 inline-block">
-              {t('dashboard.updateProfile' as any)}
+              {t('dashboard.updateProfile')}
             </Link>
           )}
         </PremiumCard>
@@ -115,18 +115,18 @@ export function DashboardHome() {
                 <div className="grid grid-cols-3 gap-2">
                   <div className="p-3 rounded-lg bg-ink/[0.02] dark:bg-white/[0.02] text-center">
                     <Hash className="w-4 h-4 text-gold/60 mx-auto mb-1" />
-                    <p className="text-[9px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyNumber')}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyNumber')}</p>
                     <p className="text-lg font-bold font-serif text-gold">{dashData.horoscope.luckyNumber}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-ink/[0.02] dark:bg-white/[0.02] text-center">
                     <Palette className="w-4 h-4 text-gold/60 mx-auto mb-1" />
-                    <p className="text-[9px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyColor')}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyColor')}</p>
                     <p className="text-xs font-bold font-serif text-gold truncate">{dashData.horoscope.luckyColor.split('/')[0]?.trim()}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-ink/[0.02] dark:bg-white/[0.02] text-center">
                     <Gem className="w-4 h-4 text-gold/60 mx-auto mb-1" />
-                    <p className="text-[9px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyGemstone')}</p>
-                    <p className="text-xs font-bold font-serif text-gold truncate">{dashData?.snapshot?.element === 'Fire' ? t('dashboard.gemstoneRuby' as any) : dashData?.snapshot?.element === 'Water' ? t('dashboard.gemstonePearl' as any) : dashData?.snapshot?.element === 'Air' ? t('dashboard.gemstoneEmerald' as any) : t('dashboard.gemstoneSapphire' as any)}</p>
+                    <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyGemstone')}</p>
+                    <p className="text-xs font-bold font-serif text-gold truncate">{dashData?.snapshot?.element === 'Fire' ? t('dashboard.gemstoneRuby') : dashData?.snapshot?.element === 'Water' ? t('dashboard.gemstonePearl') : dashData?.snapshot?.element === 'Air' ? t('dashboard.gemstoneEmerald') : t('dashboard.gemstoneSapphire')}</p>
                   </div>
                 </div>
               </PremiumCard>
@@ -153,7 +153,7 @@ export function DashboardHome() {
                   {streak.currentStreak}
                 </motion.div>
                 <div>
-                  <p className="text-xs text-ink/60 dark:text-parchment/60 leading-snug">{streak.currentStreak === 0 ? t('dashboard.streakStart') : `${streak.currentStreak === 1 ? t('dashboard.streakDays') : t('dashboard.streakConsecutive')} ${t('dashboard.ofCosmicConnection' as any)}`}</p>
+                  <p className="text-xs text-ink/60 dark:text-parchment/60 leading-snug">{streak.currentStreak === 0 ? t('dashboard.streakStart') : `${streak.currentStreak === 1 ? t('dashboard.streakDays') : t('dashboard.streakConsecutive')} ${t('dashboard.ofCosmicConnection')}`}</p>
                   <p className="text-[9px] text-ink/40 dark:text-parchment/40 mt-0.5">{t('dashboard.streakBest')} {streak.longestStreak} {t('dashboard.streakDays')}</p>
                 </div>
               </div>
@@ -170,7 +170,7 @@ export function DashboardHome() {
             { label: t('dashboard.statReports'), value: analytics?.data?.reportsGenerated ?? 0, icon: Sparkles, color: 'text-gold' },
             { label: t('dashboard.statChatSessions'), value: analytics?.data?.chatSessions ?? 0, icon: MessageCircle, color: 'text-blue-400' },
             { label: t('dashboard.statActivePlan'), value: sub?.data?.plan ?? 'Free', icon: Zap, color: 'text-purple-400', isString: true },
-            { label: t('dashboard.statWeeklyScore'), value: dashData?.cosmicEnergy?.score ?? 0, icon: BarChart3, color: 'text-emerald-400', suffix: t('common.of100' as any) },
+            { label: t('dashboard.statWeeklyScore'), value: dashData?.cosmicEnergy?.score ?? 0, icon: BarChart3, color: 'text-emerald-400', suffix: t('common.of100') },
           ].map((stat, i) => (
             <motion.div key={i} variants={staggerItem}>
               <PremiumCard glass>

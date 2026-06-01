@@ -52,7 +52,7 @@ export function CosmicEnergyCard({ data, isLoading }: { data?: CosmicEnergy | nu
           >
             {data.score}
           </motion.span>
-          <span className="text-xs text-ink/40 dark:text-parchment/40 ml-1">{t('common.of100' as any)}</span>
+          <span className="text-xs text-ink/40 dark:text-parchment/40 ml-1">{t('common.of100')}</span>
         </div>
         <span className={`text-[10px] uppercase tracking-wider font-sans font-bold ${lc.text}`}>{levelLabels[data.level] || data.level}</span>
       </div>

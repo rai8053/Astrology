@@ -294,7 +294,7 @@ export function KundliPage() {
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-serif font-bold bg-gradient-to-r from-gold to-amber-400 bg-clip-text text-transparent">{t('kundli.title')}</h1>
-            <p className="text-ink/50 dark:text-parchment/50 mt-0.5 text-sm">{t('kundli.subtitle' as any)}</p>
+            <p className="text-ink/50 dark:text-parchment/50 mt-0.5 text-sm">{t('kundli.subtitle')}</p>
           </div>
         </div>
         {profile && (

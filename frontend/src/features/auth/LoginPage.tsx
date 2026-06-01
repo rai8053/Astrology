@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GoogleLogin } from '@react-oauth/google';
 import { PremiumButton } from '@/components/PremiumButton';
@@ -13,6 +13,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login, loginWithGoogle, isAuthenticated } = useAuthStore();
   const { t } = useT();
   const navigate = useNavigate();
@@ -22,10 +23,13 @@ export function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch { /* handled by API client */ } finally { setLoading(false); }
+    } catch (err: any) {
+      setError(err?.message || t('auth.loginFailed'));
+    } finally { setLoading(false); }
   };
 
   return (
@@ -52,6 +56,11 @@ export function LoginPage() {
           <h1 className="font-serif text-3xl font-bold mb-1">{t('auth.welcomeBack')}</h1>
           <p className="text-sm text-ink/50 dark:text-parchment/50 mb-7">{t('auth.signInSubtitle')}</p>
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <p className="text-xs text-red-500 flex items-center gap-1.5 bg-red-500/10 p-3 rounded-lg">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {error}
+              </p>
+            )}
             <Input id="email" label={t('auth.email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={t('auth.emailPlaceholder')} />
             <Input id="password" label={t('auth.password')} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
             <PremiumButton type="submit" loading={loading} icon={<ArrowRight className="w-4 h-4" />} className="w-full">

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="50%" stop-color="#1a0b3a"/>
+      <stop offset="100%" stop-color="#0d0620"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#f0d060"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="400" cy="315" r="120" fill="#d4af37" opacity="0.15"/>
+  <circle cx="650" cy="280" r="80" fill="#d4af37" opacity="0.08"/>
+  <text x="600" y="260" font-family="serif" font-size="72" fill="url(#gold)" text-anchor="middle" font-weight="bold">Soma &amp; Surya</text>
+  <text x="600" y="320" font-family="sans-serif" font-size="28" fill="#d4af37" opacity="0.8" text-anchor="middle" letter-spacing="4">AI-POWERED VEDIC ASTROLOGY</text>
+  <text x="600" y="380" font-family="sans-serif" font-size="18" fill="#8b8b8d" text-anchor="middle">Personalized Birth Charts · Daily Horoscopes · Compatibility</text>
+  <circle cx="200" cy="150" r="6" fill="#d4af37" opacity="0.3"/>
+  <circle cx="950" cy="120" r="4" fill="#d4af37" opacity="0.2"/>
+  <circle cx="100" cy="500" r="5" fill="#d4af37" opacity="0.25"/>
+  <circle cx="1050" cy="520" r="7" fill="#d4af37" opacity="0.15"/>
+  <circle cx="700" cy="480" r="3" fill="#d4af37" opacity="0.2"/>
+  <circle cx="350" cy="100" r="4" fill="#d4af37" opacity="0.15"/>
+</svg>

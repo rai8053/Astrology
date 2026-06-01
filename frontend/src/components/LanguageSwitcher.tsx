@@ -1,8 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18nStore } from '@/lib/i18n/store';
 import type { Language } from '@/lib/i18n/translations';
+
+const FLAGS: Record<Language, string> = {
+  en: '🇬🇧', hi: '🇮🇳', bn: '🇧🇩', es: '🇪🇸', pt: '🇵🇹',
+  fr: '🇫🇷', de: '🇩🇪', ar: '🇸🇦', ja: '🇯🇵', zh: '🇨🇳',
+};
 
 const LANGUAGES: { code: Language; name: string; native: string }[] = [
   { code: 'en', name: 'English', native: 'English' },
@@ -38,8 +42,8 @@ export function LanguageSwitcher() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-ink/60 dark:text-parchment/60 hover:text-ink dark:hover:text-parchment hover:bg-ink/5 dark:hover:bg-white/[0.05] transition-all"
       >
-        <Globe className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">{current.native}</span>
+        <span className="text-sm">{FLAGS[language]}</span>
+        <span className="hidden sm:inline font-medium">{language.toUpperCase()}</span>
       </button>
       <AnimatePresence>
         {open && (
@@ -47,7 +51,7 @@ export function LanguageSwitcher() {
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-cosmic border border-ink/10 dark:border-white/[0.08] shadow-xl z-50 max-h-64 overflow-y-auto"
+            className="absolute right-0 mt-1 w-44 rounded-xl bg-white dark:bg-cosmic border border-ink/10 dark:border-white/[0.08] shadow-xl z-50 max-h-64 overflow-y-auto"
           >
             {LANGUAGES.map((l) => (
               <button
@@ -59,9 +63,9 @@ export function LanguageSwitcher() {
                     : 'text-ink/70 dark:text-parchment/70 hover:bg-ink/5 dark:hover:bg-white/[0.05]'
                 }`}
               >
-                <span className="text-xs opacity-60 w-5">{l.native.charAt(0)}</span>
+                <span className="text-base">{FLAGS[l.code]}</span>
                 <span>{l.native}</span>
-                <span className="ml-auto text-[10px] text-ink/30">{l.name}</span>
+                <span className="ml-auto text-[10px] text-ink/30 uppercase">{l.code}</span>
               </button>
             ))}
           </motion.div>

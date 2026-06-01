@@ -68,7 +68,7 @@ export type TranslationKey =
   | 'kundli.ascendantLabel' | 'kundli.nakshatraLabel'
   | 'kundli.nakshatraLordLabel' | 'kundli.elementLabel'
   | 'kundli.dosha' | 'kundli.luckyNum' | 'kundli.infoText'
-  | 'kundli.emptyTitle' | 'kundli.emptyDesc'
+  | 'kundli.subtitle' | 'kundli.emptyTitle' | 'kundli.emptyDesc'
   | 'kundli.nameRequired' | 'kundli.dateRequired' | 'kundli.timeRequired'
   | 'kundli.placeRequired'
   | 'compatibility.title' | 'compatibility.partnerA' | 'compatibility.partnerB'
@@ -202,7 +202,16 @@ export type TranslationKey =
   | 'report.luckyGemstone' | 'report.upcomingTransits' | 'report.transitsDesc'
   | 'report.positive' | 'report.challenging' | 'report.elementFire'
   | 'report.elementEarth' | 'report.elementAir' | 'report.elementWater'
-  | 'report.introParagraph';
+  | 'report.introParagraph'
+  | 'common.seekerFallback' | 'common.of100'
+  | 'dashboard.ofCosmicConnection'
+  | 'common.stateName' | 'common.selectState' | 'common.country' | 'common.selectCountry'
+  | 'dashboard.gemstoneRuby' | 'dashboard.gemstonePearl' | 'dashboard.gemstoneEmerald' | 'dashboard.gemstoneSapphire'
+  | 'dashboard.updateProfile'
+  | 'settings.light' | 'settings.dark' | 'settings.system' | 'settings.mode'
+  | 'settings.placeExample'
+  | 'pricing.invalidUrl'
+  | 'auth.loginFailed';
 const hi: Record<string, string> = {
   'nav.home': '???', 'nav.dashboard': '????????', 'nav.horoscope': '??????',
   'nav.kundli': '??????', 'nav.compatibility': '????????', 'nav.chat': '???',
@@ -1477,6 +1486,7 @@ const en: Record<string, string> = {
   'kundli.dosha': 'Dosha',
   'kundli.luckyNum': 'Lucky #',
   'kundli.infoText': 'Lucky Color: {color} | Gemstone: {gemstone}',
+  'kundli.subtitle': 'Generate your detailed Vedic birth chart',
   'kundli.emptyTitle': 'Enter your birth details',
   'kundli.emptyDesc': 'Uncover your complete Vedic astrological profile',
   'kundli.nameRequired': 'Name is required',
@@ -1761,6 +1771,25 @@ const en: Record<string, string> = {
   'report.elementAir': 'intellect, communication, and adaptability. Your sharp mind and social grace open doors wherever you go.',
   'report.elementWater': 'intuition, emotional depth, and creative vision. Your empathetic soul sees what others miss.',
   'report.introParagraph': 'This comprehensive birth chart report reveals the celestial blueprint imprinted at the moment of your birth. Based on the sidereal (Lahiri) system of Vedic astrology, your chart reflects the precise positions of the planets, the Moon\'s Nakshatra, and the rising sign (Lagna) that shape your life\'s journey.',
+  'common.seekerFallback': 'Seeker',
+  'common.of100': '/100',
+  'dashboard.ofCosmicConnection': 'of cosmic connection',
+  'common.stateName': 'State',
+  'common.selectState': 'Select state',
+  'common.country': 'Country',
+  'common.selectCountry': 'Select country',
+  'dashboard.gemstoneRuby': 'Ruby',
+  'dashboard.gemstonePearl': 'Pearl',
+  'dashboard.gemstoneEmerald': 'Emerald',
+  'dashboard.gemstoneSapphire': 'Sapphire',
+  'dashboard.updateProfile': 'Update Profile',
+  'settings.light': 'Light',
+  'settings.dark': 'Dark',
+  'settings.system': 'System',
+  'settings.mode': 'Mode',
+  'settings.placeExample': 'e.g., Mumbai, India',
+  'pricing.invalidUrl': 'Invalid checkout URL',
+  'auth.loginFailed': 'Login failed. Please check your credentials.',
 };
 const pt: Record<string, string> = {
   'nav.home': 'Inï¿½cio', 'nav.dashboard': 'Painel', 'nav.horoscope': 'Horï¿½scopo',

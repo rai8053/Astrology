@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/Input';
 import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumButton } from '@/components/PremiumButton';
 import { useAuthStore, useThemeStore } from '@/lib/store';
+import { useI18nStore } from '@/lib/i18n/store';
+import type { Language } from '@/lib/i18n/translations';
 import { useT } from '@/lib/i18n/useT';
 import toast from 'react-hot-toast';
 
@@ -68,6 +70,7 @@ export function SettingsPage() {
   const { t } = useT();
   const { user, setUser } = useAuthStore();
   const { theme, setTheme } = useThemeStore();
+  const { language, setLanguage } = useI18nStore();
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
@@ -205,7 +208,7 @@ export function SettingsPage() {
               <Input label={t('onboarding.dob')} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
               <div className="grid grid-cols-2 gap-4">
                 <Input label={t('onboarding.birthTime')} type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
-                <BirthPlaceInput label={t('onboarding.birthPlace')} value={birthPlace} onChange={(v) => setBirthPlace(v)} placeholder={t('settings.placeExample' as any)} state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
+                <BirthPlaceInput label={t('onboarding.birthPlace')} value={birthPlace} onChange={(v) => setBirthPlace(v)} placeholder={t('settings.placeExample')} state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
               </div>
               <PremiumButton
                 onClick={handleSave}
@@ -263,6 +266,38 @@ export function SettingsPage() {
                   <span className="text-xs capitalize font-medium">{themeOption === 'light' ? t('settings.themeLight') : themeOption === 'dark' ? t('settings.themeDark') : t('settings.themeSystem')}</span>
                 </motion.button>
               ))}
+            </div>
+          </PremiumCard>
+
+          <PremiumCard glass>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                <Globe className="w-4 h-4 text-gold" />
+              </div>
+              <h3 className="font-serif text-lg font-semibold">{t('settings.language')}</h3>
+            </div>
+            <div className="relative">
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+                className="w-full bg-transparent border border-ink/20 dark:border-white/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-gold transition-colors appearance-none cursor-pointer"
+              >
+                {[
+                  { code: 'en' as Language, label: '🇬🇧 English' },
+                  { code: 'hi' as Language, label: '🇮🇳 हिन्दी' },
+                  { code: 'bn' as Language, label: '🇧🇩 বাংলা' },
+                  { code: 'es' as Language, label: '🇪🇸 Español' },
+                  { code: 'pt' as Language, label: '🇵🇹 Português' },
+                  { code: 'fr' as Language, label: '🇫🇷 Français' },
+                  { code: 'de' as Language, label: '🇩🇪 Deutsch' },
+                  { code: 'ar' as Language, label: '🇸🇦 العربية' },
+                  { code: 'ja' as Language, label: '🇯🇵 日本語' },
+                  { code: 'zh' as Language, label: '🇨🇳 中文' },
+                ].map((opt) => (
+                  <option key={opt.code} value={opt.code}>{opt.label}</option>
+                ))}
+              </select>
+              <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40 dark:text-parchment/40 pointer-events-none" />
             </div>
           </PremiumCard>
 

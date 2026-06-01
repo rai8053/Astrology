@@ -20,7 +20,7 @@ function ThemeToggle({ className }: { className?: string }) {
       onClick={() => setTheme(next)}
       className={cn('p-2 hover:bg-ink/5 dark:hover:bg-white/5 rounded-full transition-colors relative', className)}
       aria-label={`Theme: ${t}. Click for ${next}.`}
-      title={`${t === 'light' ? trans('settings.light' as any) : t === 'dark' ? trans('settings.dark' as any) : trans('settings.system' as any)}${trans('settings.mode' as any)}`}
+      title={`${t === 'light' ? trans('settings.light') : t === 'dark' ? trans('settings.dark') : trans('settings.system')} ${trans('settings.mode')}`}
     >
       {t === 'dark' ? <Sun className="w-4 h-4" /> : t === 'light' ? <Moon className="w-4 h-4" /> : (
         <span className="text-[10px] font-bold font-mono w-4 h-4 flex items-center justify-center">A</span>
@@ -54,19 +54,26 @@ export function DashboardLayout() {
 
   const adminItems = [
     { path: '/admin', icon: BarChart3, label: t('nav.admin') },
-    { path: '/admin/users', icon: Users, label: t('nav.users' as any) },
-    { path: '/admin/analytics', icon: BarChart3, label: t('nav.analytics' as any) },
+    { path: '/admin/users', icon: Users, label: t('admin.users') },
+    { path: '/admin/analytics', icon: BarChart3, label: t('admin.analytics') },
   ];
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   const isActive = (path: string) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setUserMenuOpen(false); setSidebarOpen(false); }
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
   }, []);
 
   useEffect(() => {
@@ -106,6 +113,7 @@ export function DashboardLayout() {
                   <Link
                     key={item.path}
                     to={item.path}
+                    aria-current={isActive(item.path) ? 'page' : undefined}
                     className={cn(
                       'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-medium transition-all',
                       isActive(item.path)
@@ -201,7 +209,7 @@ export function DashboardLayout() {
                 whileTap={{ scale: 0.9 }}
                 className="lg:hidden p-2 -mr-2"
                 onClick={() => setSidebarOpen(true)}
-                aria-label={t('nav.menu' as any)}
+                aria-label={t('nav.menu')}
               >
                 <Menu className="w-5 h-5" />
               </motion.button>
@@ -247,6 +255,7 @@ export function DashboardLayout() {
               <Link
                 key={item.path}
                 to={item.path}
+                aria-current={active ? 'page' : undefined}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-sans transition-all duration-200',
