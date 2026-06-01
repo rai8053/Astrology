@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { useT } from '@/lib/i18n/useT';
-import indianPlaces from '@/data/indian-places.json';
 import countryStates from '@/data/country-states.json';
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
