@@ -1,7 +1,7 @@
 name: CI
 
 env:
-  NODE_VERSION: 22
+  NODE_VERSION: 20
 
 on:
   push:
