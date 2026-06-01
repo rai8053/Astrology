@@ -8,7 +8,7 @@ echo ============================================
 echo.
 
 REM ---- STEP 1: Dependencies ----
-echo [1/5] Checking dependencies...
+echo [1/4] Checking dependencies...
 if not exist "%~dp0node_modules" (
     echo   node_modules not found. Running npm install...
     call npm install
@@ -24,37 +24,27 @@ echo   OK
 echo.
 
 REM ---- STEP 2: Kill old servers ----
-echo [2/5] Stopping old servers on ports 4000 and 5173...
-powershell -NoProfile -Command "netstat -aon | Select-String ':4000' | Select-String 'LISTENING' | ForEach-Object { $i = ($_ -split '\s+')[-1]; Write-Host ('  Killing PID ' + $i + ' on port 4000'); Stop-Process -Id $i -Force -ErrorAction SilentlyContinue }"
-powershell -NoProfile -Command "netstat -aon | Select-String ':5173' | Select-String 'LISTENING' | ForEach-Object { $i = ($_ -split '\s+')[-1]; Write-Host ('  Killing PID ' + $i + ' on port 5173'); Stop-Process -Id $i -Force -ErrorAction SilentlyContinue }"
+echo [2/4] Stopping old servers on ports 4000 and 5173...
+powershell -NoProfile -Command "netstat -aon | Select-String ':4000' | Select-String 'LISTENING' | ForEach-Object { $i = ($_ -split '\s+')[-1]; Stop-Process -Id $i -Force -ErrorAction SilentlyContinue }" >nul 2>&1
+powershell -NoProfile -Command "netstat -aon | Select-String ':5173' | Select-String 'LISTENING' | ForEach-Object { $i = ($_ -split '\s+')[-1]; Stop-Process -Id $i -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 ping -n 2 127.0.0.1 >nul
 echo   OK
 echo.
 
 REM ---- STEP 3: Prisma Client ----
-echo [3/5] Generating Prisma Client...
+echo [3/4] Generating Prisma Client...
 cd /d "%~dp0backend"
 call npx prisma generate
 if errorlevel 1 (
     echo   Retrying prisma generate in 2s...
     ping -n 3 127.0.0.1 >nul
     call npx prisma generate
-    if errorlevel 1 (
-        echo   WARNING: prisma generate failed. Check your database connection.
-    )
 )
 echo   OK
 echo.
 
-REM ---- STEP 4: Database check ----
-echo [4/5] Checking database connectivity...
-cd /d "%~dp0backend"
-call npx prisma db push --accept-data-loss --skip-generate 2>nul
-echo   OK
-echo.
-
-REM ---- STEP 5: Start both servers ----
-echo [5/5] Starting development servers...
+REM ---- STEP 4: Start both servers ----
+echo [4/4] Starting development servers...
 cd /d "%~dp0"
 echo.
 echo ============================================
