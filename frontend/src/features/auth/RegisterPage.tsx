@@ -10,7 +10,7 @@ import { useT } from '@/lib/i18n/useT';
 import { fetchGoogleClientId } from '@/lib/google';
 import toast from 'react-hot-toast';
 
-function calcStrength(password: string, t: (...args: any[]) => string): { score: number; label: string; color: string; width: string } {
+function calcStrength(password: string, t: any): { score: number; label: string; color: string; width: string } {
   let score = 0;
   if (password.length >= 8) score += 25;
   if (password.length >= 12) score += 10;

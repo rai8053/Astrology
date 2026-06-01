@@ -5,7 +5,7 @@ import { AppError } from '../lib/errors.js';
 function isTrialActive(sub: { plan: string; status: string; trialEnd: Date | null }): boolean {
   if (sub.plan !== 'FREE') return true;
   if (sub.status === 'ACTIVE') return true;
-  if (sub.status === 'TRIALING' && sub.trialEnd && sub.trialEnd > new Date()) return true;
+  if (sub.status === 'TRIALING') return sub.trialEnd !== null && sub.trialEnd > new Date();
   return false;
 }
 

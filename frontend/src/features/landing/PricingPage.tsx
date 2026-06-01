@@ -28,7 +28,7 @@ export function PricingPage() {
 
   const { data: plansData } = useQuery({
     queryKey: ['plans-page', user?.country],
-    queryFn: () => api.get<any[]>('/api/payments/plans' + (user?.country ? `?country=${encodeURIComponent(user.country)}` : '')),
+    queryFn: () => api.get<{ id: string; name: string; price: number; currency: string; interval: string; features: string[]; highlighted: boolean; displayPrice: number }[]>('/api/payments/plans' + (user?.country ? `?country=${encodeURIComponent(user.country)}` : '')),
     staleTime: 300000,
   });
 

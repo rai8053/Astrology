@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
+type Language = 'en' | 'hi' | 'bn' | 'es' | 'pt' | 'fr' | 'de' | 'ar' | 'ja' | 'zh';
+
 import { translations } from '@/lib/i18n/translations';
 import type { PersonalDashboardData } from '@shared/types/api';
 
 function ts(key: string): string {
-  const lang = typeof window !== 'undefined' ? (() => { try { return JSON.parse(localStorage.getItem('lang') || '"en"'); } catch { return 'en'; } })() : 'en';
-  return ((translations as any)[lang]?.[key] || (translations as any).en?.[key]) as string || key;
+  let lang: Language = 'en';
+  if (typeof window !== 'undefined') {
+    try { const raw = localStorage.getItem('lang'); if (raw) lang = JSON.parse(raw) as Language; } catch { /* fall back */ }
+  }
+  return translations[lang]?.[key] || translations.en?.[key] || key;
 }
 
 type Period = 'today' | 'tomorrow' | 'week' | 'month';

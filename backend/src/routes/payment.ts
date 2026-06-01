@@ -34,8 +34,9 @@ function convertPrice(priceUSD: number, currency: string): number {
   return currency === 'JPY' ? Math.round(converted) : Math.round(converted * 100) / 100;
 }
 
-paymentRouter.get('/plans', (_req, res) => {
-  const currency = getCurrencyForCountry(_req.query.country as string);
+paymentRouter.get('/plans', (req, res) => {
+  const country = typeof req.query.country === 'string' ? req.query.country.slice(0, 100) : undefined;
+  const currency = getCurrencyForCountry(country);
   const basePlans = [
     { id: 'FREE', name: 'Free', price: 0, currency, interval: 'month', features: ['Daily horoscope', 'Basic birth chart', 'Moon phase tracker'], highlighted: false },
     { id: 'PRO', name: 'Pro', price: 9.99, currency, interval: 'month', features: ['Everything in Free', 'AI chat astrologer', 'Compatibility analysis', 'Detailed birth chart', 'Weekly predictions'], highlighted: true },
@@ -100,17 +101,17 @@ paymentRouter.post('/create-portal', authenticate, asyncHandler(async (req, res)
 }));
 
 paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
-  if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
+  if (!stripe) return res.status(503).json({ success: false, error: 'Stripe not configured' });
 
   const sig = req.headers['stripe-signature'] as string;
   const rawBody = req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body));
-  if (!rawBody || rawBody.length === 0) return res.status(400).json({ error: 'Raw body required for webhook verification' });
+  if (!rawBody || rawBody.length === 0) return res.status(400).json({ success: false, error: 'Raw body required for webhook verification' });
 
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET || '');
   } catch {
-    return res.status(400).json({ error: 'Invalid webhook signature' });
+    return res.status(400).json({ success: false, error: 'Invalid webhook signature' });
   }
 
   try {
@@ -119,11 +120,13 @@ paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.userId;
         const plan = session.metadata?.plan as string;
-        if (userId && plan) {
+        const validPlans = ['PRO', 'PREMIUM', 'ENTERPRISE'] as const;
+        if (userId && plan && validPlans.includes(plan as typeof validPlans[number])) {
+          const validatedPlan = plan as 'PRO' | 'PREMIUM' | 'ENTERPRISE';
           await prisma.subscription.update({
             where: { userId },
             data: {
-              plan: plan as 'PRO' | 'PREMIUM' | 'ENTERPRISE',
+              plan: validatedPlan,
               status: 'ACTIVE',
               stripeSubscriptionId: session.subscription as string,
               currentPeriodStart: new Date(),
@@ -132,7 +135,7 @@ paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
             },
           });
           const roleMap: Record<string, 'USER' | 'PREMIUM'> = { PRO: 'USER', PREMIUM: 'PREMIUM', ENTERPRISE: 'PREMIUM' };
-          await prisma.user.update({ where: { id: userId }, data: { role: roleMap[plan] || 'PREMIUM' } });
+          await prisma.user.update({ where: { id: userId }, data: { role: roleMap[validatedPlan] || 'PREMIUM' } });
         }
         break;
       }
@@ -149,6 +152,6 @@ paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
     res.json({ received: true });
   } catch (error) {
     logger.error({ error }, 'Webhook handling failed');
-    res.status(500).json({ error: 'Webhook handling failed' });
+    res.status(500).json({ success: false, error: 'Webhook handling failed' });
   }
 }));

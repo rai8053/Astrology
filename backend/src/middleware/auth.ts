@@ -11,7 +11,13 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+const JWT_SECRET = (() => {
+  if (!process.env.JWT_SECRET) {
+    if (process.env.NODE_ENV === 'production') throw new Error('JWT_SECRET is required in production');
+    return 'dev-secret-change-in-production';
+  }
+  return process.env.JWT_SECRET;
+})();
 
 export function authenticate(req: Request, _res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
@@ -19,6 +25,7 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
     throw new UnauthorizedError('No token provided');
   }
   const token = authHeader.slice(7);
+  if (!token) throw new UnauthorizedError('No token provided');
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
     req.user = decoded;

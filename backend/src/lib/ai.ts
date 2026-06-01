@@ -181,8 +181,8 @@ export async function generateStructuredJSON<T>(prompt: string, systemInstructio
     const extracted = extractJSON(response.text || '{}');
     return JSON.parse(extracted) as T;
   } catch (error) {
-    logger.error({ error }, 'Structured AI generation failed — returning empty result');
-    return {} as T;
+    logger.error({ error }, 'Structured AI generation failed');
+    throw error;
   } finally {
     clearTimeout(timeout);
   }

@@ -147,6 +147,7 @@ export function Navbar() {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-accent/5 transition-colors"
+                    aria-label={user?.name || (t as any)('nav.userMenu')}
                   >
                     <div className="w-7 h-7 rounded-md bg-accent/10 flex items-center justify-center text-[11px] font-semibold text-accent">
                       {initials}

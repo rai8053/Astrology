@@ -17,7 +17,7 @@ interface PartnerErrors {
   birthPlace?: string;
 }
 
-function validatePartner(name: string, date: string, time: string, place: string, t: (...args: any[]) => string): PartnerErrors {
+function validatePartner(name: string, date: string, time: string, place: string, t: any): PartnerErrors {
   const errs: PartnerErrors = {};
   if (!name.trim()) errs.name = t('compatibility.nameRequired');
   if (!date) errs.birthDate = t('compatibility.dateRequired');

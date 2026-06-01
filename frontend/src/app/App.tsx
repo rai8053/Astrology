@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
 import { brand } from '@/config/brand';
+import { easeOut } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CosmicBackground } from '@/components/CosmicBackground';
@@ -34,7 +35,6 @@ const TermsPage = lazy(() => import('@/pages/TermsPage').then(m => ({ default: m
 const RefundPage = lazy(() => import('@/pages/RefundPage').then(m => ({ default: m.RefundPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
-const easeOut = [0.25, 0.1, 0.25, 1] as const;
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: easeOut } },
@@ -67,14 +67,31 @@ const pageTitles: Record<string, string> = {
 const pageDescriptions: Record<string, string> = {
   '/': 'AI-powered Vedic astrology platform with personalized birth charts, daily horoscopes, and compatibility analysis.',
   '/pricing': 'Choose your plan — Free, Pro, Premium, or Enterprise. Unlock AI astrologer chat, detailed birth charts, and more.',
+  '/login': 'Sign in to your Soma & Surya account to access your personalized Vedic astrology dashboard.',
+  '/register': 'Create your Soma & Surya account and discover your Vedic birth chart, daily horoscope, and more.',
   '/about': 'Learn about Soma & Surya — where ancient Vedic wisdom meets modern AI technology.',
+  '/contact': 'Get in touch with the Soma & Surya team. We\'d love to hear from you.',
   '/faq': 'Frequently asked questions about Vedic astrology, birth charts, compatibility, and our AI-powered platform.',
+  '/privacy': 'Soma & Surya Privacy Policy — how we protect and handle your personal data.',
+  '/terms': 'Soma & Surya Terms of Service — the rules and guidelines for using our platform.',
+  '/refund': 'Soma & Surya Refund Policy — our cancellation and refund terms for paid plans.',
   '/dashboard': 'Your personal astrology dashboard with daily horoscopes, cosmic energy score, transit alerts, and more.',
+  '/dashboard/horoscope': 'Your daily, weekly, and monthly Vedic horoscope with personalized planetary insights.',
+  '/dashboard/kundli': 'Your detailed Vedic birth chart (Kundli) with rashi, nakshatra, and planetary positions.',
+  '/dashboard/compatibility': 'Vedic compatibility analysis — compare two birth charts for relationship matching.',
+  '/dashboard/moon': 'Track moon phases, tithi, and nakshatra for optimal timing of spiritual activities.',
+  '/dashboard/chat': 'Chat with an AI Vedic astrologer for personalized spiritual guidance and answers.',
+  '/dashboard/settings': 'Manage your Soma & Surya account settings, language, and preferences.',
+  '/admin': 'Soma & Surya admin dashboard — manage users, reports, and platform analytics.',
+  '/admin/users': 'Admin user management — view and manage platform users.',
+  '/admin/analytics': 'Admin analytics dashboard with platform usage metrics and reports.',
 };
 
 function PageWrap({ children, cosmic = false }: { children: React.ReactNode; cosmic?: boolean }) {
   const loc = useLocation();
-  const pathKey = Object.keys(pageTitles).find(k => loc.pathname === k || loc.pathname.startsWith(k + '/')) || '/';
+  const pathKey = Object.keys(pageTitles)
+    .filter(k => loc.pathname === k || loc.pathname.startsWith(k + '/'))
+    .sort((a, b) => b.length - a.length)[0] || '/';
   const title = pageTitles[pathKey] ? `${pageTitles[pathKey]} — ${brand.name}` : brand.meta.title;
   const description = pageDescriptions[pathKey] || brand.meta.description;
   return (

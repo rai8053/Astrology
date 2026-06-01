@@ -7,7 +7,9 @@ import { prisma } from '../lib/prisma.js';
 
 export const adminRouter = Router();
 
-adminRouter.use(authenticate, requireRole('ADMIN', 'SUPER_ADMIN'));
+const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN'] as const;
+
+adminRouter.use(authenticate, requireRole(...ADMIN_ROLES));
 
 adminRouter.get('/users', asyncHandler(async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);

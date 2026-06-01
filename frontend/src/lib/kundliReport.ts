@@ -1,12 +1,14 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import type { VedicProfile } from '@shared/types/api';
+type Language = 'en' | 'hi' | 'bn' | 'es' | 'pt' | 'fr' | 'de' | 'ar' | 'ja' | 'zh';
+
 import { translations } from './i18n/translations';
 
 function t(key: string): string {
-  let lang = 'en';
-  try { lang = JSON.parse(localStorage.getItem('lang') || '"en"'); } catch {}
-  const val = (translations as any)[lang]?.[key] || (translations as any).en?.[key];
+  let lang: Language = 'en';
+  try { const raw = localStorage.getItem('lang'); if (raw) lang = JSON.parse(raw) as Language; } catch { /* fall back */ }
+  const val = translations[lang]?.[key] || translations.en?.[key];
   return typeof val === 'string' ? val : key;
 }
 

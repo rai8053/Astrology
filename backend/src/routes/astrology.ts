@@ -199,9 +199,16 @@ function buildFallbackProfile(name: string, birthDate: string, birthTime: string
   };
 }
 
+const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD format').refine((d) => {
+  const date = new Date(d);
+  const min = new Date('1900-01-01');
+  const max = new Date();
+  return date >= min && date <= max;
+}, 'Birth date must be between 1900-01-01 and today');
+
 const birthChartSchema = z.object({
   name: z.string().min(1).max(100),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD format'),
+  birthDate: dateStr,
   birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'),
   birthPlace: z.string().min(1).max(200),
 });
@@ -272,8 +279,8 @@ astrologyRouter.post('/daily-horoscope', optionalAuth, validate(horoscopeSchema)
 }));
 
 const compatibilitySchema = z.object({
-  partnerA: z.object({ name: z.string().min(1), birthDate: z.string(), birthTime: z.string(), birthPlace: z.string() }),
-  partnerB: z.object({ name: z.string().min(1), birthDate: z.string(), birthTime: z.string(), birthPlace: z.string() }),
+  partnerA: z.object({ name: z.string().min(1), birthDate: dateStr, birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'), birthPlace: z.string().min(1).max(200) }),
+  partnerB: z.object({ name: z.string().min(1), birthDate: dateStr, birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'), birthPlace: z.string().min(1).max(200) }),
 });
 
 astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchema), asyncHandler(async (req, res) => {

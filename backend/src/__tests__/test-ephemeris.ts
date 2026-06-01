@@ -1,4 +1,4 @@
-import { calculateBirthDetails } from './services/astrology/calculator.js';
+import { calculateBirthDetails } from '../services/astrology/calculator';
 
 const r1 = calculateBirthDetails('1995-06-15', '14:30');
 const r2 = calculateBirthDetails('1995-06-15', '14:30');

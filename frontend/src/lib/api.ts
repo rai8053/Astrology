@@ -1,9 +1,12 @@
 import toast from 'react-hot-toast';
 import { translations } from './i18n/translations';
 
+type Language = 'en' | 'hi' | 'bn' | 'es' | 'pt' | 'fr' | 'de' | 'ar' | 'ja' | 'zh';
+
 function apiT(key: string): string {
-  const lang = (() => { try { return JSON.parse(localStorage.getItem('lang') || '"en"'); } catch { return 'en'; } })();
-  const val = (translations as any)[lang]?.[key] || (translations as any).en?.[key];
+  let lang: Language = 'en';
+  try { const raw = localStorage.getItem('lang'); if (raw) lang = JSON.parse(raw) as Language; } catch { /* fall back to en */ }
+  const val = translations[lang]?.[key] || translations.en?.[key];
   return typeof val === 'string' ? val : key;
 }
 

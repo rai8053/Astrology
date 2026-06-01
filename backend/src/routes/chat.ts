@@ -31,7 +31,7 @@ chatRouter.post('/', authenticate, requirePremium, validate(chatSchema), asyncHa
   }
 
   const messages = (session.messages as Array<{ role: string; content: string }>) || [];
-  const context = messages.slice(-10).map(m => `${m.role}: ${m.content}`).join('\n');
+  const context = messages.slice(-10).map(m => `${m.role}: ${m.content}`).join('\n').slice(-3000);
   const prompt = `Previous conversation:\n${context}\n\nUser: ${message}`;
 
   try {

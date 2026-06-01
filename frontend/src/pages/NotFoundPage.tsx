@@ -26,7 +26,7 @@ export function NotFoundPage() {
         </motion.div>
         <h1 className="font-serif text-6xl font-bold text-gold mb-2">404</h1>
         <p className="text-lg text-ink/60 dark:text-parchment/60 mb-8 max-w-md mx-auto">
-          {t('common.somethingWentWrong')} — the stars could not align for this page.
+          The stars could not align for this page — it may have been moved or does not exist.
         </p>
         <Link
           to="/"

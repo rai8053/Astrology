@@ -45,8 +45,13 @@ const JWT_REFRESH_SECRET = (() => {
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const HAS_GOOGLE_AUTH = GOOGLE_CLIENT_ID.length > 20;
 
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+const googleClient = HAS_GOOGLE_AUTH ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
+
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
 
 function generateTokens(payload: { userId: string; role: string }) {
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
@@ -55,6 +60,10 @@ function generateTokens(payload: { userId: string; role: string }) {
 }
 
 authRouter.post('/google', authLimiter, asyncHandler(async (req, res) => {
+  if (!googleClient) {
+    res.status(503).json({ success: false, error: 'Google authentication is not configured', code: 'SERVICE_UNAVAILABLE' });
+    return;
+  }
   const { credential } = req.body;
   if (!credential) {
     res.status(400).json({ success: false, error: 'Google credential is required', code: 'VALIDATION_ERROR' });
@@ -107,7 +116,7 @@ authRouter.post('/google', authLimiter, asyncHandler(async (req, res) => {
   }
 
   const tokens = generateTokens({ userId: user.id, role: user.role });
-  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken } });
+  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
   res.cookie('refreshToken', tokens.refreshToken, {
     httpOnly: true,
@@ -196,7 +205,7 @@ authRouter.post('/register', authLimiter, validate(registerSchema), asyncHandler
   });
 
   const tokens = generateTokens({ userId: user.id, role: user.role });
-  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken } });
+  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
   res.cookie('refreshToken', tokens.refreshToken, {
     httpOnly: true,
@@ -227,7 +236,6 @@ authRouter.post('/register', authLimiter, validate(registerSchema), asyncHandler
         astrologyProfile,
       },
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
     },
   });
 }));
@@ -247,7 +255,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), asyncHandler(async
   if (!valid) throw new UnauthorizedError('Invalid email or password');
 
   const tokens = generateTokens({ userId: user.id, role: user.role });
-  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken } });
+  await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
   res.cookie('refreshToken', tokens.refreshToken, {
     httpOnly: true,
@@ -270,10 +278,10 @@ authRouter.post('/refresh', authLimiter, asyncHandler(async (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as { userId: string; role: string };
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-    if (!user || user.refreshToken !== token) throw new UnauthorizedError('Invalid refresh token');
+    if (!user || user.refreshToken !== hashToken(token)) throw new UnauthorizedError('Invalid refresh token');
 
     const tokens = generateTokens({ userId: user.id, role: user.role });
-    await prisma.user.update({ where: { id: user.id }, data: { refreshToken: tokens.refreshToken } });
+    await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
