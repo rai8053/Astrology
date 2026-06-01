@@ -20,16 +20,16 @@ export function AdminAnalytics() {
   return (
     <div className="space-y-6">
       <PremiumCard glass>
-        <h3 className="font-serif text-lg font-semibold mb-4">{t('admin.aiUsageTitle' as any)}</h3>
+        <h3 className="font-serif text-lg font-semibold mb-4">{t('admin.aiUsageTitle')}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-ink/10 dark:border-white/[0.06]">
-                <th className="pb-3 font-sans text-[9px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider">{t('admin.tableFeature' as any)}</th>
-                <th className="pb-3 font-sans text-[9px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider text-right">{t('admin.tableCalls' as any)}</th>
-                <th className="pb-3 font-sans text-[9px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider text-right">{t('admin.tableTokensIn' as any)}</th>
-                <th className="pb-3 font-sans text-[9px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider text-right">{t('admin.tableTokensOut' as any)}</th>
-                <th className="pb-3 font-sans text-[9px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider text-right">{t('admin.tableCost' as any)}</th>
+                <th className="pb-3 font-sans text-[10px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider">{t('admin.tableFeature')}</th>
+                <th className="pb-3 font-sans text-[10px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider text-right">{t('admin.tableCalls')}</th>
+                <th className="pb-3 font-sans text-[10px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider text-right">{t('admin.tableTokensIn')}</th>
+                <th className="pb-3 font-sans text-[10px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider text-right">{t('admin.tableTokensOut')}</th>
+                <th className="pb-3 font-sans text-[10px] uppercase text-ink/40 dark:text-parchment/40 tracking-wider text-right">{t('admin.tableCost')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-ink/5 dark:divide-white/[0.03]">

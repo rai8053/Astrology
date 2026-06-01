@@ -14,10 +14,10 @@ export function AdminDashboard() {
   });
 
   const stats = [
-    { label: t('admin.statTotalUsers' as any), value: analytics?.data?.totalUsers ?? 0, icon: Users, color: 'text-blue-400', gradient: 'from-blue-500/20' },
-    { label: t('admin.statActiveSubscriptions' as any), value: analytics?.data?.activeSubscriptions ?? 0, icon: CreditCard, color: 'text-green-400', gradient: 'from-green-500/20' },
-    { label: t('admin.statReportsThisMonth' as any), value: analytics?.data?.reportsThisMonth ?? 0, icon: FileText, color: 'text-purple-400', gradient: 'from-purple-500/20' },
-    { label: t('admin.statRevenue' as any), value: `$${(analytics?.data?.revenueThisMonth ?? 0).toFixed(2)}`, icon: TrendingUp, color: 'text-gold', gradient: 'from-gold/20' },
+    { label: t('admin.statTotalUsers'), value: analytics?.data?.totalUsers ?? 0, icon: Users, color: 'text-blue-400', gradient: 'from-blue-500/20' },
+    { label: t('admin.statActiveSubscriptions'), value: analytics?.data?.activeSubscriptions ?? 0, icon: CreditCard, color: 'text-green-400', gradient: 'from-green-500/20' },
+    { label: t('admin.statReportsThisMonth'), value: analytics?.data?.reportsThisMonth ?? 0, icon: FileText, color: 'text-purple-400', gradient: 'from-purple-500/20' },
+    { label: t('admin.statRevenue'), value: `$${(analytics?.data?.revenueThisMonth ?? 0).toFixed(2)}`, icon: TrendingUp, color: 'text-gold', gradient: 'from-gold/20' },
   ];
 
   if (isLoading) return <StatsSkeleton />;

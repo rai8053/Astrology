@@ -90,6 +90,15 @@ export function SettingsPage() {
     queryFn: () => api.get<Subscription>('/api/payments/subscription'),
   });
 
+  const languageMutation = useMutation({
+    mutationFn: (lang: Language) => api.patch('/api/user/profile', { language: lang }),
+  });
+
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    languageMutation.mutate(lang);
+  };
+
   const billingPortalMutation = useMutation({
     mutationFn: () => api.post<{ url: string }>('/api/payments/create-portal'),
     onSuccess: (data) => {
@@ -279,7 +288,7 @@ export function SettingsPage() {
             <div className="relative">
               <select
                 value={language}
-                onChange={(e) => setLanguage(e.target.value as Language)}
+                onChange={(e) => handleLanguageChange(e.target.value as Language)}
                 className="w-full bg-transparent border border-ink/20 dark:border-white/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-gold transition-colors appearance-none cursor-pointer"
               >
                 {[

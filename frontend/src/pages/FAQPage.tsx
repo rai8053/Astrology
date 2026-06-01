@@ -9,18 +9,18 @@ export function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const FAQS = [
-    { q: t('faq.q1' as any), a: t('faq.a1' as any) },
-    { q: t('faq.q2' as any), a: t('faq.a2' as any) },
-    { q: t('faq.q3' as any), a: t('faq.a3' as any) },
-    { q: t('faq.q4' as any), a: t('faq.a4' as any) },
-    { q: t('faq.q5' as any), a: t('faq.a5' as any) },
-    { q: t('faq.q6' as any), a: t('faq.a6' as any) },
-    { q: t('faq.q7' as any), a: t('faq.a7' as any) },
-    { q: t('faq.q8' as any), a: t('faq.a8' as any) },
-    { q: t('faq.q9' as any), a: t('faq.a9' as any) },
-    { q: t('faq.q10' as any), a: t('faq.a10' as any) },
-    { q: t('faq.q11' as any), a: t('faq.a11' as any) },
-    { q: t('faq.q12' as any), a: t('faq.a12' as any) },
+    { q: t('faq.q1'), a: t('faq.a1') },
+    { q: t('faq.q2'), a: t('faq.a2') },
+    { q: t('faq.q3'), a: t('faq.a3') },
+    { q: t('faq.q4'), a: t('faq.a4') },
+    { q: t('faq.q5'), a: t('faq.a5') },
+    { q: t('faq.q6'), a: t('faq.a6') },
+    { q: t('faq.q7'), a: t('faq.a7') },
+    { q: t('faq.q8'), a: t('faq.a8') },
+    { q: t('faq.q9'), a: t('faq.a9') },
+    { q: t('faq.q10'), a: t('faq.a10') },
+    { q: t('faq.q11'), a: t('faq.a11') },
+    { q: t('faq.q12'), a: t('faq.a12') },
   ];
 
   return (
@@ -28,8 +28,8 @@ export function FAQPage() {
       <div className="max-w-3xl mx-auto px-5 py-24">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
           <HelpCircle className="w-10 h-10 text-gold mx-auto mb-3" />
-          <h1 className="font-serif text-4xl font-bold mb-3">{t('faq.title' as any)}</h1>
-          <p className="text-ink/60 dark:text-parchment/60">{t('faq.subtitle' as any)}</p>
+          <h1 className="font-serif text-4xl font-bold mb-3">{t('faq.title')}</h1>
+          <p className="text-ink/60 dark:text-parchment/60">{t('faq.subtitle')}</p>
         </motion.div>
 
         <div className="space-y-2">
@@ -53,9 +53,9 @@ export function FAQPage() {
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-sm text-ink/50 mb-4">{t('faq.stillHaveQuestions' as any)}</p>
+          <p className="text-sm text-ink/50 mb-4">{t('faq.stillHaveQuestions')}</p>
           <Link to="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold text-white font-medium hover:bg-gold/90 transition-colors">
-            <Sparkles className="w-4 h-4" /> {t('faq.contactUs' as any)}
+            <Sparkles className="w-4 h-4" /> {t('faq.contactUs')}
           </Link>
         </div>
       </div>

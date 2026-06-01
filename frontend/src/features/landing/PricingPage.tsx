@@ -20,10 +20,10 @@ export function PricingPage() {
   const { t } = useT();
 
   const faqs = [
-    { q: t('pricing.faq1q' as any), a: t('pricing.faq1a' as any) },
-    { q: t('pricing.faq2q' as any), a: t('pricing.faq2a' as any) },
-    { q: t('pricing.faq3q' as any), a: t('pricing.faq3a' as any) },
-    { q: t('pricing.faq4q' as any), a: t('pricing.faq4a' as any) },
+    { q: t('pricing.faq1q'), a: t('pricing.faq1a') },
+    { q: t('pricing.faq2q'), a: t('pricing.faq2a') },
+    { q: t('pricing.faq3q'), a: t('pricing.faq3a') },
+    { q: t('pricing.faq4q'), a: t('pricing.faq4a') },
   ];
 
   const { data: plansData } = useQuery({

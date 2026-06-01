@@ -36,6 +36,7 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const { t } = useT();
 
   const navItems = [
@@ -80,6 +81,28 @@ export function DashboardLayout() {
     setUserMenuOpen(false);
     setSidebarOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const container = sidebarRef.current;
+    if (!container) return;
+    const selector = 'a[href], button:not([disabled]), input, textarea, select, [tabindex]:not([tabindex="-1"])';
+    const focusable = container.querySelectorAll<HTMLElement>(selector);
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first?.focus();
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (active === last) { e.preventDefault(); first?.focus(); }
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [sidebarOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -233,6 +256,7 @@ export function DashboardLayout() {
 
       {/* Mobile Drawer */}
       <motion.aside
+        ref={sidebarRef}
         initial={{ x: -300 }}
         animate={{ x: sidebarOpen ? 0 : -300 }}
         className={cn(

@@ -18,12 +18,12 @@ export function AdminLayout() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('admin.title' as any)}</h1>
-          <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('admin.subtitle' as any)}</p>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('admin.title')}</h1>
+          <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('admin.subtitle')}</p>
         </motion.div>
         <motion.div whileHover={{ x: -3 }}>
           <Link to="/dashboard" className="flex items-center gap-1 text-sm text-ink/40 dark:text-parchment/40 hover:text-gold transition-colors">
-            <ArrowLeft className="w-4 h-4" /> {t('admin.backToDashboard' as any)}
+            <ArrowLeft className="w-4 h-4" /> {t('admin.backToDashboard')}
           </Link>
         </motion.div>
       </div>

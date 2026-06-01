@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { useT } from '@/lib/i18n/useT';
+import type { TranslationKey } from '@/lib/i18n/translations';
 import { Sparkles, Moon, Heart, Star, Globe, MessageCircle, ArrowRight, Shield, Zap, Users, Check, Quote, ChevronDown, Sun, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
@@ -96,31 +97,31 @@ const features = [
 
 const testimonials = [
   {
-    nameKey: 'landing.testimonial1Name' as any,
-    textKey: 'landing.testimonial1Text' as any,
-    roleKey: 'landing.testimonial1Role' as any,
+    nameKey: 'landing.testimonial1Name' as TranslationKey,
+    textKey: 'landing.testimonial1Text' as TranslationKey,
+    roleKey: 'landing.testimonial1Role' as TranslationKey,
     initials: 'PS',
   },
   {
-    nameKey: 'landing.testimonial2Name' as any,
-    textKey: 'landing.testimonial2Text' as any,
-    roleKey: 'landing.testimonial2Role' as any,
+    nameKey: 'landing.testimonial2Name' as TranslationKey,
+    textKey: 'landing.testimonial2Text' as TranslationKey,
+    roleKey: 'landing.testimonial2Role' as TranslationKey,
     initials: 'RK',
   },
   {
-    nameKey: 'landing.testimonial3Name' as any,
-    textKey: 'landing.testimonial3Text' as any,
-    roleKey: 'landing.testimonial3Role' as any,
+    nameKey: 'landing.testimonial3Name' as TranslationKey,
+    textKey: 'landing.testimonial3Text' as TranslationKey,
+    roleKey: 'landing.testimonial3Role' as TranslationKey,
     initials: 'AM',
   },
 ];
 
 const faqs = [
-  { qKey: 'landing.faq1q' as any, aKey: 'landing.faq1a' as any },
-  { qKey: 'landing.faq2q' as any, aKey: 'landing.faq2a' as any },
-  { qKey: 'landing.faq3q' as any, aKey: 'landing.faq3a' as any },
-  { qKey: 'landing.faq4q' as any, aKey: 'landing.faq4a' as any },
-  { qKey: 'landing.faq5q' as any, aKey: 'landing.faq5a' as any },
+  { qKey: 'landing.faq1q' as TranslationKey, aKey: 'landing.faq1a' as TranslationKey },
+  { qKey: 'landing.faq2q' as TranslationKey, aKey: 'landing.faq2a' as TranslationKey },
+  { qKey: 'landing.faq3q' as TranslationKey, aKey: 'landing.faq3a' as TranslationKey },
+  { qKey: 'landing.faq4q' as TranslationKey, aKey: 'landing.faq4a' as TranslationKey },
+  { qKey: 'landing.faq5q' as TranslationKey, aKey: 'landing.faq5a' as TranslationKey },
 ];
 
 function DashboardPreview() {
@@ -138,13 +139,13 @@ function DashboardPreview() {
           <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
           <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
           <div className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
-          <span className="ml-3 text-[11px] text-text-tertiary dark:text-dark-text-tertiary font-mono">{t('landing.dashboard' as any)}</span>
+          <span className="ml-3 text-[11px] text-text-tertiary dark:text-dark-text-tertiary font-mono">{t('landing.dashboard')}</span>
         </div>
         <div className="p-5 sm:p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wider font-medium">{t('landing.goodMorning' as any)}</p>
-              <p className="text-lg font-semibold tracking-tight mt-0.5">{t('landing.welcomeBack' as any)}</p>
+              <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wider font-medium">{t('landing.goodMorning')}</p>
+              <p className="text-lg font-semibold tracking-tight mt-0.5">{t('landing.welcomeBack')}</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-[11px] font-medium">{t('billing.free')}</div>
@@ -152,9 +153,9 @@ function DashboardPreview() {
           </div>
           <div className="grid grid-cols-3 gap-3 mb-6">
             {[
-              { label: t('landing.dashboardReports' as any), value: '12' },
-              { label: t('landing.dashboardChatSessions' as any), value: '48' },
-              { label: t('landing.dashboardActivePlan' as any), value: t('billing.free') },
+              { label: t('landing.dashboardReports'), value: '12' },
+              { label: t('landing.dashboardChatSessions'), value: '48' },
+              { label: t('landing.dashboardActivePlan'), value: t('billing.free') },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -355,8 +356,8 @@ export function Landing() {
                 <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
                   <f.icon className="w-4.5 h-4.5 text-accent" />
                 </div>
-                <h3 className="text-base font-semibold tracking-tight mb-2">{t(f.titleKey as any)}</h3>
-                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">{t(f.descKey as any)}</p>
+                <h3 className="text-base font-semibold tracking-tight mb-2">{t(f.titleKey as TranslationKey)}</h3>
+                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">{t(f.descKey as TranslationKey)}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -367,7 +368,7 @@ export function Landing() {
       <section className="section-padding bg-bg-primary dark:bg-dark-bg-primary">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-14">
-            <SectionTag>{t('landing.security' as any)}</SectionTag>
+            <SectionTag>{t('landing.security')}</SectionTag>
             <SectionHeading>{t('landing.securityTitle')}</SectionHeading>
             <SectionSubtitle>{t('landing.securityDesc')}</SectionSubtitle>
           </motion.div>
@@ -394,10 +395,10 @@ export function Landing() {
       <section className="section-padding bg-bg-secondary dark:bg-dark-bg-secondary/50 border-y border-border-primary dark:border-dark-border-primary">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-16">
-            <SectionTag>{t('landing.dashboard' as any)}</SectionTag>
-            <SectionHeading>{t('landing.dashboardTitle' as any)}</SectionHeading>
+            <SectionTag>{t('landing.dashboard')}</SectionTag>
+            <SectionHeading>{t('landing.dashboardTitle')}</SectionHeading>
             <SectionSubtitle>
-              {t('landing.dashboardDesc' as any)}
+              {t('landing.dashboardDesc')}
             </SectionSubtitle>
           </motion.div>
 
@@ -518,17 +519,17 @@ export function Landing() {
         <div className="max-w-6xl mx-auto px-5">
           <div className="text-center mb-14">
             <span className="text-accent text-[11px] font-bold uppercase tracking-[0.2em]">{t('landing.testimonials')}</span>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold mt-3 mb-4">{t('landing.testimonials2Title' as any)}</h2>
-            <p className="text-text-secondary dark:text-dark-text-secondary text-sm max-w-xl mx-auto">{t('landing.testimonials2Desc' as any)}</p>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold mt-3 mb-4">{t('landing.testimonials2Title')}</h2>
+            <p className="text-text-secondary dark:text-dark-text-secondary text-sm max-w-xl mx-auto">{t('landing.testimonials2Desc')}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6" {...stagger}>
             {[
-              { nameKey: 'landing.testimonial4Name' as any, roleKey: 'landing.testimonial4Role' as any, locationKey: 'landing.testimonial4Location' as any, textKey: 'landing.testimonial4Text' as any, rating: 5 },
-              { nameKey: 'landing.testimonial5Name' as any, roleKey: 'landing.testimonial5Role' as any, locationKey: 'landing.testimonial5Location' as any, textKey: 'landing.testimonial5Text' as any, rating: 5 },
-              { nameKey: 'landing.testimonial6Name' as any, roleKey: 'landing.testimonial6Role' as any, locationKey: 'landing.testimonial6Location' as any, textKey: 'landing.testimonial6Text' as any, rating: 5 },
-              { nameKey: 'landing.testimonial7Name' as any, roleKey: 'landing.testimonial7Role' as any, locationKey: 'landing.testimonial7Location' as any, textKey: 'landing.testimonial7Text' as any, rating: 5 },
-              { nameKey: 'landing.testimonial8Name' as any, roleKey: 'landing.testimonial8Role' as any, locationKey: 'landing.testimonial8Location' as any, textKey: 'landing.testimonial8Text' as any, rating: 5 },
-              { nameKey: 'landing.testimonial9Name' as any, roleKey: 'landing.testimonial9Role' as any, locationKey: 'landing.testimonial9Location' as any, textKey: 'landing.testimonial9Text' as any, rating: 5 },
+              { nameKey: 'landing.testimonial4Name' as TranslationKey, roleKey: 'landing.testimonial4Role' as TranslationKey, locationKey: 'landing.testimonial4Location' as TranslationKey, textKey: 'landing.testimonial4Text' as TranslationKey, rating: 5 },
+              { nameKey: 'landing.testimonial5Name' as TranslationKey, roleKey: 'landing.testimonial5Role' as TranslationKey, locationKey: 'landing.testimonial5Location' as TranslationKey, textKey: 'landing.testimonial5Text' as TranslationKey, rating: 5 },
+              { nameKey: 'landing.testimonial6Name' as TranslationKey, roleKey: 'landing.testimonial6Role' as TranslationKey, locationKey: 'landing.testimonial6Location' as TranslationKey, textKey: 'landing.testimonial6Text' as TranslationKey, rating: 5 },
+              { nameKey: 'landing.testimonial7Name' as TranslationKey, roleKey: 'landing.testimonial7Role' as TranslationKey, locationKey: 'landing.testimonial7Location' as TranslationKey, textKey: 'landing.testimonial7Text' as TranslationKey, rating: 5 },
+              { nameKey: 'landing.testimonial8Name' as TranslationKey, roleKey: 'landing.testimonial8Role' as TranslationKey, locationKey: 'landing.testimonial8Location' as TranslationKey, textKey: 'landing.testimonial8Text' as TranslationKey, rating: 5 },
+              { nameKey: 'landing.testimonial9Name' as TranslationKey, roleKey: 'landing.testimonial9Role' as TranslationKey, locationKey: 'landing.testimonial9Location' as TranslationKey, textKey: 'landing.testimonial9Text' as TranslationKey, rating: 5 },
             ].map((item, i) => (
               <motion.div key={i} variants={staggerItem} className="p-6 rounded-2xl border border-border-primary dark:border-dark-border-primary bg-bg-primary dark:bg-dark-bg-primary">
                 <div className="flex gap-1 mb-3">
@@ -604,10 +605,10 @@ function PricingSection() {
     mutationFn: (planId: string) => api.post<{ url: string }>('/api/payments/create-checkout', { plan: planId, currency: user?.country ? undefined : 'USD' }),
     onSuccess: (data) => {
       if (data.data?.url?.startsWith('https://')) window.location.href = data.data.url;
-      else toast.error(t('errors.invalidCheckoutUrl' as any));
+      else toast.error(t('errors.invalidCheckoutUrl'));
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : t('errors.paymentUnavailable' as any));
+      toast.error(err instanceof Error ? err.message : t('errors.paymentUnavailable'));
     },
   });
 
@@ -621,10 +622,10 @@ function PricingSection() {
 
   const currencyInfo = user?.country ? getCurrencyForCountry(user.country) : { code: 'USD', symbol: '$', locale: 'en-US' };
   const plans = plansData?.data || [
-    { id: 'FREE', name: 'Free', price: 0, currency: 'USD', interval: 'month', features: [t('pricing.freeFeature1' as any), t('pricing.freeFeature2' as any), t('pricing.freeFeature3' as any), t('pricing.freeFeature4' as any)], highlighted: false },
-    { id: 'PRO', name: 'Pro', price: 9.99, currency: 'USD', interval: 'month', features: [t('pricing.proFeature1' as any), t('pricing.proFeature2' as any), t('pricing.proFeature3' as any), t('pricing.proFeature4' as any), t('pricing.proFeature5' as any)], highlighted: true },
-    { id: 'PREMIUM', name: 'Premium', price: 19.99, currency: 'USD', interval: 'month', features: [t('pricing.premiumFeature1' as any), t('pricing.premiumFeature2' as any), t('pricing.premiumFeature3' as any), t('pricing.premiumFeature4' as any), t('pricing.premiumFeature5' as any)], highlighted: false },
-    { id: 'ENTERPRISE', name: 'Enterprise', price: 49.99, currency: 'USD', interval: 'month', features: [t('pricing.enterpriseFeature1' as any), t('pricing.enterpriseFeature2' as any), t('pricing.enterpriseFeature3' as any), t('pricing.enterpriseFeature4' as any), t('pricing.enterpriseFeature5' as any)], highlighted: false },
+    { id: 'FREE', name: 'Free', price: 0, currency: 'USD', interval: 'month', features: [t('pricing.freeFeature1'), t('pricing.freeFeature2'), t('pricing.freeFeature3'), t('pricing.freeFeature4')], highlighted: false },
+    { id: 'PRO', name: 'Pro', price: 9.99, currency: 'USD', interval: 'month', features: [t('pricing.proFeature1'), t('pricing.proFeature2'), t('pricing.proFeature3'), t('pricing.proFeature4'), t('pricing.proFeature5')], highlighted: true },
+    { id: 'PREMIUM', name: 'Premium', price: 19.99, currency: 'USD', interval: 'month', features: [t('pricing.premiumFeature1'), t('pricing.premiumFeature2'), t('pricing.premiumFeature3'), t('pricing.premiumFeature4'), t('pricing.premiumFeature5')], highlighted: false },
+    { id: 'ENTERPRISE', name: 'Enterprise', price: 49.99, currency: 'USD', interval: 'month', features: [t('pricing.enterpriseFeature1'), t('pricing.enterpriseFeature2'), t('pricing.enterpriseFeature3'), t('pricing.enterpriseFeature4'), t('pricing.enterpriseFeature5')], highlighted: false },
   ];
 
   return (
@@ -691,8 +692,8 @@ function PricingSection() {
                   </motion.span>
                 )}
 
-                <h3 className="text-lg font-semibold tracking-tight mb-1">{t('billing.' + plan.name.toLowerCase() as any)}</h3>
-                <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary mb-5 min-h-[2rem]">{plan.desc || t('pricing.planDescription' as any)}</p>
+                <h3 className="text-lg font-semibold tracking-tight mb-1">{t('billing.' + plan.name.toLowerCase() as TranslationKey)}</h3>
+                <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary mb-5 min-h-[2rem]">{plan.desc || t('pricing.planDescription')}</p>
 
                 <div className="mb-5">
                   <AnimatePresence mode="wait">
@@ -709,7 +710,7 @@ function PricingSection() {
                       </span>
                       {monthlyPrice > 0 && (
                         <span className="text-xs text-text-tertiary dark:text-dark-text-tertiary ml-1">
-                          /{yearly ? t('pricing.perYear' as any) : t('pricing.perMonth' as any)}
+                          /{yearly ? t('pricing.perYear') : t('pricing.perMonth')}
                         </span>
                       )}
                     </motion.div>

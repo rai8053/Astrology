@@ -211,7 +211,47 @@ export type TranslationKey =
   | 'settings.light' | 'settings.dark' | 'settings.system' | 'settings.mode'
   | 'settings.placeExample'
   | 'pricing.invalidUrl'
-  | 'auth.loginFailed';
+  | 'auth.loginFailed'
+  | 'about.title' | 'about.intro' | 'about.journey' | 'about.team' | 'about.quote' | 'about.attribution' | 'about.cta'
+  | 'about.mission1' | 'about.mission1Desc' | 'about.mission2' | 'about.mission2Desc' | 'about.mission3' | 'about.mission3Desc'
+  | 'about.milestone1' | 'about.milestone1Desc' | 'about.milestone2' | 'about.milestone2Desc' | 'about.milestone3' | 'about.milestone3Desc'
+  | 'about.milestone4' | 'about.milestone4Desc' | 'about.milestone5' | 'about.milestone5Desc' | 'about.milestone6' | 'about.milestone6Desc'
+  | 'about.team1Name' | 'about.team1Role' | 'about.team1Bio' | 'about.team2Name' | 'about.team2Role' | 'about.team2Bio'
+  | 'about.team3Name' | 'about.team3Role' | 'about.team3Bio' | 'about.team4Name' | 'about.team4Role' | 'about.team4Bio'
+  | 'contact.title' | 'contact.subtitle' | 'contact.nameLabel' | 'contact.namePlaceholder'
+  | 'contact.emailLabel' | 'contact.subjectLabel' | 'contact.subjectPlaceholder'
+  | 'contact.messageLabel' | 'contact.messagePlaceholder' | 'contact.send'
+  | 'contact.email' | 'contact.support' | 'contact.location' | 'contact.responseTime'
+  | 'faq.title' | 'faq.subtitle' | 'faq.stillHaveQuestions' | 'faq.contactUs'
+  | 'faq.q1' | 'faq.a1' | 'faq.q2' | 'faq.a2' | 'faq.q3' | 'faq.a3' | 'faq.q4' | 'faq.a4'
+  | 'faq.q5' | 'faq.a5' | 'faq.q6' | 'faq.a6' | 'faq.q7' | 'faq.a7' | 'faq.q8' | 'faq.a8'
+  | 'faq.q9' | 'faq.a9' | 'faq.q10' | 'faq.a10' | 'faq.q11' | 'faq.a11' | 'faq.q12' | 'faq.a12'
+  | 'errors.tokenRefresh' | 'errors.sessionExpired' | 'errors.requestFailed'
+  | 'errors.invalidCheckoutUrl' | 'errors.paymentUnavailable' | 'errors.loadDashboard'
+  | 'pricing.freeFeature1' | 'pricing.freeFeature2' | 'pricing.freeFeature3' | 'pricing.freeFeature4'
+  | 'pricing.proFeature1' | 'pricing.proFeature2' | 'pricing.proFeature3' | 'pricing.proFeature4' | 'pricing.proFeature5'
+  | 'pricing.premiumFeature1' | 'pricing.premiumFeature2' | 'pricing.premiumFeature3' | 'pricing.premiumFeature4' | 'pricing.premiumFeature5'
+  | 'pricing.enterpriseFeature1' | 'pricing.enterpriseFeature2' | 'pricing.enterpriseFeature3' | 'pricing.enterpriseFeature4' | 'pricing.enterpriseFeature5'
+  | 'pricing.planDescription'
+  | 'landing.dashboard' | 'landing.dashboardTitle' | 'landing.dashboardDesc'
+  | 'landing.dashboardReports' | 'landing.dashboardChatSessions' | 'landing.dashboardActivePlan'
+  | 'landing.goodMorning' | 'landing.welcomeBack' | 'landing.security'
+  | 'landing.testimonials2Title' | 'landing.testimonials2Desc'
+  | 'terms.title' | 'terms.lastUpdated'
+  | 'privacy.title' | 'privacy.lastUpdated'
+  | 'refund.title' | 'refund.lastUpdated'
+  | 'terms.section1Title' | 'terms.section1Body' | 'terms.section2Title' | 'terms.section2Body'
+  | 'terms.section3Title' | 'terms.section3Body' | 'terms.section4Title' | 'terms.section4Body'
+  | 'terms.section5Title' | 'terms.section5Body' | 'terms.section6Title' | 'terms.section6Body'
+  | 'terms.section7Title' | 'terms.section7Body' | 'terms.section8Title' | 'terms.section8Body'
+  | 'terms.section9Title' | 'terms.section9Body' | 'terms.section10Title' | 'terms.section10Body'
+  | 'privacy.section1Title' | 'privacy.section1Body' | 'privacy.section2Title' | 'privacy.section2Body'
+  | 'privacy.section3Title' | 'privacy.section3Body' | 'privacy.section4Title' | 'privacy.section4Body'
+  | 'privacy.section5Title' | 'privacy.section5Body' | 'privacy.section6Title' | 'privacy.section6Body'
+  | 'privacy.section7Title' | 'privacy.section7Body' | 'privacy.section8Title' | 'privacy.section8Body'
+  | 'refund.section1Title' | 'refund.section1Body' | 'refund.section2Title' | 'refund.section2Body'
+  | 'refund.section3Title' | 'refund.section3Body' | 'refund.section4Title' | 'refund.section4Body'
+  | 'refund.section5Title' | 'refund.section5Body' | 'refund.section6Title' | 'refund.section6Body';
 const hi: Record<string, string> = {
   'nav.home': '???', 'nav.dashboard': '????????', 'nav.horoscope': '??????',
   'nav.kundli': '??????', 'nav.compatibility': '????????', 'nav.chat': '???',
@@ -1790,6 +1830,176 @@ const en: Record<string, string> = {
   'settings.placeExample': 'e.g., Mumbai, India',
   'pricing.invalidUrl': 'Invalid checkout URL',
   'auth.loginFailed': 'Login failed. Please check your credentials.',
+  'about.title': 'About Soma & Surya',
+  'about.intro': 'We are on a mission to make Vedic astrology accessible to everyone through the power of modern AI and precise astronomical calculations.',
+  'about.journey': 'Our Journey',
+  'about.team': 'Meet the Team',
+  'about.quote': 'The cosmos is within us. We are made of star-stuff. Our goal is to help each person discover their unique celestial blueprint.',
+  'about.attribution': '— The Soma & Surya Team',
+  'about.cta': 'Start Your Journey',
+  'about.mission1': 'Democratize Astrology',
+  'about.mission1Desc': 'Make Vedic astrology accessible to everyone, anywhere in the world, in their native language.',
+  'about.mission2': 'AI-Powered Precision',
+  'about.mission2Desc': 'Combine ancient wisdom with modern AI for deeper, more personalized astrological insights.',
+  'about.mission3': 'Privacy First',
+  'about.mission3Desc': 'Your birth data is encrypted and never shared. You have full control over your data.',
+  'about.milestone1': 'The Spark',
+  'about.milestone1Desc': 'The idea was born — combining VSOP87 ephemeris with modern web technology.',
+  'about.milestone2': 'First Prototype',
+  'about.milestone2Desc': 'First working birth chart calculator with planetary positions and house divisions.',
+  'about.milestone3': 'AI Integration',
+  'about.milestone3Desc': 'Integrated AI-powered chat and personalized horoscope interpretations.',
+  'about.milestone4': 'Public Launch',
+  'about.milestone4Desc': 'Official launch with support for 10 languages and 200K+ birth chart calculations.',
+  'about.milestone5': 'Compatibility Suite',
+  'about.milestone5Desc': 'Added Ashta Koota Gun Milan compatibility analysis and PDF report generation.',
+  'about.milestone6': 'Global Reach',
+  'about.milestone6Desc': '50,000+ users worldwide, enterprise partnerships, and continuous improvement.',
+  'about.team1Name': 'Arjun Sharma',
+  'about.team1Role': 'Founder & Lead Astrologer',
+  'about.team1Bio': '20+ years of Vedic astrology practice, combining traditional Jyotish with computational methods.',
+  'about.team2Name': 'Priya Mehta',
+  'about.team2Role': 'CTO & AI Engineer',
+  'about.team2Bio': 'Built the ephemeris engine and AI interpretation system. Passionate about making astrology scientific.',
+  'about.team3Name': 'Rajesh Kumar',
+  'about.team3Role': 'Full-Stack Developer',
+  'about.team3Bio': 'Architected the platform from the ground up. Believes great code creates great user experiences.',
+  'about.team4Name': 'Anika Gupta',
+  'about.team4Role': 'UX & Design Lead',
+  'about.team4Bio': 'Designs intuitive cosmic experiences. Every pixel is placed with intention and purpose.',
+  'contact.title': 'Contact Us',
+  'contact.subtitle': 'We would love to hear from you. Reach out with questions, feedback, or partnership inquiries.',
+  'contact.nameLabel': 'Your Name',
+  'contact.namePlaceholder': 'John Doe',
+  'contact.emailLabel': 'Your Email',
+  'contact.subjectLabel': 'Subject',
+  'contact.subjectPlaceholder': 'How can we help?',
+  'contact.messageLabel': 'Message',
+  'contact.messagePlaceholder': 'Tell us more about your inquiry...',
+  'contact.send': 'Send Message',
+  'contact.email': 'Email',
+  'contact.support': 'Support',
+  'contact.location': 'Location',
+  'contact.responseTime': 'Response Time',
+  'faq.title': 'Frequently Asked Questions',
+  'faq.subtitle': 'Everything you need to know about Vedic astrology and our platform',
+  'faq.stillHaveQuestions': 'Still have questions?',
+  'faq.contactUs': 'Contact Us',
+  'faq.q1': 'What is Vedic astrology?',
+  'faq.a1': 'Vedic astrology, also known as Jyotish, is an ancient Indian system of astrology that uses the sidereal zodiac. Unlike Western astrology which uses the tropical zodiac, Vedic astrology accounts for the precession of the equinoxes, making it astronomically precise.',
+  'faq.q2': 'How accurate are your birth chart calculations?',
+  'faq.a2': 'Our calculations use the VSOP87 planetary theory, which is the same high-precision model used by professional astronomers. We calculate planetary positions to within arc-minute accuracy using the Lahiri ayanamsa system.',
+  'faq.q3': 'What is a Nakshatra?',
+  'faq.a3': 'Nakshatras are the 27 lunar mansions in Vedic astrology, each spanning 13°20\'. Your birth Nakshatra reveals your core personality, life purpose, and karmic tendencies. It is one of the most important factors in Vedic chart analysis.',
+  'faq.q4': 'How does the AI astrologer work?',
+  'faq.a4': 'Our AI astrologer combines your birth chart data with a deep knowledge base of Vedic astrology principles. It provides personalized interpretations, answers your questions, and offers guidance based on classical texts and modern understanding.',
+  'faq.q5': 'What is Ashta Koota matching?',
+  'faq.a5': 'Ashta Koota Gun Milan is a traditional Vedic compatibility system that evaluates 8 categories (Kootas) of compatibility between two individuals. A score of 18 out of 36 Gunas is considered minimum for marriage compatibility.',
+  'faq.q6': 'Is my birth data secure?',
+  'faq.a6': 'Absolutely. All birth data is encrypted at rest using AES-256 and transmitted over TLS 1.3. We never share your personal data with third parties. You can delete your account and all associated data at any time.',
+  'faq.q7': 'What is a Dasha system?',
+  'faq.a7': 'The Vimshottari Dasha system is a 120-year planetary period cycle based on the position of the Moon at birth. Each planet rules specific periods of your life, revealing the timing of major life events and spiritual growth phases.',
+  'faq.q8': 'Can I download my birth chart report?',
+  'faq.a8': 'Yes, premium users can download detailed PDF birth chart reports. These include planetary positions, house divisions, Nakshatra details, Dasha periods, yogas, remedies, and personalized interpretations.',
+  'faq.q9': 'What is the difference between Lagna and Moon sign?',
+  'faq.a9': 'Your Lagna (Ascendant) is the zodiac sign rising on the eastern horizon at your birth moment — it changes every 2 hours. Your Moon sign (Rashi) is the sign the Moon was in at birth — it changes every 2.3 days. Both are used in Vedic analysis.',
+  'faq.q10': 'Do you offer refunds?',
+  'faq.a10': 'Yes, we offer a 30-day money-back guarantee on all paid plans. If you are not satisfied, simply email us and we will process your refund within 5-7 business days.',
+  'faq.q11': 'What languages are supported?',
+  'faq.a11': 'Our platform supports 10 languages: English, Hindi, Bengali, Spanish, Portuguese, French, German, Arabic, Japanese, and Chinese. All astrological content, including AI chat, is available in your preferred language.',
+  'faq.q12': 'What is a Yoga in Vedic astrology?',
+  'faq.a12': 'A Yoga is a special planetary combination that creates specific effects in a birth chart. Some yogas bestow wealth and success (like Gaja Kesari Yoga), while others indicate spiritual inclinations or specific life themes.',
+  'errors.tokenRefresh': 'Failed to refresh session. Please log in again.',
+  'errors.sessionExpired': 'Session expired. Please log in again.',
+  'errors.requestFailed': 'Request failed. Please try again.',
+  'errors.invalidCheckoutUrl': 'Invalid checkout URL. Please try again.',
+  'errors.paymentUnavailable': 'Payment service unavailable. Please try again later.',
+  'errors.loadDashboard': 'Failed to load dashboard data.',
+  'pricing.freeFeature1': 'Daily personalized horoscope',
+  'pricing.freeFeature2': 'Basic birth chart (Kundli)',
+  'pricing.freeFeature3': 'Moon phase tracking',
+  'pricing.freeFeature4': '5 AI astrologer chats',
+  'pricing.proFeature1': 'Everything in Free, plus:',
+  'pricing.proFeature2': 'Advanced birth chart with Dasha',
+  'pricing.proFeature3': 'Compatibility (Ashta Koota) matching',
+  'pricing.proFeature4': '50 AI astrologer chats per month',
+  'pricing.proFeature5': 'Detailed PDF reports',
+  'pricing.premiumFeature1': 'Everything in Pro, plus:',
+  'pricing.premiumFeature2': 'Unlimited AI astrologer chats',
+  'pricing.premiumFeature3': 'Priority AI response time',
+  'pricing.premiumFeature4': 'Transit alerts & predictions',
+  'pricing.premiumFeature5': 'Early access to new features',
+  'pricing.enterpriseFeature1': 'Everything in Premium, plus:',
+  'pricing.enterpriseFeature2': 'Custom API integration',
+  'pricing.enterpriseFeature3': 'Dedicated support',
+  'pricing.enterpriseFeature4': 'White-label reports',
+  'pricing.enterpriseFeature5': 'Volume pricing',
+  'pricing.planDescription': 'Perfect for getting started',
+  'landing.dashboard': 'Dashboard',
+  'landing.dashboardTitle': 'Your Cosmic Dashboard',
+  'landing.dashboardDesc': 'Everything you need in one place',
+  'landing.dashboardReports': 'Reports',
+  'landing.dashboardChatSessions': 'Chat Sessions',
+  'landing.dashboardActivePlan': 'Active Plan',
+  'landing.goodMorning': 'Good Morning',
+  'landing.welcomeBack': 'Welcome back, seeker',
+  'landing.security': 'Your privacy is protected with enterprise-grade encryption',
+  'landing.testimonials2Title': 'What Our Users Say',
+  'landing.testimonials2Desc': 'Real stories from real seekers',
+  'terms.title': 'Terms of Service',
+  'terms.lastUpdated': 'Last Updated',
+  'privacy.title': 'Privacy Policy',
+  'privacy.lastUpdated': 'Last Updated',
+  'refund.title': 'Refund Policy',
+  'refund.lastUpdated': 'Last Updated',
+  'terms.section1Title': '1. Acceptance of Terms',
+  'terms.section1Body': 'By creating an account and using Soma & Surya, you agree to these terms. If you do not agree, do not use the service.',
+  'terms.section2Title': '2. Description of Service',
+  'terms.section2Body': 'Soma & Surya provides AI-powered Vedic astrology readings, horoscopes, Kundli charts, compatibility analysis, and related services. All astrological content is for entertainment, self-reflection, and educational purposes. It is not a substitute for professional advice.',
+  'terms.section3Title': '3. User Accounts',
+  'terms.section3Body': 'You are responsible for maintaining the confidentiality of your account credentials. You must be at least 13 years old to use this service. One account per person.',
+  'terms.section4Title': '4. Subscriptions & Billing',
+  'terms.section4Body': 'Free accounts include basic features. Premium subscriptions auto-renew unless canceled. Refunds follow our Refund Policy. Prices are subject to change with 30 days notice.',
+  'terms.section5Title': '5. Acceptable Use',
+  'terms.section5Body': 'You agree not to: misuse the AI chat for harmful content, attempt to reverse-engineer our calculations, scrape or reproduce our content, or create multiple accounts.',
+  'terms.section6Title': '6. Intellectual Property',
+  'terms.section6Body': 'All content, calculations, and technology are the property of Soma & Surya. Your personal astrology reports are yours to download and keep.',
+  'terms.section7Title': '7. Disclaimer',
+  'terms.section7Body': 'Astrological readings are provided for entertainment and personal growth. We make no guarantees about accuracy of predictions. Always consult qualified professionals for medical, legal, or financial decisions.',
+  'terms.section8Title': '8. Limitation of Liability',
+  'terms.section8Body': 'Soma & Surya is not liable for any damages arising from the use or inability to use the service. Our total liability is limited to the amount you paid for your subscription.',
+  'terms.section9Title': '9. Termination',
+  'terms.section9Body': 'We reserve the right to terminate accounts that violate these terms. You may delete your account at any time. Upon termination, your data is deleted within 30 days.',
+  'terms.section10Title': '10. Changes to Terms',
+  'terms.section10Body': 'We may update these terms with 30 days notice via email. Continued use after changes constitutes acceptance.',
+  'privacy.section1Title': '1. Information We Collect',
+  'privacy.section1Body': 'We collect information you provide directly: name, email, birth date, birth time, birth place, gender, and language preferences. We also collect usage data: astrology reports, chat history, and feature interactions.',
+  'privacy.section2Title': '2. How We Use Your Data',
+  'privacy.section2Body': 'Your birth details are used solely to generate astrological calculations and personalized readings. We use AI to enhance interpretations but never share your personal data with third parties. Usage data helps us improve our services.',
+  'privacy.section3Title': '3. Data Storage & Security',
+  'privacy.section3Body': 'All data is encrypted at rest using AES-256. Data in transit uses TLS 1.3. We use PostgreSQL with row-level security. Each user data is isolated and never accessible to other users.',
+  'privacy.section4Title': '4. Data Retention',
+  'privacy.section4Body': 'We retain your data for as long as your account is active. Upon account deletion, all personal data including birth details, chat history, and astrology reports are permanently deleted within 30 days.',
+  'privacy.section5Title': '5. Third-Party Services',
+  'privacy.section5Body': 'We use Stripe for payment processing and OpenRouter for AI services. Payment data goes directly to Stripe — we never store credit card details. AI processing is done without storing your personal information on third-party servers.',
+  'privacy.section6Title': '6. Cookies',
+  'privacy.section6Body': 'We use essential cookies for authentication (JWT tokens) and preference storage (language, theme). No tracking cookies or third-party analytics are used.',
+  'privacy.section7Title': '7. Your Rights',
+  'privacy.section7Body': 'You have the right to access, correct, or delete your data at any time from your Settings page. You can export your data in JSON format. Contact us at privacy@somaandsurya.com for any privacy concerns.',
+  'privacy.section8Title': '8. Children\'s Privacy',
+  'privacy.section8Body': 'Our service is not intended for users under 13. We do not knowingly collect data from children. If we discover such data, we delete it immediately.',
+  'refund.section1Title': '30-Day Money-Back Guarantee',
+  'refund.section1Body': 'We stand behind our service. If you\'re not satisfied within 30 days of your premium subscription purchase, we\'ll refund your payment in full — no questions asked.',
+  'refund.section2Title': 'How to Request a Refund',
+  'refund.section2Body': 'Simply email us at refunds@somaandsurya.com with the email address used for your account. We process refunds within 5-7 business days. The refund will be credited to your original payment method.',
+  'refund.section3Title': 'Partial Refunds',
+  'refund.section3Body': 'For annual subscriptions canceled after 30 days, we offer prorated refunds for the remaining months. Monthly subscriptions canceled after 30 days are not eligible for refunds but remain active until the end of the billing period.',
+  'refund.section4Title': 'Free Trial',
+  'refund.section4Body': 'All new accounts include a 14-day free trial of premium features. You can cancel anytime during the trial with no charge. Your account automatically converts to the free plan after the trial ends.',
+  'refund.section5Title': 'Exceptions',
+  'refund.section5Body': 'Refunds are limited to one per customer. Enterprise and custom plans may have separate refund terms as specified in your agreement.',
+  'refund.section6Title': 'Contact',
+  'refund.section6Body': 'For refund questions: refunds@somaandsurya.com. We typically respond within 24 hours.',
 };
 const pt: Record<string, string> = {
   'nav.home': 'Inï¿½cio', 'nav.dashboard': 'Painel', 'nav.horoscope': 'Horï¿½scopo',

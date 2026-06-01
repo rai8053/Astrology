@@ -25,11 +25,11 @@ export function AdminUsers() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-ink/10 dark:border-white/[0.06]">
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableName' as any)}</th>
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableEmail' as any)}</th>
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableRole' as any)}</th>
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableVerified' as any)}</th>
-              <th className="pb-3 font-sans text-[9px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableJoined' as any)}</th>
+              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableName')}</th>
+              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableEmail')}</th>
+              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableRole')}</th>
+              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableVerified')}</th>
+              <th className="pb-3 font-sans text-[10px] uppercase tracking-wider text-ink/40 dark:text-parchment/40">{t('admin.tableJoined')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink/5 dark:divide-white/[0.03]">
@@ -43,7 +43,7 @@ export function AdminUsers() {
                 <td className="py-3 font-medium">{user.name}</td>
                 <td className="py-3 text-ink/60 dark:text-parchment/60">{user.email}</td>
                 <td className="py-3">
-                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                     user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'
                       ? 'bg-gold/15 text-gold'
                       : user.role === 'PREMIUM'

@@ -4,6 +4,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
+import { brand } from '@/config/brand';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CosmicBackground } from '@/components/CosmicBackground';
@@ -30,6 +31,7 @@ const FAQPage = lazy(() => import('@/pages/FAQPage').then(m => ({ default: m.FAQ
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import('@/pages/TermsPage').then(m => ({ default: m.TermsPage })));
 const RefundPage = lazy(() => import('@/pages/RefundPage').then(m => ({ default: m.RefundPage })));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 const easeOut = [0.25, 0.1, 0.25, 1] as const;
 const pageVariants = {
@@ -72,10 +74,10 @@ const pageDescriptions: Record<string, string> = {
 function PageWrap({ children, cosmic = false }: { children: React.ReactNode; cosmic?: boolean }) {
   const loc = useLocation();
   const pathKey = Object.keys(pageTitles).find(k => loc.pathname === k || loc.pathname.startsWith(k + '/')) || '/';
-  const title = pageTitles[pathKey] ? `${pageTitles[pathKey]} — Soma & Surya` : 'Soma & Surya — AI-Powered Vedic Astrology';
-  const description = pageDescriptions[pathKey] || 'AI-powered Vedic astrology platform for personalized readings and spiritual guidance.';
+  const title = pageTitles[pathKey] ? `${pageTitles[pathKey]} — ${brand.name}` : brand.meta.title;
+  const description = pageDescriptions[pathKey] || brand.meta.description;
   return (
-    <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
+    <motion.div id="main-content" variants={pageVariants} initial="initial" animate="animate" exit="exit">
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -144,7 +146,7 @@ export default function App() {
           <Route path="/privacy" element={<PageWrap><PrivacyPage /></PageWrap>} />
           <Route path="/terms" element={<PageWrap><TermsPage /></PageWrap>} />
           <Route path="/refund" element={<PageWrap><RefundPage /></PageWrap>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<PageWrap><NotFoundPage /></PageWrap>} />
         </Routes>
         </Suspense>
       </AnimatePresence>
@@ -153,6 +155,9 @@ export default function App() {
 
   return (
     <HelmetProvider>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-gold focus:text-cosmic focus:rounded-lg focus:text-sm focus:font-sans focus:font-bold focus:outline-none">
+        Skip to main content
+      </a>
       <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>
     </HelmetProvider>
   );

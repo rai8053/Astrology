@@ -32,6 +32,7 @@ export function Navbar() {
   const { t } = useT();
   const isLanding = location.pathname === '/';
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width: 767px)');
 
   useEffect(() => {
@@ -59,6 +60,28 @@ export function Navbar() {
     setUserMenuOpen(false);
     setOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const container = mobileMenuRef.current;
+    if (!container) return;
+    const selector = 'a[href], button:not([disabled]), input, textarea, select, [tabindex]:not([tabindex="-1"])';
+    const focusable = container.querySelectorAll<HTMLElement>(selector);
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first?.focus();
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (active === last) { e.preventDefault(); first?.focus(); }
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open]);
 
   const links = isLanding ? [
     { label: t('nav.features'), href: '#features' },
@@ -210,6 +233,7 @@ export function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
+            ref={mobileMenuRef}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
