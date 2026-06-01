@@ -120,7 +120,8 @@ class ApiClient {
     try {
       return await execute();
     } catch (error) {
-      if (error instanceof Error && !error.message.includes('Session expired') && (error as any).status !== 429) {
+      const status = (error as any).status;
+      if (error instanceof Error && !error.message.includes('Session expired') && (!status || status >= 500)) {
         toast.error(error.message);
       }
       throw error;
