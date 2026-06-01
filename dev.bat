@@ -43,21 +43,22 @@ if errorlevel 1 (
 echo   OK
 echo.
 
-REM ---- STEP 4: Start both servers ----
-echo [4/4] Starting development servers...
+REM ---- STEP 4: Start servers ----
+echo [4/4] Starting servers...
 cd /d "%~dp0"
 echo.
-echo ============================================
-echo   Starting Backend (port 4000) ^& Frontend (port 5173)
-echo   Press Ctrl+C to stop both.
-echo ============================================
-echo.
 
-call npm run dev
+echo === Backend (port 4000) ===
+start "Soma-Surya-Backend" cmd /c "cd /d "%~dp0backend" && npx tsx src/index.ts"
 
-REM ---- This runs after Ctrl+C ----
+ping -n 4 127.0.0.1 >nul
+
+echo === Frontend (port 5173) ===
+start "Soma-Surya-Frontend" cmd /c "cd /d "%~dp0frontend" && npx vite --host"
+
 echo.
-echo ============================================
-echo   Servers stopped.
-echo ============================================
-pause
+echo Backend: http://localhost:4000/api/health
+echo Frontend: http://localhost:5173
+echo.
+echo Close this window to stop both servers, or press any key...
+pause >nul
