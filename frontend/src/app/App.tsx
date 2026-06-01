@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,6 +8,7 @@ import { brand } from '@/config/brand';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CosmicBackground } from '@/components/CosmicBackground';
+import { fetchGoogleClientId } from '@/lib/google';
 import { Landing } from '@/features/landing/Landing';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
@@ -115,7 +116,11 @@ export default function App() {
     return () => window.removeEventListener('session-expired', handler);
   }, [logout]);
 
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+  const [googleClientId, setGoogleClientId] = useState('');
+
+  useEffect(() => {
+    fetchGoogleClientId().then(setGoogleClientId);
+  }, []);
 
   const content = (
     <ErrorBoundary>

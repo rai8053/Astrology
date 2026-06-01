@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -7,6 +7,7 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/lib/store';
 import { useT } from '@/lib/i18n/useT';
+import { fetchGoogleClientId } from '@/lib/google';
 import toast from 'react-hot-toast';
 
 function calcStrength(password: string, t: (...args: any[]) => string): { score: number; label: string; color: string; width: string } {
@@ -33,6 +34,9 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [googleClientId, setGoogleClientId] = useState('');
+
+  useEffect(() => { fetchGoogleClientId().then(setGoogleClientId); }, []);
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
@@ -108,7 +112,7 @@ export function RegisterPage() {
           </div>
 
           <div className="flex justify-center">
-            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+            {googleClientId ? (
               <GoogleLogin
                 onSuccess={async (credentialResponse) => {
                   if (credentialResponse.credential) {

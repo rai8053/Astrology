@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -7,6 +7,7 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/lib/store';
 import { useT } from '@/lib/i18n/useT';
+import { fetchGoogleClientId } from '@/lib/google';
 import toast from 'react-hot-toast';
 
 export function LoginPage() {
@@ -14,9 +15,12 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [googleClientId, setGoogleClientId] = useState('');
   const { login, loginWithGoogle, isAuthenticated } = useAuthStore();
   const { t } = useT();
   const navigate = useNavigate();
+
+  useEffect(() => { fetchGoogleClientId().then(setGoogleClientId); }, []);
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
@@ -76,7 +80,7 @@ export function LoginPage() {
             </div>
           </div>
           <div className="flex justify-center">
-            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+            {googleClientId ? (
               <GoogleLogin
                 onSuccess={async (credentialResponse) => {
                   if (credentialResponse.credential) {

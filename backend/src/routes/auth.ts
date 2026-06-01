@@ -14,6 +14,10 @@ import { logger } from '../lib/logger.js';
 
 export const authRouter = Router();
 
+authRouter.get('/google/client-id', (req, res) => {
+  res.json({ success: true, data: { clientId: GOOGLE_CLIENT_ID } });
+});
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 10 : 50,
