@@ -50,6 +50,7 @@ userRouter.get('/usage', asyncHandler(async (req, res) => {
 
 const profileSchema = z.object({
   name: z.string().min(2).max(100).optional(),
+  email: z.string().email().optional(),
   birthDate: z.string().optional(),
   birthTime: z.string().optional(),
   birthPlace: z.string().optional(),

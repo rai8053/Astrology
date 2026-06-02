@@ -72,6 +72,7 @@ export function SettingsPage() {
   const { theme, setTheme } = useThemeStore();
   const { language, setLanguage } = useI18nStore();
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [birthPlace, setBirthPlace] = useState('');
@@ -122,6 +123,7 @@ export function SettingsPage() {
     if (p && !initializedRef.current) {
       initializedRef.current = true;
       setName(p.name ?? '');
+      setEmail(p.email ?? '');
       setBirthDate(p.birthDate ?? '');
       setBirthTime(p.birthTime ?? '');
       setBirthPlace(p.birthPlace ?? '');
@@ -131,7 +133,7 @@ export function SettingsPage() {
   }, [profileData]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: { name: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string }) =>
+    mutationFn: (data: { name: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string }) =>
       api.patch<{ message: string } & UserProfile>('/api/user/profile', data),
     onSuccess: (res) => {
       setSaveState('success');
@@ -151,7 +153,7 @@ export function SettingsPage() {
   const handleSave = () => {
     if (saveState === 'loading') return;
     setSaveState('loading');
-    updateMutation.mutate({ name, birthDate, birthTime, birthPlace, birthState, birthCountry });
+    updateMutation.mutate({ name, email, birthDate, birthTime, birthPlace, birthState, birthCountry });
   };
 
   const queryClient = useQueryClient();
@@ -164,6 +166,7 @@ export function SettingsPage() {
       setShowResetConfirm(false);
       setEmailHidden(true);
       setName('');
+      setEmail('');
       setBirthDate('');
       setBirthTime('');
       setBirthPlace('');
@@ -238,7 +241,7 @@ export function SettingsPage() {
             </div>
             <div className="space-y-4">
               <Input label={t('settings.nameLabel')} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('settings.namePlaceholder')} />
-              <Input label={t('auth.email')} value={emailHidden ? '' : (user?.email ?? '')} disabled />
+              <Input label={t('auth.email')} value={emailHidden ? '' : email} onChange={(e) => setEmail(e.target.value)} placeholder={t('auth.emailPlaceholder')} />
               <Input label={t('onboarding.dob')} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
               <div className="grid grid-cols-2 gap-4">
                 <Input label={t('onboarding.birthTime')} type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
