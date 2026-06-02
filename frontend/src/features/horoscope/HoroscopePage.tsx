@@ -96,7 +96,6 @@ export function HoroscopePage() {
               <p className="text-base leading-relaxed mt-4 text-ink/70 dark:text-parchment/70">{horoscope.general}</p>
             </PremiumCard>
 
-            {viewMode === 'detailed' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { label: t('horoscope.career'), value: horoscope.career, color: 'from-blue-500/10', border: 'border-l-blue-400' },
@@ -120,7 +119,6 @@ export function HoroscopePage() {
                 </motion.div>
               ))}
             </div>
-            )}
           </div>
 
           <div className="space-y-6">

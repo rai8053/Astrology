@@ -477,9 +477,6 @@ export function KundliPage() {
                 </PremiumCard>
               </motion.div>
 
-              {/* Detailed sections */}
-              {viewMode === 'detailed' && (
-              <>
               {/* Planetary Placements */}
               <motion.div variants={itemVariants}>
                 <PremiumCard glass>
@@ -611,7 +608,6 @@ export function KundliPage() {
                   </PremiumCard>
                 </motion.div>
               )}
-              </>)}
             </motion.div>
           ) : (
             <PremiumCard glass className="flex items-center justify-center py-24">
