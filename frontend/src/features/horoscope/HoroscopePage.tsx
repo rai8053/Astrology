@@ -27,7 +27,7 @@ export function HoroscopePage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('horoscope.title')}</h1>
+          <h1 className="text-3xl md:text-4xl font-sans font-bold">{t('horoscope.title')}</h1>
           <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('horoscope.subtitle')}</p>
         </div>
         {horoscope && (
@@ -90,7 +90,7 @@ export function HoroscopePage() {
           <div className="lg:col-span-2 space-y-6">
             <PremiumCard glass glow>
               <span className="text-[9px] uppercase tracking-[0.2em] font-sans font-bold text-gold">{t('horoscope.cosmicForecast')}</span>
-              <h2 className="text-3xl md:text-4xl font-serif font-bold mt-1">
+              <h2 className="text-3xl md:text-4xl font-sans font-bold mt-1">
                 {horoscope.rashi} <span className="text-lg font-normal text-ink/40 dark:text-parchment/40">({horoscope.englishName})</span>
               </h2>
               <p className="text-base leading-relaxed mt-4 text-ink/70 dark:text-parchment/70">{horoscope.general}</p>
@@ -129,7 +129,7 @@ export function HoroscopePage() {
                 <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-3xl font-serif font-bold text-gold"
+                  className="text-3xl font-sans font-bold text-gold"
                 >
                   {horoscope.energyLevel}%
                 </motion.span>

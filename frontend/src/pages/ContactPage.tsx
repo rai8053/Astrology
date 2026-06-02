@@ -1,7 +1,11 @@
 import { useState, FormEvent } from 'react';
 import { Mail, MessageSquare, Send, Sparkles, MapPin, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 import { PremiumButton } from '@/components/PremiumButton';
+import { PremiumCard } from '@/components/ui/PremiumCard';
+import { Input } from '@/components/ui/Input';
 import { useT } from '@/lib/i18n/useT';
 
 export function ContactPage() {
@@ -19,12 +23,13 @@ export function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-parchment to-amber-50 dark:from-cosmic dark:to-cosmic-deeper">
+    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
+      <Navbar />
       <div className="max-w-4xl mx-auto px-5 py-24">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-          <MessageSquare className="w-10 h-10 text-gold mx-auto mb-3" />
-          <h1 className="font-serif text-4xl font-bold mb-3">{t('contact.title')}</h1>
-          <p className="text-ink/60 dark:text-parchment/60">{t('contact.subtitle')}</p>
+          <MessageSquare className="w-10 h-10 text-accent mx-auto mb-3" />
+          <h1 className="font-sans text-4xl sm:text-5xl font-bold tracking-tight mb-3">{t('contact.title')}</h1>
+          <p className="text-text-secondary">{t('contact.subtitle')}</p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -35,43 +40,39 @@ export function ContactPage() {
               { icon: MapPin, label: t('contact.location'), value: 'Mumbai, India' },
               { icon: Clock, label: t('contact.responseTime'), value: 'Within 24 hours' },
             ].map((item) => (
-              <div key={item.label} className="flex items-center gap-3 p-4 rounded-xl bg-white/50 dark:bg-white/[0.03] border border-ink/5 dark:border-white/[0.06]">
-                <item.icon className="w-5 h-5 text-gold shrink-0" />
-                <div>
-                  <p className="text-xs text-ink/40">{item.label}</p>
-                  <p className="text-sm font-medium">{item.value}</p>
+              <PremiumCard key={item.label} glass>
+                <div className="flex items-center gap-3">
+                  <item.icon className="w-5 h-5 text-accent shrink-0" />
+                  <div>
+                    <p className="text-xs text-text-tertiary">{item.label}</p>
+                    <p className="text-sm font-medium">{item.value}</p>
+                  </div>
                 </div>
-              </div>
+              </PremiumCard>
             ))}
           </div>
 
           <div className="md:col-span-2">
-            <form onSubmit={handleSubmit} className="p-6 rounded-2xl bg-white/50 dark:bg-white/[0.03] border border-ink/5 dark:border-white/[0.06] space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-ink/60 dark:text-parchment/60 mb-1">{t('contact.nameLabel')}</label>
-                  <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full px-3.5 py-2.5 rounded-xl bg-ink/5 dark:bg-white/[0.05] border border-transparent focus:border-gold/50 focus:outline-none text-sm transition-colors" placeholder={t('contact.namePlaceholder')} />
+            <PremiumCard glass>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input label={t('contact.nameLabel')} value={name} onChange={(e) => setName(e.target.value)} required placeholder={t('contact.namePlaceholder')} />
+                  <Input label={t('contact.emailLabel')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={t('auth.emailPlaceholder')} />
                 </div>
+                <Input label={t('contact.subjectLabel')} value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder={t('contact.subjectPlaceholder')} />
                 <div>
-                  <label className="block text-xs font-medium text-ink/60 dark:text-parchment/60 mb-1">{t('contact.emailLabel')}</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-3.5 py-2.5 rounded-xl bg-ink/5 dark:bg-white/[0.05] border border-transparent focus:border-gold/50 focus:outline-none text-sm transition-colors" placeholder={t('auth.emailPlaceholder')} />
+                  <label className="block text-xs font-medium text-text-secondary mb-1">{t('contact.messageLabel')}</label>
+                  <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5} className="input-glass w-full resize-none" placeholder={t('contact.messagePlaceholder')} />
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-ink/60 dark:text-parchment/60 mb-1">{t('contact.subjectLabel')}</label>
-                <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} required className="w-full px-3.5 py-2.5 rounded-xl bg-ink/5 dark:bg-white/[0.05] border border-transparent focus:border-gold/50 focus:outline-none text-sm transition-colors" placeholder={t('contact.subjectPlaceholder')} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-ink/60 dark:text-parchment/60 mb-1">{t('contact.messageLabel')}</label>
-                <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5} className="w-full px-3.5 py-2.5 rounded-xl bg-ink/5 dark:bg-white/[0.05] border border-transparent focus:border-gold/50 focus:outline-none text-sm transition-colors resize-none" placeholder={t('contact.messagePlaceholder')} />
-              </div>
-              <PremiumButton type="submit" disabled={sent} icon={sent ? <Sparkles className="w-4 h-4" /> : <Send className="w-4 h-4" />} className="w-full">
-                {sent ? t('contact.send') : t('contact.send')}
-              </PremiumButton>
-            </form>
+                <PremiumButton type="submit" disabled={sent} icon={sent ? <Sparkles className="w-4 h-4" /> : <Send className="w-4 h-4" />} className="w-full">
+                  {sent ? t('contact.send') : t('contact.send')}
+                </PremiumButton>
+              </form>
+            </PremiumCard>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

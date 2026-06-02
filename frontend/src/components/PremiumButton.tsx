@@ -15,16 +15,16 @@ export function PremiumButton({ className, variant = 'primary', size = 'md', loa
     <motion.button
       type="button"
       disabled={isDisabled}
+      whileHover={isDisabled ? {} : { scale: 1.01 }}
+      whileTap={isDisabled ? {} : { scale: 0.97 }}
       className={cn(
-        'relative inline-flex items-center justify-center gap-2 font-sans font-medium overflow-hidden rounded-lg transition-all duration-200',
-        variant === 'primary' && 'bg-accent text-white shadow-sm shadow-accent/20 hover:shadow-md hover:shadow-accent/25 hover:bg-accent-hover',
-        variant === 'secondary' && 'card-border bg-bg-primary dark:bg-dark-bg-secondary text-text-primary dark:text-dark-text-primary hover:bg-bg-secondary dark:hover:bg-dark-bg-tertiary',
-        variant === 'ghost' && 'bg-transparent text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-accent/5',
-        variant === 'outline' && 'border border-accent/40 text-accent hover:bg-accent/5 hover:border-accent',
-        size === 'sm' && 'px-4 py-2 text-[12px]',
-        size === 'md' && 'px-6 py-2.5 text-[13px]',
-        size === 'lg' && 'px-8 py-3 text-sm',
-        'cursor-pointer',
+        variant === 'primary' && 'btn-gold',
+        variant === 'secondary' && 'card-border-premium bg-bg-primary dark:bg-dark-bg-secondary text-text-primary dark:text-dark-text-primary hover:bg-bg-secondary dark:hover:bg-dark-bg-tertiary inline-flex items-center justify-center gap-2 font-sans font-medium rounded-xl transition-all duration-200',
+        variant === 'ghost' && 'btn-ghost-premium',
+        variant === 'outline' && 'btn-outline-premium',
+        size === 'sm' && 'px-4 py-1.5 text-[11px]',
+        size === 'md' && 'px-6 py-2.5 text-xs',
+        size === 'lg' && 'px-8 py-3.5 text-sm',
         loading && 'cursor-wait',
         isDisabled && 'opacity-50 cursor-not-allowed',
         className,

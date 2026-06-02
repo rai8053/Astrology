@@ -39,7 +39,7 @@ export function AdminDashboard() {
                   <stat.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold font-serif">{typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}</p>
+                  <p className="text-2xl font-bold font-sans">{typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}</p>
                   <p className="text-xs text-ink/40 dark:text-parchment/40">{stat.label}</p>
                 </div>
               </div>

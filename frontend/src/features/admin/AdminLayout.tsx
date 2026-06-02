@@ -18,7 +18,7 @@ export function AdminLayout() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('admin.title')}</h1>
+          <h1 className="text-3xl md:text-4xl font-sans font-bold">{t('admin.title')}</h1>
           <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('admin.subtitle')}</p>
         </motion.div>
         <motion.div whileHover={{ x: -3 }}>

@@ -200,7 +200,7 @@ export function SettingsPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('settings.title')}</h1>
+        <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight">{t('settings.title')}</h1>
         <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('settings.subtitle')}</p>
       </motion.div>
 
@@ -211,7 +211,7 @@ export function SettingsPage() {
               <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
                 <User className="w-4 h-4 text-gold" />
               </div>
-              <h3 className="font-serif text-lg font-semibold">{t('settings.profile')}</h3>
+              <h3 className="font-sans text-lg font-semibold">{t('settings.profile')}</h3>
             </div>
             <div className="space-y-4">
               <Input label={t('settings.nameLabel')} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('settings.namePlaceholder')} />
@@ -258,7 +258,7 @@ export function SettingsPage() {
               <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
                 <Sun className="w-4 h-4 text-gold" />
               </div>
-              <h3 className="font-serif text-lg font-semibold">{t('settings.theme')}</h3>
+              <h3 className="font-sans text-lg font-semibold">{t('settings.theme')}</h3>
             </div>
             <div className="grid grid-cols-3 gap-3">
               {(['light', 'dark', 'system'] as const).map((themeOption) => (
@@ -285,7 +285,7 @@ export function SettingsPage() {
               <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
                 <Globe className="w-4 h-4 text-gold" />
               </div>
-              <h3 className="font-serif text-lg font-semibold">{t('settings.language')}</h3>
+              <h3 className="font-sans text-lg font-semibold">{t('settings.language')}</h3>
             </div>
             <div className="relative">
               <select
@@ -317,7 +317,7 @@ export function SettingsPage() {
               <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
                 <CreditCard className="w-4 h-4 text-gold" />
               </div>
-              <h3 className="font-serif text-lg font-semibold">{t('settings.subscription')}</h3>
+              <h3 className="font-sans text-lg font-semibold">{t('settings.subscription')}</h3>
             </div>
             <p className="text-sm text-ink/50 dark:text-parchment/50">
               {t('settings.onPlan', { plan: subData?.data?.plan || 'Free' })}

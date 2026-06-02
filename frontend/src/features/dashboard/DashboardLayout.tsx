@@ -18,9 +18,8 @@ function ThemeToggle({ className }: { className?: string }) {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onClick={() => setTheme(next)}
-      className={cn('p-2 hover:bg-ink/5 dark:hover:bg-white/5 rounded-full transition-colors relative', className)}
+      className={cn('p-2 hover:bg-text-secondary/5 dark:hover:bg-dark-text-secondary/5 rounded-full transition-colors relative', className)}
       aria-label={`Theme: ${t}. Click for ${next}.`}
-      title={`${t === 'light' ? trans('settings.light') : t === 'dark' ? trans('settings.dark') : trans('settings.system')} ${trans('settings.mode')}`}
     >
       {t === 'dark' ? <Sun className="w-4 h-4" /> : t === 'light' ? <Moon className="w-4 h-4" /> : (
         <span className="text-[10px] font-bold font-mono w-4 h-4 flex items-center justify-center">A</span>
@@ -116,9 +115,9 @@ export function DashboardLayout() {
   const allNavItems = [...navItems, ...secondaryItems, ...(isAdmin ? adminItems : [])];
 
   return (
-    <div className="min-h-screen bg-parchment dark:bg-cosmic">
+    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 glass border-b border-ink/5 dark:border-white/[0.04]">
+      <header className="sticky top-0 z-50 glass-nav border-b border-border-primary dark:border-dark-border-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14 md:h-16">
             {/* Left: Logo + Desktop Nav */}
@@ -260,13 +259,13 @@ export function DashboardLayout() {
         initial={{ x: -300 }}
         animate={{ x: sidebarOpen ? 0 : -300 }}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-cosmic-light/90 backdrop-blur-2xl border-r border-ink/10 dark:border-white/[0.06] lg:hidden',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-bg-primary dark:bg-dark-bg-secondary/95 backdrop-blur-2xl border-r border-border-primary dark:border-dark-border-primary lg:hidden',
         )}
       >
-        <div className="flex items-center justify-between p-4 border-b border-ink/10 dark:border-white/[0.06]">
+        <div className="flex items-center justify-between p-4 border-b border-border-primary dark:border-dark-border-primary">
           <Link to="/dashboard" className="flex items-center gap-2" onClick={() => setSidebarOpen(false)}>
-            <Sparkles className="w-5 h-5 text-gold" />
-            <span className="font-serif text-lg font-semibold bg-gradient-to-r from-gold to-amber-400 bg-clip-text text-transparent">Soma & Surya</span>
+            <Sparkles className="w-5 h-5 text-accent" />
+            <span className="font-sans text-lg font-semibold tracking-tight">Soma<span className="text-text-tertiary dark:text-dark-text-tertiary font-normal">&</span>Surya</span>
           </Link>
           <motion.button whileTap={{ scale: 0.9 }} onClick={() => setSidebarOpen(false)} className="p-1">
             <X className="w-5 h-5" />
@@ -284,8 +283,8 @@ export function DashboardLayout() {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-sans transition-all duration-200',
                   active
-                    ? 'bg-gold/10 text-gold font-semibold shadow-sm'
-                    : 'text-ink/50 dark:text-parchment/50 hover:bg-ink/5 dark:hover:bg-white/[0.04] hover:text-ink dark:hover:text-parchment',
+                    ? 'bg-accent/10 text-accent font-semibold shadow-sm'
+                    : 'text-text-tertiary hover:bg-accent/5 hover:text-text-primary dark:hover:text-dark-text-primary',
                 )}
               >
                 <item.icon className="w-4 h-4" />
@@ -294,20 +293,20 @@ export function DashboardLayout() {
             );
           })}
         </nav>
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-ink/10 dark:border-white/[0.06]">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border-primary dark:border-dark-border-primary">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center">
-              <User className="w-4 h-4 text-gold" />
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+              <User className="w-4 h-4 text-accent" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-ink/40 dark:text-parchment/40 truncate">{user?.email}</p>
+              <p className="text-xs text-text-tertiary truncate">{user?.email}</p>
             </div>
             <ThemeToggle />
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-ink/40 dark:text-parchment/40 hover:text-red-500 transition-colors w-full py-1.5"
+            className="flex items-center gap-2 text-sm text-text-tertiary hover:text-red-500 transition-colors w-full py-1.5"
           >
             <LogOut className="w-4 h-4" /> {t('nav.signOut')}
           </button>

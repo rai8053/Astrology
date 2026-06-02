@@ -38,7 +38,7 @@ export function CosmicEnergyCard({ data, isLoading }: { data?: CosmicEnergy | nu
         <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
           <Zap className="w-3.5 h-3.5 text-gold" />
         </div>
-        <h3 className="font-serif text-base font-semibold">{t('dashboard.cosmicEnergy')}</h3>
+        <h3 className="font-sans text-base font-semibold">{t('dashboard.cosmicEnergy')}</h3>
       </div>
 
       <div className="flex items-end justify-between mb-2">
@@ -48,7 +48,7 @@ export function CosmicEnergyCard({ data, isLoading }: { data?: CosmicEnergy | nu
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-            className={`text-3xl font-serif font-bold ${lc.text}`}
+            className={`text-3xl font-sans font-bold ${lc.text}`}
           >
             {data.score}
           </motion.span>

@@ -4,6 +4,7 @@ import { Sparkles, ArrowRight, Eye, EyeOff, User, Mail, Lock } from 'lucide-reac
 import { motion } from 'framer-motion';
 import { GoogleLogin } from '@react-oauth/google';
 import { PremiumButton } from '@/components/PremiumButton';
+import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/lib/store';
 import { useT } from '@/lib/i18n/useT';
@@ -58,25 +59,20 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 bg-gradient-to-br from-bg-primary to-bg-secondary dark:from-dark-bg-primary dark:to-dark-bg-secondary">
+    <div className="min-h-screen flex items-center justify-center p-5 bg-bg-primary dark:bg-dark-bg-primary">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm"
       >
         <Link to="/" className="flex items-center gap-2 justify-center mb-8">
-          <Sparkles className="w-6 h-6 text-gold" />
-          <span className="font-serif text-2xl font-semibold bg-gradient-to-r from-gold to-amber-400 bg-clip-text text-transparent">Soma & Surya</span>
+          <Sparkles className="w-6 h-6 text-accent" />
+          <span className="font-sans text-2xl font-semibold bg-gradient-to-r from-accent to-amber-400 bg-clip-text text-transparent">Soma & Surya</span>
         </Link>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card p-6 rounded-2xl"
-        >
-          <h1 className="font-serif text-xl font-bold mb-1">{t('auth.createAccount')}</h1>
-          <p className="text-sm text-ink/50 dark:text-parchment/50 mb-5">{t('auth.freeAccess')}</p>
+        <PremiumCard glass>
+          <h1 className="font-sans text-xl font-bold tracking-tight mb-1">{t('auth.createAccount')}</h1>
+          <p className="text-sm text-text-secondary mb-5">{t('auth.freeAccess')}</p>
 
           <form onSubmit={handleSubmit} className="space-y-3.5">
             <Input id="name" label={t('auth.name')} type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder={t('auth.namePlaceholder')} icon={<User className="w-4 h-4" />} />
@@ -85,10 +81,10 @@ export function RegisterPage() {
               <Input id="password" label={t('auth.password')} type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} placeholder={t('auth.passwordPlaceholder')} icon={<Lock className="w-4 h-4" />} trailingIcon={password ? (showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />) : undefined} onTrailingIconClick={() => setShowPassword(!showPassword)} />
               {password && (
                 <div className="mt-1.5 flex items-center gap-2">
-                  <div className="flex-1 h-1 bg-ink/10 dark:bg-white/10 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1 bg-border-primary dark:bg-dark-border-primary rounded-full overflow-hidden">
                     <div className={`h-full rounded-full transition-all ${pw.color} ${pw.width}`} />
                   </div>
-                  <span className="text-[10px] font-medium text-ink/40 dark:text-parchment/40">{pw.label}</span>
+                  <span className="text-[10px] font-medium text-text-tertiary">{pw.label}</span>
                 </div>
               )}
             </div>
@@ -104,10 +100,10 @@ export function RegisterPage() {
 
           <div className="relative my-5">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-ink/10 dark:border-parchment/10" />
+              <div className="w-full border-t border-border-primary dark:border-dark-border-primary" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white dark:bg-cosmic-deeper px-2 text-ink/40 dark:text-parchment/40">{t('auth.or')}</span>
+              <span className="bg-bg-primary dark:bg-dark-bg-secondary px-2 text-text-tertiary">{t('auth.or')}</span>
             </div>
           </div>
 
@@ -128,20 +124,20 @@ export function RegisterPage() {
                 text="signup_with"
               />
             ) : (
-              <p className="text-xs text-ink/40 dark:text-parchment/40">{t('auth.googleUnavailable')}</p>
+              <p className="text-xs text-text-tertiary">{t('auth.googleUnavailable')}</p>
             )}
           </div>
 
-          <p className="text-xs text-center mt-5 text-ink/40 dark:text-parchment/40">
+          <p className="text-xs text-center mt-5 text-text-tertiary">
             {t('auth.hasAccount')}{' '}
-            <Link to="/login" className="text-gold hover:underline font-medium">{t('auth.signIn')}</Link>
+            <Link to="/login" className="text-accent hover:underline font-medium">{t('auth.signIn')}</Link>
           </p>
-        </motion.div>
+        </PremiumCard>
 
-        <p className="text-[10px] text-center mt-4 text-ink/30 dark:text-parchment/30">
+        <p className="text-[10px] text-center mt-4 text-text-tertiary">
           {t('auth.termsAgree')}{' '}
-          <Link to="/terms" className="underline hover:text-gold">{t('auth.terms')}</Link> and{' '}
-          <Link to="/privacy" className="underline hover:text-gold">{t('auth.privacy')}</Link>
+          <Link to="/terms" className="underline hover:text-accent">{t('auth.terms')}</Link> and{' '}
+          <Link to="/privacy" className="underline hover:text-accent">{t('auth.privacy')}</Link>
         </p>
       </motion.div>
     </div>

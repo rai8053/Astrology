@@ -32,7 +32,7 @@ export function TransitAlertsCard({ data, isLoading }: { data?: TransitAlert[] |
         <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
           <Calendar className="w-3.5 h-3.5 text-gold" />
         </div>
-        <h3 className="font-serif text-base font-semibold">{t('dashboard.transitAlerts')}</h3>
+        <h3 className="font-sans text-base font-semibold">{t('dashboard.transitAlerts')}</h3>
       </div>
 
       <div className="space-y-2">

@@ -11,15 +11,15 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, id, icon, trailingIcon, onTrailingIconClick, ...props }, ref) => (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       {label && (
-        <label htmlFor={id} className="block text-[10px] font-sans font-bold uppercase tracking-widest text-ink/60 dark:text-parchment/60">
+        <label htmlFor={id} className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">
           {label}
         </label>
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 text-ink/30 dark:text-parchment/30">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary dark:text-dark-text-tertiary z-[1]">
             {icon}
           </div>
         )}
@@ -27,21 +27,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           id={id}
           ref={ref}
           className={cn(
-            'w-full bg-transparent border-b border-ink/20 dark:border-parchment/20 text-sm py-2 outline-none transition-colors focus:border-gold font-serif placeholder:text-ink/30 dark:placeholder:text-parchment/30',
-            icon && 'pl-6',
-            trailingIcon && 'pr-6',
-            error && 'border-red-500',
+            'input-glass',
+            icon && 'pl-10',
+            trailingIcon && 'pr-10',
+            error && '!border-red-500/40 !shadow-[0_0_0_3px_rgba(239,68,68,0.08)]',
             className,
           )}
           {...props}
         />
         {trailingIcon && (
-          <button type="button" onClick={onTrailingIconClick} className="absolute right-0 top-1/2 -translate-y-1/2 text-ink/30 dark:text-parchment/30 hover:text-gold transition-colors">
+          <button type="button" onClick={onTrailingIconClick} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary dark:text-dark-text-tertiary hover:text-accent transition-colors z-[1]">
             {trailingIcon}
           </button>
         )}
       </div>
-      {error && <p className="text-xs text-red-500 font-sans">{error}</p>}
+      {error && <p className="text-xs text-red-400 font-sans">{error}</p>}
     </div>
   ),
 );

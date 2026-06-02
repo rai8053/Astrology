@@ -62,7 +62,7 @@ export function MoonPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('moon.title')}</h1>
+        <h1 className="text-3xl md:text-4xl font-sans font-bold">{t('moon.title')}</h1>
         <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('moon.subtitle')}</p>
       </motion.div>
 
@@ -87,7 +87,7 @@ export function MoonPage() {
             <motion.h2
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-2xl font-serif font-bold mt-4"
+              className="text-2xl font-sans font-bold mt-4"
             >
               {moon.phaseName}
             </motion.h2>
@@ -102,7 +102,7 @@ export function MoonPage() {
               ].map((item, i) => (
                 <div key={i}>
                   <span className="text-[9px] text-ink/40 dark:text-parchment/40 block uppercase tracking-wider">{item.label}</span>
-                  <span className="text-lg font-bold font-serif text-gold">{item.value}</span>
+                  <span className="text-lg font-bold font-sans text-gold">{item.value}</span>
                 </div>
               ))}
             </div>
@@ -111,7 +111,7 @@ export function MoonPage() {
           <div className="lg:col-span-2 space-y-6">
             <PremiumCard glass>
               <span className="text-[9px] uppercase font-sans font-bold text-gold tracking-[0.2em]">{t('moon.tithi')}</span>
-              <h2 className="text-2xl font-serif font-bold mt-1">{moon.tithiName}</h2>
+              <h2 className="text-2xl font-sans font-bold mt-1">{moon.tithiName}</h2>
               <p className="text-sm mt-3 leading-relaxed text-ink/70 dark:text-parchment/70">{moon.tithiSignificance}</p>
             </PremiumCard>
 
@@ -119,15 +119,15 @@ export function MoonPage() {
               <motion.div whileHover={{ y: -4 }}>
                 <PremiumCard glass className="bg-gradient-to-br from-amber-50 to-parchment dark:from-cosmic dark:to-cosmic-light text-ink dark:text-parchment gold-border h-full">
                   <span className="text-[8px] uppercase font-sans font-bold text-gold tracking-wider">{t('moon.fullMoon')}</span>
-                  <h3 className="text-xl font-serif font-bold mt-2">{t('moon.purnima')}</h3>
-                  <p className="text-lg mt-2 text-gold font-serif">{moon.nextPurnima}</p>
+                  <h3 className="text-xl font-sans font-bold mt-2">{t('moon.purnima')}</h3>
+                  <p className="text-lg mt-2 text-gold font-sans">{moon.nextPurnima}</p>
                 </PremiumCard>
               </motion.div>
               <motion.div whileHover={{ y: -4 }}>
                 <PremiumCard glass className="h-full">
                   <span className="text-[8px] uppercase font-sans font-bold text-ink/40 dark:text-parchment/40 tracking-wider">{t('moon.newMoon')}</span>
-                  <h3 className="text-xl font-serif font-bold mt-2">{t('moon.amavasya')}</h3>
-                  <p className="text-lg mt-2 text-ink/60 dark:text-parchment/60 font-serif">{moon.nextAmavasya}</p>
+                  <h3 className="text-xl font-sans font-bold mt-2">{t('moon.amavasya')}</h3>
+                  <p className="text-lg mt-2 text-ink/60 dark:text-parchment/60 font-sans">{moon.nextAmavasya}</p>
                 </PremiumCard>
               </motion.div>
             </div>

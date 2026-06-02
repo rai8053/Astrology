@@ -20,7 +20,7 @@ export function AdminAnalytics() {
   return (
     <div className="space-y-6">
       <PremiumCard glass>
-        <h3 className="font-serif text-lg font-semibold mb-4">{t('admin.aiUsageTitle')}</h3>
+        <h3 className="font-sans text-lg font-semibold mb-4">{t('admin.aiUsageTitle')}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>

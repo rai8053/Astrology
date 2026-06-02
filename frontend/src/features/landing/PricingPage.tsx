@@ -153,7 +153,7 @@ export function PricingPage() {
                   <div className="flex-1 space-y-2.5 mb-6">
                     {(plan.features || []).map((f: string, j: number) => (
                       <div key={j} className="flex items-start gap-2">
-                        <div className={cn('mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0', 'bg-accent/15')}>
+                        <div className="w-4 h-4 rounded-full bg-accent/15 flex items-center justify-center shrink-0 mt-0.5">
                           <Check className="w-2.5 h-2.5 text-accent" />
                         </div>
                         <span className="text-xs sm:text-sm text-text-secondary dark:text-dark-text-secondary">{f}</span>

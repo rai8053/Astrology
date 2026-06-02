@@ -31,7 +31,7 @@ export function LoadingScreen() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="mt-6 text-sm font-serif text-ink/40 dark:text-parchment/40 italic"
+        className="mt-6 text-sm font-sans text-text-tertiary italic"
       >
         {t('common.loadingCosmic')}
       </motion.p>

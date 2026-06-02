@@ -35,7 +35,7 @@ export function HoroscopeSection({
           <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5 text-gold" />
           </div>
-          <h3 className="font-serif text-base font-semibold">{t('horoscope.title')}</h3>
+          <h3 className="font-sans text-base font-semibold">{t('horoscope.title')}</h3>
         </div>
       </div>
 
@@ -86,7 +86,7 @@ export function HoroscopeSection({
                       <Icon className={`w-3.5 h-3.5 ${s.color}`} />
                       <span className="text-[11px] font-sans font-semibold text-ink/50 dark:text-parchment/50">{s.label}</span>
                     </div>
-                    <span className={`text-sm font-bold font-serif ${s.color}`}>{val}%</span>
+                    <span className={`text-sm font-bold font-sans ${s.color}`}>{val}%</span>
                   </div>
                   <div className="w-full h-1.5 bg-ink/5 dark:bg-white/5 rounded-full overflow-hidden">
                     <motion.div
@@ -106,14 +106,14 @@ export function HoroscopeSection({
               <Hash className="w-4 h-4 text-gold/60" />
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyNumber')}</p>
-                <p className="text-sm font-bold font-serif">{data.luckyNumber}</p>
+                <p className="text-sm font-bold font-sans">{data.luckyNumber}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-lg bg-ink/[0.02] dark:bg-white/[0.02]">
               <Palette className="w-4 h-4 text-gold/60" />
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyColor')}</p>
-                <p className="text-sm font-bold font-serif">{data.luckyColor}</p>
+                <p className="text-sm font-bold font-sans">{data.luckyColor}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-lg bg-ink/[0.02] dark:bg-white/[0.02]">

@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, Quote, Users, Globe, Star, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
+import { PremiumButton } from '@/components/PremiumButton';
+import { PremiumCard } from '@/components/ui/PremiumCard';
 import { useT } from '@/lib/i18n/useT';
 
 export function AboutPage() {
@@ -23,16 +27,15 @@ export function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-parchment to-amber-50 dark:from-cosmic dark:to-cosmic-deeper">
+    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
+      <Navbar />
       <div className="max-w-5xl mx-auto px-5 py-24">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-8 h-8 text-gold" />
+          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-8 h-8 text-accent" />
           </div>
-          <h1 className="font-serif text-4xl font-bold mb-4">{t('about.title')}</h1>
-          <p className="text-lg text-ink/60 dark:text-parchment/60 max-w-2xl mx-auto">
-            {t('about.intro')}
-          </p>
+          <h1 className="font-sans text-4xl sm:text-5xl font-bold tracking-tight mb-4">{t('about.title')}</h1>
+          <p className="text-lg text-text-secondary max-w-2xl mx-auto">{t('about.intro')}</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="grid md:grid-cols-3 gap-6 mb-20">
@@ -41,26 +44,26 @@ export function AboutPage() {
             { icon: Star, title: t('about.mission2'), desc: t('about.mission2Desc') },
             { icon: Shield, title: t('about.mission3'), desc: t('about.mission3Desc') },
           ].map((item) => (
-            <div key={item.title} className="p-6 rounded-2xl bg-white/50 dark:bg-white/[0.03] border border-ink/5 dark:border-white/[0.06] text-center">
-              <item.icon className="w-8 h-8 text-gold mx-auto mb-3" />
+            <PremiumCard key={item.title} glass className="text-center">
+              <item.icon className="w-8 h-8 text-accent mx-auto mb-3" />
               <h3 className="font-medium mb-2">{item.title}</h3>
-              <p className="text-sm text-ink/50 dark:text-parchment/50">{item.desc}</p>
-            </div>
+              <p className="text-sm text-text-secondary">{item.desc}</p>
+            </PremiumCard>
           ))}
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <h2 className="font-serif text-2xl font-bold text-center mb-10">{t('about.journey')}</h2>
+          <h2 className="font-sans text-2xl font-bold text-center mb-10">{t('about.journey')}</h2>
           <div className="relative">
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gold/20 -translate-x-1/2 hidden md:block" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-accent/20 -translate-x-1/2 hidden md:block" />
             {MILESTONES.map((m, i) => (
               <motion.div key={m.year} initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 * i }} className={`flex items-center gap-6 mb-8 ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
                 <div className={`flex-1 ${i % 2 === 0 ? 'md:text-right' : 'md:text-left'}`}>
-                  <span className="text-gold text-sm font-bold">{m.year}</span>
+                  <span className="text-accent text-sm font-bold">{m.year}</span>
                   <h3 className="font-medium text-lg">{m.title}</h3>
-                  <p className="text-sm text-ink/50 dark:text-parchment/50">{m.desc}</p>
+                  <p className="text-sm text-text-secondary">{m.desc}</p>
                 </div>
-                <div className="hidden md:flex w-4 h-4 rounded-full bg-gold shrink-0 relative z-10" />
+                <div className="hidden md:flex w-4 h-4 rounded-full bg-accent shrink-0 relative z-10" />
                 <div className="flex-1 hidden md:block" />
               </motion.div>
             ))}
@@ -68,35 +71,34 @@ export function AboutPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-20">
-          <h2 className="font-serif text-2xl font-bold text-center mb-10">{t('about.team')}</h2>
+          <h2 className="font-sans text-2xl font-bold text-center mb-10">{t('about.team')}</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {TEAM.map((member) => (
-              <div key={member.name} className="p-6 rounded-2xl bg-white/50 dark:bg-white/[0.03] border border-ink/5 dark:border-white/[0.06] text-center">
-                <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-gold font-bold">{member.avatar}</span>
+              <PremiumCard key={member.name} glass className="text-center">
+                <div className="w-14 h-14 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-accent font-bold">{member.avatar}</span>
                 </div>
                 <h3 className="font-medium text-sm">{member.name}</h3>
-                <p className="text-xs text-gold mb-2">{member.role}</p>
-                <p className="text-xs text-ink/50 dark:text-parchment/50">{member.bio}</p>
-              </div>
+                <p className="text-xs text-accent mb-2">{member.role}</p>
+                <p className="text-xs text-text-secondary">{member.bio}</p>
+              </PremiumCard>
             ))}
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-16 text-center p-10 rounded-3xl bg-gradient-to-br from-gold/5 to-amber-500/5 border border-gold/10">
-          <Quote className="w-8 h-8 text-gold mx-auto mb-4" />
-          <p className="font-serif text-xl italic max-w-2xl mx-auto mb-4">
-            {t('about.quote')}
-          </p>
-          <p className="text-sm text-ink/50">{t('about.attribution')}</p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-16 text-center p-10 rounded-3xl bg-accent/5 border border-accent/10">
+          <Quote className="w-8 h-8 text-accent mx-auto mb-4" />
+          <p className="font-sans text-xl italic max-w-2xl mx-auto mb-4">{t('about.quote')}</p>
+          <p className="text-sm text-text-secondary">{t('about.attribution')}</p>
         </motion.div>
 
         <div className="text-center mt-12">
-          <Link to="/register" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold text-white font-medium hover:bg-gold/90 transition-colors">
-            <Sparkles className="w-4 h-4" /> {t('about.cta')}
+          <Link to="/register">
+            <PremiumButton icon={<Sparkles className="w-4 h-4" />}>{t('about.cta')}</PremiumButton>
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

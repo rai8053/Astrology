@@ -18,7 +18,7 @@ function ErrorFallback({ error }: { error?: Error }) {
       >
         <AlertTriangle className="w-14 h-14 text-amber-400 mb-4" />
       </motion.div>
-      <h2 className="text-2xl font-serif font-bold mb-2">Something went wrong</h2>
+      <h2 className="text-2xl font-sans font-bold mb-2">Something went wrong</h2>
       <p className="text-sm text-ink/50 dark:text-parchment/50 mb-6 max-w-md">
         {error?.message || 'An unexpected error occurred'}
       </p>

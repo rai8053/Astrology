@@ -35,7 +35,7 @@ export function AstrologySnapshotCard({ data, isLoading }: { data?: SnapshotData
         <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
           <Star className="w-3.5 h-3.5 text-gold" />
         </div>
-        <h3 className="font-serif text-base font-semibold">{t('dashboard.astrologySnapshot')}</h3>
+        <h3 className="font-sans text-base font-semibold">{t('dashboard.astrologySnapshot')}</h3>
       </div>
       <motion.div initial="initial" animate="animate" className="grid grid-cols-2 gap-3">
         {fields.map((f) => {

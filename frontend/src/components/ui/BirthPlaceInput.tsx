@@ -83,7 +83,7 @@ function RowComponent({ index, style, results, focusedIdx, select, setFocusedIdx
           focusedIdx === index ? 'bg-gold/10' : 'hover:bg-gold/5',
         )}
       >
-        <h3 className="text-sm font-serif font-semibold text-ink dark:text-parchment truncate leading-tight">
+        <h3 className="text-sm font-sans font-semibold text-text-primary dark:text-dark-text-primary truncate leading-tight">
           {place.v}
         </h3>
         <p className="text-xs text-ink/40 dark:text-parchment/40 truncate leading-tight">
@@ -246,7 +246,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
           required={required}
           placeholder={placeholder}
           className={cn(
-            'w-full bg-transparent border-b text-sm py-2 outline-none transition-colors focus:border-gold font-serif placeholder:text-ink/30 dark:placeholder:text-parchment/30',
+            'w-full bg-transparent border-b text-sm py-2 outline-none transition-colors focus:border-accent font-sans placeholder:text-text-tertiary',
             error ? 'border-red-500' : 'border-ink/20 dark:border-parchment/20',
           )}
           autoComplete="off"

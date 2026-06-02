@@ -61,7 +61,7 @@ export function CompatibilityPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('compatibility.title')}</h1>
+        <h1 className="text-3xl md:text-4xl font-sans font-bold">{t('compatibility.title')}</h1>
         <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('compatibility.subtitle')}</p>
       </motion.div>
 
@@ -72,7 +72,7 @@ export function CompatibilityPage() {
               <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center">
                 <Heart className="w-4 h-4 text-pink-400" />
               </div>
-              <h3 className="font-serif text-lg font-semibold">{t('compatibility.partnerDetails')}</h3>
+              <h3 className="font-sans text-lg font-semibold">{t('compatibility.partnerDetails')}</h3>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -120,7 +120,7 @@ export function CompatibilityPage() {
                 <div className="flex justify-between items-start border-b border-ink/10 dark:border-white/[0.06] pb-4 mb-4">
                   <div>
                     <span className="text-[9px] uppercase font-sans font-bold text-gold tracking-[0.2em]">{t('compatibility.result')}</span>
-                    <h2 className="text-2xl font-serif font-bold mt-1">{t('compatibility.gunMilan')}</h2>
+                    <h2 className="text-2xl font-sans font-bold mt-1">{t('compatibility.gunMilan')}</h2>
                   </div>
                   <div className="text-right">
                     <span className="text-[9px] uppercase font-sans font-bold text-ink/40 dark:text-parchment/40 block">{t('compatibility.score')}</span>
@@ -128,7 +128,7 @@ export function CompatibilityPage() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 200 }}
-                      className="text-4xl font-serif font-bold text-gold"
+                      className="text-4xl font-sans font-bold text-gold"
                     >
                       {result.gunsMatched}/36
                     </motion.span>
@@ -151,12 +151,12 @@ export function CompatibilityPage() {
                 <div className="grid grid-cols-2 gap-3 text-sm bg-ink/5 dark:bg-white/[0.04] p-3 rounded-lg">
                   <div>
                     <span className="text-[9px] uppercase font-sans font-bold text-ink/40 dark:text-parchment/40 block">{t('compatibility.partnerA')}</span>
-                    <span className="font-serif font-semibold">{result.partnerA_Rashi}</span>
+                    <span className="font-sans font-semibold">{result.partnerA_Rashi}</span>
                     <span className="text-ink/40 dark:text-parchment/40 block text-xs">{result.partnerA_Nakshatra}</span>
                   </div>
                   <div>
                     <span className="text-[9px] uppercase font-sans font-bold text-ink/40 dark:text-parchment/40 block">{t('compatibility.partnerB')}</span>
-                    <span className="font-serif font-semibold">{result.partnerB_Rashi}</span>
+                    <span className="font-sans font-semibold">{result.partnerB_Rashi}</span>
                     <span className="text-ink/40 dark:text-parchment/40 block text-xs">{result.partnerB_Nakshatra}</span>
                   </div>
                 </div>
@@ -182,7 +182,7 @@ export function CompatibilityPage() {
 
               {result.gunAnalysis && (
                 <PremiumCard glass>
-                  <h3 className="font-serif font-semibold mb-4">{t('compatibility.koota')}</h3>
+                  <h3 className="font-sans font-semibold mb-4">{t('compatibility.koota')}</h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                       <thead>

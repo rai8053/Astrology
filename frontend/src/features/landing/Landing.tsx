@@ -519,7 +519,7 @@ export function Landing() {
         <div className="max-w-6xl mx-auto px-5">
           <div className="text-center mb-14">
             <span className="text-accent text-[11px] font-bold uppercase tracking-[0.2em]">{t('landing.testimonials')}</span>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold mt-3 mb-4">{t('landing.testimonials2Title')}</h2>
+            <h2 className="font-sans text-3xl md:text-4xl font-bold mt-3 mb-4">{t('landing.testimonials2Title')}</h2>
             <p className="text-text-secondary dark:text-dark-text-secondary text-sm max-w-xl mx-auto">{t('landing.testimonials2Desc')}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6" {...stagger}>

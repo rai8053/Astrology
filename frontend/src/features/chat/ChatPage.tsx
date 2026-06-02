@@ -175,7 +175,7 @@ export function ChatPage() {
             <Stars className="w-5 h-5 text-gold" />
           </motion.div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('chat.title')}</h1>
+            <h1 className="text-3xl md:text-4xl font-sans font-bold">{t('chat.title')}</h1>
             <p className="text-ink/50 dark:text-parchment/50 mt-0.5 text-sm">{t('chat.subtitle')}</p>
           </div>
         </div>
@@ -281,7 +281,7 @@ export function ChatPage() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   placeholder={t('chat.placeholder')}
-                  className="flex-1 bg-transparent border-b border-ink/20 dark:border-white/10 outline-none focus:border-gold py-2.5 text-sm font-serif placeholder:text-ink/30 dark:placeholder:text-parchment/30 transition-colors"
+                  className="flex-1 bg-transparent border-b border-ink/20 dark:border-white/10 outline-none focus:border-gold py-2.5 text-sm font-sans placeholder:text-ink/30 dark:placeholder:text-parchment/30 transition-colors"
                 />
                 <PremiumButton
                   size="sm"

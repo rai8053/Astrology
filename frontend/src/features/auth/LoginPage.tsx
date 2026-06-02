@@ -4,6 +4,7 @@ import { Sparkles, ArrowRight, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GoogleLogin } from '@react-oauth/google';
 import { PremiumButton } from '@/components/PremiumButton';
+import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/lib/store';
 import { useT } from '@/lib/i18n/useT';
@@ -37,7 +38,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-parchment to-amber-50 dark:from-cosmic dark:to-cosmic-deeper p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-bg-primary dark:bg-dark-bg-primary p-4 relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]" style={{
         backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(212,175,55,0.5) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(212,175,55,0.3) 0%, transparent 40%)',
       }} />
@@ -48,17 +49,12 @@ export function LoginPage() {
         className="w-full max-w-md relative z-10"
       >
         <Link to="/" className="flex items-center gap-2 justify-center mb-8">
-          <Sparkles className="w-6 h-6 text-gold" />
-          <span className="font-serif text-2xl font-semibold bg-gradient-to-r from-gold to-amber-400 bg-clip-text text-transparent">Soma & Surya</span>
+          <Sparkles className="w-6 h-6 text-accent" />
+          <span className="font-sans text-2xl font-semibold bg-gradient-to-r from-accent to-amber-400 bg-clip-text text-transparent">Soma & Surya</span>
         </Link>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card p-8 rounded-2xl"
-        >
-          <h1 className="font-serif text-3xl font-bold mb-1">{t('auth.welcomeBack')}</h1>
-          <p className="text-sm text-ink/50 dark:text-parchment/50 mb-7">{t('auth.signInSubtitle')}</p>
+        <PremiumCard glass>
+          <h1 className="font-sans text-3xl font-bold tracking-tight mb-1">{t('auth.welcomeBack')}</h1>
+          <p className="text-sm text-text-secondary mb-7">{t('auth.signInSubtitle')}</p>
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <p className="text-xs text-red-500 flex items-center gap-1.5 bg-red-500/10 p-3 rounded-lg">
@@ -73,10 +69,10 @@ export function LoginPage() {
           </form>
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-ink/10 dark:border-parchment/10" />
+              <div className="w-full border-t border-border-primary dark:border-dark-border-primary" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white dark:bg-cosmic-deeper px-2 text-ink/40 dark:text-parchment/40">{t('auth.orContinueWith')}</span>
+              <span className="bg-bg-primary dark:bg-dark-bg-secondary px-2 text-text-tertiary">{t('auth.orContinueWith')}</span>
             </div>
           </div>
           <div className="flex justify-center">
@@ -96,14 +92,14 @@ export function LoginPage() {
                 text="signin_with"
               />
             ) : (
-              <p className="text-xs text-ink/40 dark:text-parchment/40">{t('auth.googleUnavailable')}</p>
+              <p className="text-xs text-text-tertiary">{t('auth.googleUnavailable')}</p>
             )}
           </div>
-          <p className="text-sm text-center mt-6 text-ink/40 dark:text-parchment/40">
+          <p className="text-sm text-center mt-6 text-text-tertiary">
             {t('auth.noAccount')}{' '}
-            <Link to="/register" className="text-gold hover:underline font-medium">{t('auth.createOne')}</Link>
+            <Link to="/register" className="text-accent hover:underline font-medium">{t('auth.createOne')}</Link>
           </p>
-        </motion.div>
+        </PremiumCard>
       </motion.div>
     </div>
   );
