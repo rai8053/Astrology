@@ -1,11 +1,13 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, Home, Moon, Star, Heart, MessageCircle, Settings, BarChart3, Users, LogOut, Menu, X, Sun, User, Crown, Bell, ChevronDown, Shield } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Sparkles, Home, Moon, Star, Heart, MessageCircle, Settings, BarChart3, Users, LogOut, Menu, X, Sun, User, Crown, Bell, ChevronDown, Shield, Globe } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuthStore, useThemeStore } from '@/lib/store';
 import { PremiumButton } from '@/components/PremiumButton';
 import { useT } from '@/lib/i18n/useT';
+import { useI18nStore } from '@/lib/i18n/store';
+import { ALL_LANGUAGES, type LanguageEntry } from '@/data/languages';
 
 function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useThemeStore();
@@ -28,6 +30,103 @@ function ThemeToggle({ className }: { className?: string }) {
   );
 }
 
+const DROPDOWN_H = 320;
+
+interface LangRowProps {
+  language: string;
+  select: (lang: LanguageEntry) => void;
+}
+
+function LangRow({ index, language, select }: LangRowProps & { index: number }) {
+  const lang = ALL_LANGUAGES[index];
+  if (!lang) return null;
+  return (
+    <button
+      onClick={() => select(lang)}
+      className={`block w-full text-left px-3 py-2 text-sm transition-colors cursor-pointer ${
+        lang.code === language
+          ? 'bg-accent/10 text-accent font-medium'
+          : 'text-text-secondary dark:text-dark-text-secondary hover:bg-accent/5 hover:text-text-primary dark:hover:text-dark-text-primary'
+      }`}
+    >
+      {lang.native} <span className="text-text-tertiary dark:text-dark-text-tertiary">({lang.short})</span>
+    </button>
+  );
+}
+
+function LanguageSelector() {
+  const { language, setLanguage } = useI18nStore();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      listRef.current?.focus();
+      const idx = ALL_LANGUAGES.findIndex((l) => l.code === language);
+      if (idx >= 0 && listRef.current) {
+        const el = listRef.current.children[idx] as HTMLElement | undefined;
+        el?.scrollIntoView({ block: 'center', behavior: 'instant' });
+      }
+    }
+  }, [open, language]);
+
+  const select = useCallback((lang: LanguageEntry) => {
+    setLanguage(lang.code as any);
+    setOpen(false);
+    triggerRef.current?.focus();
+  }, [setLanguage]);
+
+  const current = ALL_LANGUAGES.find((l) => l.code === language);
+
+  return (
+    <div className="relative" ref={ref}>
+      <motion.button
+        ref={triggerRef}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-0.5 px-2 py-2 hover:bg-ink/5 dark:hover:bg-white/5 rounded-full transition-colors"
+        title={current?.native || 'English'}
+      >
+        <Globe className="w-3.5 h-3.5" />
+        <span className="text-[10px] font-semibold font-sans">{current?.short || 'EN'}</span>
+      </motion.button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 mt-2 card-border rounded-xl premium-shadow z-50"
+            style={{ width: 228, height: DROPDOWN_H, paddingRight: 6 }}>
+            <div ref={listRef} tabIndex={-1} className="overflow-y-scroll w-full h-full outline-none rounded-xl">
+              {ALL_LANGUAGES.map((lang, i) => (
+                <LangRow
+                  key={lang.code}
+                  index={i}
+                  language={language}
+                  select={select}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -35,6 +134,7 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuTriggerRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { t } = useT();
 
@@ -61,12 +161,17 @@ export function DashboardLayout() {
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   const isActive = (path: string) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
 
+  const closeUserMenu = useCallback(() => {
+    setUserMenuOpen(false);
+    userMenuTriggerRef.current?.focus();
+  }, []);
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
     };
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setUserMenuOpen(false); setSidebarOpen(false); }
+      if (e.key === 'Escape') { closeUserMenu(); setSidebarOpen(false); }
     };
     document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleKey);
@@ -74,7 +179,12 @@ export function DashboardLayout() {
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleKey);
     };
-  }, []);
+  }, [closeUserMenu]);
+
+  useEffect(() => {
+    setUserMenuOpen(false);
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     setUserMenuOpen(false);
@@ -153,6 +263,7 @@ export function DashboardLayout() {
             {/* Right: Actions */}
             <div className="flex items-center gap-1 md:gap-2">
               <ThemeToggle />
+              <LanguageSelector />
 
               <Link to="/pricing">
                 <PremiumButton variant="ghost" size="sm" className="hidden sm:flex">
@@ -163,6 +274,7 @@ export function DashboardLayout() {
               {/* User Menu */}
               <div className="relative" ref={userMenuRef}>
                 <motion.button
+                  ref={userMenuTriggerRef}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-accent/5 transition-colors"
@@ -192,7 +304,7 @@ export function DashboardLayout() {
                           <Link
                             key={item.to}
                             to={item.to}
-                            onClick={() => setUserMenuOpen(false)}
+                            onClick={() => closeUserMenu()}
                             className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
                           >
                             <item.icon className="w-3.5 h-3.5" />
@@ -204,7 +316,7 @@ export function DashboardLayout() {
                             <div className="my-1 border-t border-border-primary dark:border-dark-border-primary" />
                             <Link
                               to="/admin"
-                              onClick={() => setUserMenuOpen(false)}
+                              onClick={() => closeUserMenu()}
                               className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
                             >
                               <Shield className="w-3.5 h-3.5" />
@@ -214,7 +326,7 @@ export function DashboardLayout() {
                         )}
                         <div className="my-1 border-t border-border-primary dark:border-dark-border-primary" />
                         <button
-                          onClick={() => { setUserMenuOpen(false); handleLogout(); }}
+                          onClick={() => { closeUserMenu(); handleLogout(); }}
                           className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
                         >
                           <LogOut className="w-3.5 h-3.5" />
@@ -271,7 +383,7 @@ export function DashboardLayout() {
             <X className="w-5 h-5" />
           </motion.button>
         </div>
-        <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+        <nav className="p-4 space-y-1 overflow-y-scroll max-h-[calc(100vh-140px)]">
           {allNavItems.map((item) => {
             const active = isActive(item.path);
             return (
@@ -302,6 +414,7 @@ export function DashboardLayout() {
               <p className="text-sm font-medium truncate">{user?.name}</p>
               <p className="text-xs text-text-tertiary truncate">{user?.email}</p>
             </div>
+            <LanguageSelector />
             <ThemeToggle />
           </div>
           <button

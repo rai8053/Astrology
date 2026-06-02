@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import crypto from 'crypto';
 import { validate } from '../middleware/validate.js';
 import { optionalAuth, authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
@@ -211,37 +212,222 @@ const birthChartSchema = z.object({
   birthDate: dateStr,
   birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'),
   birthPlace: z.string().min(1).max(200),
+  language: z.string().min(2).max(10).optional().default('en'),
 });
 
 astrologyRouter.post('/vedic-profile', optionalAuth, validate(birthChartSchema), asyncHandler(async (req, res) => {
   const { name, birthDate, birthTime, birthPlace } = req.body as z.infer<typeof birthChartSchema>;
   const fallback = buildFallbackProfile(name, birthDate, birthTime, birthPlace);
 
-  try {
-    const { rashiKey, nakshatraName, lagnaKey } = calculateBirthDetails(birthDate, birthTime);
-    const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
-    const prompt = `Write a personalized Vedic astrology reading for ${name}, born ${birthDate} at ${birthTime} in ${birthPlace}. Their chart has Moon in ${rashiKey} (${rd.translation}), Nakshatra ${nakshatraName}, and Lagna ${lagnaKey}. Return a flat JSON object with: generalReading (3-4 sentence personalized spiritual reading interpreting their chart), strengths (array of 5 personality/life strengths as full sentences), weaknesses (array of 3 areas for growth as full sentences), planetaryPlacements (array of 8 objects each with planet name, sign name, house number 1-12, and a brief interpretation of that placement). Do NOT calculate or change any astrology — only interpret and enrich the given data.`;
-    const aiResult = await generateStructuredJSON<VedicProfile>(prompt, 'You are a Vedic astrology interpreter. The birth chart data has already been calculated. Your role is ONLY to write insightful interpretations and readings. Never change or recalculate any astrological facts. Return ONLY flat JSON.');
-    const merged: VedicProfile = {
-      ...fallback,
-      generalReading: aiResult.generalReading ?? fallback.generalReading,
-      strengths: aiResult.strengths ?? fallback.strengths,
-      weaknesses: aiResult.weaknesses ?? fallback.weaknesses,
-      planetaryPlacements: aiResult.planetaryPlacements ?? fallback.planetaryPlacements,
-      name, birthDate, birthTime, birthPlace,
-    };
-
-    if (req.user) {
-      await prisma.astrologyReport.create({
-        data: { userId: req.user.userId, type: 'vedic_profile', input: { name, birthDate, birthTime, birthPlace }, result: JSON.parse(JSON.stringify(merged)) },
-      }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save vedic_profile report'); });
-    }
-    res.json({ success: true, data: merged });
-  } catch (error) {
-    logger.warn({ error }, 'AI profile fallback used');
-    res.json({ success: true, data: fallback });
+  if (req.user) {
+    prisma.astrologyReport.create({
+      data: { userId: req.user.userId, type: 'vedic_profile', input: { name, birthDate, birthTime, birthPlace }, result: JSON.parse(JSON.stringify(fallback)) },
+    }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save vedic_profile report'); });
   }
+  res.json({ success: true, data: fallback });
 }));
+
+const aiDetailedCache = new Map<string, { done: boolean; html?: string }>();
+
+const detailedReportSchema = z.object({
+  name: z.string().min(1).max(100),
+  birthDate: dateStr,
+  birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'),
+  birthPlace: z.string().min(1).max(200),
+  language: z.string().min(2).max(10).optional().default('en'),
+});
+
+function hashKey(name: string, date: string, time: string, place: string): string {
+  return crypto.createHash('md5').update(`${name}|${date}|${time}|${place}`).digest('hex');
+}
+
+astrologyRouter.post('/vedic-profile/detailed', optionalAuth, validate(detailedReportSchema), asyncHandler(async (req, res) => {
+  const { name, birthDate, birthTime, birthPlace, language } = req.body as z.infer<typeof detailedReportSchema>;
+  const key = hashKey(name, birthDate, birthTime, birthPlace);
+
+  const cached = aiDetailedCache.get(key);
+  if (cached?.done && cached.html) {
+    res.json({ success: true, data: { detailedReport: cached.html } });
+    return;
+  }
+
+  const { rashiKey, nakshatraIndex, nakshatraName, lagnaKey } = calculateBirthDetails(birthDate, birthTime);
+  const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
+  const ld = RASHI_DATA[lagnaKey] || RASHI_DATA.Mesh;
+  const nakshatraLord = NAKSHATRA_LORDS[nakshatraIndex % 9];
+  const rashiLord = rd.lord;
+  const luckyColor = rd.element === 'Fire' ? 'Crimson Red / Gold' : rd.element === 'Water' ? 'Royal Blue / Sea Green' : rd.element === 'Air' ? 'Emerald Green / Silver' : 'Saffron / Earthy Yellow';
+  const gemstone = rd.element === 'Fire' ? 'Ruby (Manik)' : rd.element === 'Water' ? 'Pearl (Moti)' : rd.element === 'Air' ? 'Emerald (Panna)' : 'Yellow Sapphire (Pukhraj)';
+  const luckyNum = (nakshatraIndex % 9) + 1;
+  const ni = getNakshatraInfo(nakshatraName);
+  const et = ELEMENT_TRAITS[rd.element] || ELEMENT_TRAITS.Fire;
+  const rashiLordName = rashiLord.split('/')[0].trim();
+
+  function buildTemplateDetailed(): string {
+    return `<div class="detailed-report">
+  <h3>Birth Chart Overview</h3>
+  <p>Your celestial blueprint reveals a profound connection between your Moon sign in <strong>${rashiKey} (${rd.translation})</strong>, your Ascendant in <strong>${lagnaKey} (${ld.translation})</strong>, and your birth star <strong>${nakshatraName}</strong> ruled by <strong>${nakshatraLord}</strong>. This sacred combination creates a unique soul signature that shapes your entire life journey.</p>
+  <p>The ${rd.element.toLowerCase()} element of your Moon sign infuses you with ${rd.element === 'Fire' ? 'passion, courage, and an indomitable spirit' : rd.element === 'Earth' ? 'stability, patience, and practical wisdom' : rd.element === 'Air' ? 'intellect, adaptability, and brilliant communication' : 'intuition, compassion, and emotional depth'}. Your Ascendant in ${lagnaKey} adds ${ld.element.toLowerCase()} qualities to your outward personality, creating a dynamic interplay of energies.</p>
+  <p>Your Nakshatra, ${nakshatraName}, is symbolized by ${ni.symbol} and dedicated to ${ni.deity}. This indicates ${ni.meaning.toLowerCase()} Those born under this star carry a special karmic mission and possess innate gifts that unfold over time.</p>
+  <p>The ruling planet of your chart is <strong>${rashiLord}</strong>, which bestows upon you ${rd.element === 'Fire' ? 'leadership qualities and dynamic energy' : rd.element === 'Earth' ? 'groundedness and material stability' : rd.element === 'Air' ? 'sharp intellect and communication skills' : 'emotional intelligence and creative vision'}. Understanding these core placements is the first step toward aligning with your highest potential.</p>
+
+  <h3>Planetary Analysis</h3>
+  <h4>Ascendant (Lagna) — ${lagnaKey}</h4>
+  <p>Your Ascendant in ${lagnaKey} (${ld.translation}) represents the mask you wear in the world and your natural approach to life. With ${ld.element.toLowerCase()} qualities, you project ${ld.element === 'Fire' ? 'confidence and enthusiasm' : ld.element === 'Earth' ? 'reliability and composure' : ld.element === 'Air' ? 'intellectual curiosity and charm' : 'sensitivity and nurturing warmth'}. This sign colors your first impressions and physical appearance.</p>
+  <h4>Moon (Chandra) — ${rashiKey}</h4>
+  <p>The Moon in ${rashiKey} (${rd.translation}) governs your emotional nature, intuition, and subconscious mind. Ruled by ${rashiLord}, your emotional responses are ${rd.element === 'Fire' ? 'passionate and immediate' : rd.element === 'Earth' ? 'steady and pragmatic' : rd.element === 'Air' ? 'intellectual and analytical' : 'deep and flowing'}. This placement reveals how you find emotional security and what nurtures your soul.</p>
+  <h4>Sun (Surya)</h4>
+  <p>The Sun represents your core identity, vitality, and life purpose. Its placement in your chart illuminates where you shine brightest and what gives you a sense of meaning. Your Sun's energy is filtered through the ${rd.element.toLowerCase()} element, encouraging you to express your authentic self ${rd.element === 'Fire' ? 'boldly and courageously' : rd.element === 'Earth' ? 'steadily and reliably' : rd.element === 'Air' ? 'intellectually and creatively' : 'empathetically and artistically'}.</p>
+  <h4>Mercury (Budha)</h4>
+  <p>Mercury governs your communication style, intellect, and analytical abilities. This placement influences how you process information, express ideas, and connect with others mentally. Your communication style is ${rd.element === 'Fire' ? 'direct and passionate' : rd.element === 'Earth' ? 'practical and methodical' : rd.element === 'Air' ? 'quick and versatile' : 'intuitive and diplomatic'}, allowing you to convey your thoughts with clarity and purpose.</p>
+  <h4>Venus (Shukra)</h4>
+  <p>Venus blesses your relationships, creative expression, and sense of beauty. This placement reveals what you value, how you love, and what brings you pleasure. In your chart, Venus encourages you to ${rd.element === 'Fire' ? 'pursue love with passion and creativity' : rd.element === 'Earth' ? 'build stable and lasting relationships' : rd.element === 'Air' ? 'seek intellectual and social connection' : 'express love through deep emotional bonding'}.</p>
+  <h4>Jupiter (Guru)</h4>
+  <p>Jupiter expands your wisdom, fortune, and spiritual growth. This benefic planet indicates where you experience luck, abundance, and higher learning. Jupiter's influence in your chart blesses you with ${rd.element === 'Fire' ? 'optimism and adventurous spirit' : rd.element === 'Earth' ? 'practical wisdom and financial growth' : rd.element === 'Air' ? 'philosophical insight and teaching ability' : 'spiritual depth and compassion'}.</p>
+  <h4>Saturn (Shani)</h4>
+  <p>Saturn brings discipline, life lessons, and karmic responsibility. This planet teaches through challenges and rewards patience and perseverance. Saturn's placement encourages you to ${rd.element === 'Fire' ? 'channel your energy with discipline and focus' : rd.element === 'Earth' ? 'build your foundations methodically and patiently' : rd.element === 'Air' ? 'develop mental discipline and structured thinking' : 'cultivate emotional maturity and boundaries'}.</p>
+  <h4>Mars (Mangal)</h4>
+  <p>Mars drives your ambition, energy, and assertiveness. This fiery planet shows how you pursue your goals and assert yourself. Mars in your chart gives you ${rd.element === 'Fire' ? 'tremendous drive and courageous action' : rd.element === 'Earth' ? 'determined persistence and practical ambition' : rd.element === 'Air' ? 'strategic thinking and decisive communication' : 'passionate conviction and protective instincts'}.</p>
+
+  <h3>House-by-House Analysis</h3>
+  <h4>First House — Self and Identity</h4>
+  <p>The first house represents your self-image, physical appearance, and approach to life. With your Ascendant in ${lagnaKey}, you naturally project ${ld.element.toLowerCase()} energy. This house governs new beginnings and how you initiate experiences.</p>
+  <h4>Second House — Wealth and Values</h4>
+  <p>The second house governs finances, speech, and personal values. Your ${rd.element.toLowerCase()} element influences your approach to money and what you truly value in life. This house also rules family traditions and your sense of self-worth.</p>
+  <h4>Third House — Communication and Courage</h4>
+  <p>The third house represents communication, siblings, short journeys, and courage. Your Mercury placement influences how you express yourself and connect with your immediate environment. This house also rules your hands and artistic skills.</p>
+  <h4>Fourth House — Home and Emotions</h4>
+  <p>The fourth house governs home, mother, emotional foundations, and inner peace. Your Moon sign ${rashiKey} provides deep insight into where you feel most secure and nurtured. This house represents the roots from which you grow.</p>
+  <h4>Fifth House — Creativity and Children</h4>
+  <p>The fifth house rules creative expression, romance, children, and intellectual pursuits. Your Venus placement blesses this area with artistic talent and the capacity for joyful self-expression. This is the house of pure creative potential.</p>
+  <h4>Sixth House — Service and Health</h4>
+  <p>The sixth house governs daily work, health, service, and overcoming obstacles. Your Mars placement influences your approach to challenges and your vitality. This house teaches through discipline and service to others.</p>
+  <h4>Seventh House — Partnerships</h4>
+  <p>The seventh house rules marriage, business partnerships, and significant relationships. This house reveals what you seek in a partner and how you relate one-on-one. Balance and harmony are the key themes here.</p>
+  <h4>Eighth House — Transformation</h4>
+  <p>The eighth house governs transformation, shared resources, occult knowledge, and spiritual depth. This house holds the keys to profound personal change and metaphysical understanding. It represents the cycle of death and rebirth.</p>
+  <h4>Ninth House — Higher Knowledge</h4>
+  <p>The ninth house rules higher education, philosophy, spirituality, and long journeys. Your Jupiter placement expands this area, bringing opportunities for growth through learning and travel. This is the house of dharma and higher purpose.</p>
+  <h4>Tenth House — Career and Reputation</h4>
+  <p>The tenth house governs career, public standing, and life achievements. This house shows your professional path and how you contribute to society. Your ${rashiLord} influence suggests ${rd.element === 'Fire' ? 'leadership roles and creative entrepreneurship' : rd.element === 'Earth' ? 'stable careers in finance, management, or service' : rd.element === 'Air' ? 'careers in communication, technology, or teaching' : 'healing arts, creative fields, or spiritual guidance'}.</p>
+  <h4>Eleventh House — Gains and Community</h4>
+  <p>The eleventh house rules income, friendships, community involvement, and the fulfillment of desires. This house represents your social network and the support you receive from others.</p>
+  <h4>Twelfth House — Spirituality and Liberation</h4>
+  <p>The twelfth house governs solitude, spirituality, foreign lands, and liberation (moksha). This house represents the unseen realms and the completion of karmic cycles. It is the house of spiritual surrender and transcendence.</p>
+
+  <h3>Career & Finance</h3>
+  <p>Your ${rd.element.toLowerCase()} element strongly influences your professional path. ${et.career} The ${rashiLord} influence suggests that you will find success in careers that align with your natural ${rd.element.toLowerCase()} strengths.</p>
+  <p>Financial growth comes steadily through ${rd.element === 'Fire' ? 'bold initiatives and leadership roles' : rd.element === 'Earth' ? 'patient accumulation and wise investments' : rd.element === 'Air' ? 'intellectual property and communication-based ventures' : 'intuitive decisions and creative enterprises'}. Your lucky number <strong>${luckyNum}</strong> and lucky color <strong>${luckyColor}</strong> can be incorporated into your professional life for enhanced success.</p>
+  <p>The ideal time for major career decisions is when Jupiter transits favorable houses in your chart, typically bringing opportunities for advancement, recognition, and professional growth.</p>
+
+  <h3>Relationships & Love</h3>
+  <p>In relationships, your ${rashiKey} Moon sign makes you ${et.relationship.toLowerCase()} Your Venus placement influences how you express love and what you find attractive in a partner.</p>
+  <p>Your ${rd.element.toLowerCase()} element suggests that you are most compatible with ${rd.element === 'Fire' ? 'Air and Fire signs that match your enthusiasm' : rd.element === 'Earth' ? 'Water and Earth signs that share your stability' : rd.element === 'Air' ? 'Air and Fire signs that stimulate your intellect' : 'Earth and Water signs that honor your depth'}. Communication is the foundation of lasting relationships, and your Mercury placement encourages ${rd.element === 'Fire' ? 'honest and direct expression' : rd.element === 'Earth' ? 'practical and meaningful conversations' : rd.element === 'Air' ? 'intellectual and stimulating dialogue' : 'heartfelt and empathetic communication'}.</p>
+  <p>The Nakshatra ${nakshatraName}, governed by ${ni.deity}, adds a layer of depth to your relationship patterns, indicating ${ni.meaning.toLowerCase()} Understanding these celestial influences helps you navigate partnerships with greater awareness and compassion.</p>
+
+  <h3>Health & Wellness</h3>
+  <p>Your health is governed by the ${rd.dosha} dosha, which requires ${rd.dosha === 'Vata' ? 'warming, grounding, and nourishing practices' : rd.dosha === 'Pitta' ? 'cooling, calming, and moderation-focused routines' : 'warming, stimulating, and energizing activities'}. ${et.health}</p>
+  <p>Recommended practices for your ${rd.element.toLowerCase()} constitution include: ${rd.element === 'Fire' ? 'cooling pranayama (Sheetali), moonlight meditation, and moderate exercise' : rd.element === 'Earth' ? 'grounding yoga, nature walks, and digestive wellness' : rd.element === 'Air' ? 'warm oil massage (Abhyanga), regular meal times, and gentle movement' : 'emotional release practices, water therapies, and creative expression'}.</p>
+  <p>Dietary recommendations focus on ${rd.dosha === 'Vata' ? 'warm, cooked, oily foods with sweet, sour, and salty tastes' : rd.dosha === 'Pitta' ? 'cool, fresh foods with sweet, bitter, and astringent tastes' : 'light, warm, dry foods with pungent, bitter, and astringent tastes'}. Regular sleep patterns and stress management are essential for maintaining optimal health.</p>
+
+  <h3>Spiritual Path</h3>
+  <p>Your spiritual journey is deeply influenced by your Moon sign in ${rashiKey} and your Nakshatra ${nakshatraName}. The ${ni.deity} energy guides your spiritual evolution, encouraging you to ${ni.meaning.toLowerCase()}</p>
+  <p>${rd.element === 'Fire' ? 'Your spiritual path is one of active devotion (Bhakti Yoga), fire ceremonies (Homa), and service (Seva). You connect with the divine through passionate dedication and courageous action.' : rd.element === 'Earth' ? 'Your spiritual path is grounded in practice (Hatha Yoga), service (Karma Yoga), and devotion to tradition. You build your spiritual foundation steadily and reliably.' : rd.element === 'Air' ? 'Your spiritual path is intellectual (Jnana Yoga), centered on study, contemplation, and philosophical inquiry. You seek truth through knowledge and understanding.' : 'Your spiritual path is devotional (Bhakti Yoga), creative, and emotionally transformative. You connect with the divine through love, art, and compassionate service.'}</p>
+  <p>Regular meditation, especially during the ${nakshatraName} Nakshatra days, amplifies your spiritual connection and supports your inner growth.</p>
+
+  <h3>Remedies & Recommendations</h3>
+  <h4>Gemstone Therapy</h4>
+  <p>Wear <strong>${gemstone}</strong> set in a ring or pendant, preferably on a ${rd.element === 'Fire' ? 'Sunday' : rd.element === 'Earth' ? 'Thursday' : rd.element === 'Air' ? 'Wednesday' : 'Monday'} after performing the appropriate purification rituals. The gemstone amplifies your natural strengths and balances planetary energies.</p>
+  <h4>Mantra Chanting</h4>
+  <p>Chant <strong>"Om ${rashiLordName.toUpperCase()}YA NAMAH"</strong> 108 times daily, preferably during the morning hours (Brahma Muhurta). This mantra strengthens your ruling planet and brings peace and prosperity.</p>
+  <h4>Lucky Colors</h4>
+  <p>Incorporate <strong>${luckyColor}</strong> into your daily wardrobe and environment. These colors harmonize with your cosmic energy and enhance your luck in important endeavors.</p>
+  <h4>Dosha-Balancing Practices</h4>
+  <p>Practice ${rd.element === 'Fire' ? 'cooling pranayama (Sheetali) and moonlight meditation' : rd.element === 'Earth' ? 'grounding yoga (Tadasana, Vrikshasana) and earthing walks' : rd.element === 'Air' ? 'warm oil self-massage (Abhyanga) and regular daily routines' : 'gentle flowing movements (Yin Yoga) and emotional journaling'} to balance your ${rd.element.toLowerCase()} energy and maintain harmony.</p>
+  <h4>Charity and Service</h4>
+  <p>Donate ${rd.element === 'Fire' ? 'red lentils, ghee, or warm blankets on Sundays' : rd.element === 'Earth' ? 'yellow clothes, wheat, or gold on Thursdays' : rd.element === 'Air' ? 'green vegetables, sesame seeds, or pulses on Wednesdays' : 'white rice, milk, or silver on Mondays'} to strengthen benefic planetary influences and accumulate positive karma.</p>
+  <h4>Planetary Peace</h4>
+  <p>Observe fasts on ${rashiKey === 'Mesh' || rashiKey === 'Simha' || rashiKey === 'Dhanu' ? 'Tuesdays and Sundays' : rashiKey === 'Vrishabh' || rashiKey === 'Kanya' || rashiKey === 'Makar' ? 'Fridays and Saturdays' : rashiKey === 'Mithun' || rashiKey === 'Tula' || rashiKey === 'Kumbha' ? 'Wednesdays and Saturdays' : 'Mondays and Thursdays'} for planetary peace and spiritual purification. Light a ghee lamp daily in the morning and offer prayers to your Ishta Devata.</p>
+
+  <h3>Current Transits & Upcoming Periods</h3>
+  <p>The current celestial transits bring important opportunities for growth and transformation. The Moon transits ${rashiKey} every month, activating your emotional and intuitive centers. During these periods, pay attention to your dreams and gut feelings.</p>
+  <p>Mercury's transits highlight periods of enhanced communication, learning, and mental clarity — ideal for important conversations, negotiations, and intellectual pursuits.</p>
+  <p>Saturn's influence encourages patience, discipline, and long-term planning. While challenging, these periods build character and lasting success through persistent effort.</p>
+  <p>Jupiter's transits bring expansion, optimism, and opportunities for growth. These are auspicious times for starting new ventures, pursuing education, and deepening spiritual practice.</p>
+  <p>Overall, the next few months offer significant potential for ${rd.element === 'Fire' ? 'career advancement and creative projects' : rd.element === 'Earth' ? 'financial stability and relationship deepening' : rd.element === 'Air' ? 'intellectual growth and social connections' : 'emotional healing and spiritual development'}. Trust in the cosmic timing of your life journey.</p>
+</div>`;
+  }
+
+  const fallbackDetailed = buildTemplateDetailed();
+
+  res.json({ success: true, data: { detailedReport: fallbackDetailed, requestKey: key } });
+
+  if (cached?.done) return;
+
+  aiDetailedCache.set(key, { done: false });
+
+  generateStructuredJSON<{ detailedReport: string }>(
+    `Generate an extremely detailed, comprehensive Vedic astrology reading in the language code: ${language}.
+
+PERSON DETAILS:
+Name: ${name}
+Birth Date: ${birthDate}
+Birth Time: ${birthTime}
+Birth Place: ${birthPlace}
+
+COMPUTED CHART DATA (already calculated — do not change):
+- Moon Sign (Rashi): ${rashiKey} (${rd.translation}), ruled by ${rd.lord}, Element: ${rd.element}, Dosha: ${rd.dosha}
+- Ascendant (Lagna): ${lagnaKey} (${ld.translation}), Element: ${ld.element}
+- Nakshatra (Birth Star): ${nakshatraName}, ruled by ${nakshatraLord}
+- Lucky Number: ${(nakshatraIndex % 9) + 1}
+- Lucky Color: ${rd.element === 'Fire' ? 'Crimson Red / Gold' : rd.element === 'Water' ? 'Royal Blue / Sea Green' : rd.element === 'Air' ? 'Emerald Green / Silver' : 'Saffron / Earthy Yellow'}
+- Gemstone: ${rd.element === 'Fire' ? 'Ruby (Manik)' : rd.element === 'Water' ? 'Pearl (Moti)' : rd.element === 'Air' ? 'Emerald (Panna)' : 'Yellow Sapphire (Pukhraj)'}
+
+Return a flat JSON object with ONE field:
+"detailedReport" — a string containing the COMPLETE reading as clean HTML (NO markdown, NO code fences). Use ONLY these HTML tags: <h3>, <h4>, <p>, <ul>, <li>, <strong>, <em>, <br>. No <script>, <style>, <div>, <span>, or custom attributes.
+
+The reading MUST cover ALL of these sections with substantial, personalized content for EACH:
+
+1. <h3>Birth Chart Overview</h3> — Deep analysis of how the Moon sign (${rashiKey}), Ascendant (${lagnaKey}), and Nakshatra (${nakshatraName}) work together. Minimum 4 paragraphs.
+
+2. <h3>Planetary Analysis</h3> — For each planet (Lagna, Moon, Sun, Mercury, Venus, Jupiter, Saturn, Mars), explain its significance, the sign it occupies, what house it rules, and its overall impact. Each planet gets its own <h4> heading and at least 2-3 sentences.
+
+3. <h3>House-by-House Analysis</h3> — For all 12 houses, explain what each house represents and how the planetary placements affect each area of life. Each house gets its own <h4> heading.
+
+4. <h3>Career & Finance</h3> — Detailed career path, suitable professions, financial strengths and challenges, ideal timing for major decisions. Multiple paragraphs.
+
+5. <h3>Relationships & Love</h3> — Relationship patterns, compatibility with different signs, communication style in partnerships, ideal partner qualities. Multiple paragraphs.
+
+6. <h3>Health & Wellness</h3> — Health predispositions based on the chart, dosha analysis, recommended lifestyle practices, yoga and dietary suggestions. Multiple paragraphs.
+
+7. <h3>Spiritual Path</h3> — Spiritual inclinations, meditation practices that resonate, past life indications, karmic lessons. Multiple paragraphs.
+
+8. <h3>Remedies & Recommendations</h3> — Detailed remedial measures: gemstone therapy (with specific instructions), mantra chanting (with exact mantras), colors to wear, days to observe, charities to perform, dosha-balancing practices. Each remedy with full explanation.
+
+9. <h3>Current Transits & Upcoming Periods</h3> — Current planetary transits affecting the chart, what to expect in the next 3 months, opportunities and challenges ahead.
+
+Write in the language corresponding to code: "${language}". For "hi" write in Hindi (Devanagari script), for "bn" in Bengali, for "en" in English, for "es" in Spanish, etc.`,
+    `You are an expert Vedic astrologer providing an exhaustive, deeply personalized birth chart reading. The astrological data has already been computed — never recalculate or change it. Return ONLY flat JSON with a single "detailedReport" field containing the full HTML reading. Use only <h3>, <h4>, <p>, <ul>, <li>, <strong>, <em>, <br> tags. All content must be in the language specified in the prompt (code: ${language}).`
+  ).then((aiResult) => {
+    const html = aiResult.detailedReport || fallbackDetailed;
+    aiDetailedCache.set(key, { done: true, html });
+    if (req.user) {
+      prisma.astrologyReport.create({
+        data: { userId: req.user.userId, type: 'vedic_profile_detailed', input: { name, birthDate, birthTime, birthPlace }, result: { detailedReport: html } },
+      }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save detailed report'); });
+    }
+  }).catch((error) => {
+    logger.warn({ error }, 'AI detailed report failed');
+    aiDetailedCache.set(key, { done: true, html: fallbackDetailed });
+  });
+}));
+
+astrologyRouter.get('/vedic-profile/detailed/status/:key', (req, res) => {
+  const entry = aiDetailedCache.get(req.params.key);
+  if (!entry) return res.json({ success: true, data: { done: false } });
+  if (entry.done) return res.json({ success: true, data: { done: true, detailedReport: entry.html } });
+  res.json({ success: true, data: { done: false } });
+});
 
 const horoscopeSchema = z.object({ rashi: z.string().min(1).max(50) });
 

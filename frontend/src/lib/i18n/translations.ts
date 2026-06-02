@@ -72,6 +72,7 @@ export type TranslationKey =
   | 'kundli.nameRequired' | 'kundli.dateRequired' | 'kundli.timeRequired'
   | 'kundli.placeRequired'
   | 'kundli.summarized' | 'kundli.detailed'
+  | 'kundli.generatingDetailed'
   | 'compatibility.title' | 'compatibility.partnerA' | 'compatibility.partnerB'
   | 'compatibility.score' | 'compatibility.gunsMatched'
   | 'compatibility.verdict' | 'compatibility.analysis'
@@ -1536,6 +1537,7 @@ const en: Record<string, string> = {
   'kundli.placeRequired': 'Place is required',
   'kundli.summarized': 'Summarized',
   'kundli.detailed': 'Detailed',
+  'kundli.generatingDetailed': 'Generating your detailed reading...',
   'compatibility.title': 'Compatibility', 'compatibility.partnerA': 'Partner A',
   'compatibility.partnerB': 'Partner B', 'compatibility.score': 'Compatibility Score',
   'compatibility.gunsMatched': 'Gunas Matched', 'compatibility.verdict': 'Verdict',

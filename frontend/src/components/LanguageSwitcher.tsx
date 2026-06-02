@@ -51,7 +51,7 @@ export function LanguageSwitcher() {
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            className="absolute right-0 mt-1 w-44 rounded-xl bg-white dark:bg-cosmic border border-ink/10 dark:border-white/[0.08] shadow-xl z-50 max-h-64 overflow-y-auto"
+            className="absolute right-0 mt-1 w-44 rounded-xl bg-white dark:bg-cosmic border border-ink/10 dark:border-white/[0.08] shadow-xl z-50 max-h-64 overflow-y-scroll"
           >
             {LANGUAGES.map((l) => (
               <button

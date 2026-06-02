@@ -189,7 +189,7 @@ export function ChatPage() {
           <PremiumCard glass className="p-3">
             <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/40 dark:text-parchment/40 mb-3 px-1">{t('chat.history')}</h3>
             {sessionsData?.data?.length ? (
-              <div className="space-y-1 max-h-[400px] overflow-y-auto">
+              <div className="space-y-1 max-h-[400px] overflow-y-scroll">
                 {sessionsData.data.map((s) => (
                   <motion.div
                     key={s.id}
@@ -220,7 +220,7 @@ export function ChatPage() {
 
         <div className="lg:col-span-3">
           <PremiumCard glass className="h-[600px] flex flex-col p-0 overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+            <div className="flex-1 overflow-y-scroll p-4 md:p-6 space-y-4">
               <AnimatePresence>
                 {messages.length === 0 && !streaming && (
                   <motion.div

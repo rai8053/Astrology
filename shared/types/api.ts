@@ -69,6 +69,7 @@ export interface VedicProfile {
   insights: AstroInsight[];
   remedies: Remedy[];
   transitTimeline: TransitEvent[];
+  detailedReport?: string;
 }
 
 export interface DailyHoroscope {

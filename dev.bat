@@ -49,12 +49,12 @@ cd /d "%~dp0"
 echo.
 
 echo === Backend (port 4000) ===
-start "Soma-Surya-Backend" cmd /c "cd /d "%~dp0backend" && npx tsx src/index.ts"
+start "Soma-Surya-Backend" /D "%~dp0backend" cmd /k "npx tsx src/index.ts || pause"
 
 ping -n 4 127.0.0.1 >nul
 
 echo === Frontend (port 5173) ===
-start "Soma-Surya-Frontend" cmd /c "cd /d "%~dp0frontend" && npx vite --host"
+start "Soma-Surya-Frontend" /D "%~dp0frontend" cmd /k "npx vite --host || pause"
 
 echo.
 echo Backend: http://localhost:4000/api/health
