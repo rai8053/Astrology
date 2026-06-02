@@ -59,21 +59,21 @@ export const useAuthStore = create<AuthState>((set) => ({
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/login', { email, password });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
-    set({ user, accessToken, isAuthenticated: true });
+    set({ user, accessToken, isAuthenticated: true, isLoading: false });
   },
 
   register: async (name, email, password, options = {}) => {
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/register', { name, email, password, ...options });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
-    set({ user, accessToken, isAuthenticated: true });
+    set({ user, accessToken, isAuthenticated: true, isLoading: false });
   },
 
   loginWithGoogle: async (credential) => {
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/google', { credential });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
-    set({ user, accessToken, isAuthenticated: true });
+    set({ user, accessToken, isAuthenticated: true, isLoading: false });
   },
 
   logout: async () => {
