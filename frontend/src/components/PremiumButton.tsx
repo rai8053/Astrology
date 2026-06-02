@@ -24,6 +24,7 @@ export function PremiumButton({ className, variant = 'primary', size = 'md', loa
         size === 'sm' && 'px-4 py-2 text-[12px]',
         size === 'md' && 'px-6 py-2.5 text-[13px]',
         size === 'lg' && 'px-8 py-3 text-sm',
+        'cursor-pointer',
         loading && 'cursor-wait',
         isDisabled && 'opacity-50 cursor-not-allowed',
         className,
