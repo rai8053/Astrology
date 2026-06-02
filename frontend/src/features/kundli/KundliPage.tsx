@@ -229,8 +229,36 @@ function TransitCard({ event }: { event: TransitEvent }) {
 
 
 
+function ViewToggle({ view, onChange }: { view: 'summary' | 'detailed'; onChange: (v: 'summary' | 'detailed') => void }) {
+  return (
+    <div className="flex rounded-lg border border-ink/10 dark:border-white/[0.06] overflow-hidden">
+      <button
+        onClick={() => onChange('summary')}
+        className={`px-3 py-1.5 text-xs font-medium transition-all ${
+          view === 'summary'
+            ? 'bg-gold text-white shadow-sm'
+            : 'text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment hover:bg-ink/5 dark:hover:bg-white/[0.04]'
+        }`}
+      >
+        {t('kundli.summarized')}
+      </button>
+      <button
+        onClick={() => onChange('detailed')}
+        className={`px-3 py-1.5 text-xs font-medium transition-all ${
+          view === 'detailed'
+            ? 'bg-gold text-white shadow-sm'
+            : 'text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment hover:bg-ink/5 dark:hover:bg-white/[0.04]'
+        }`}
+      >
+        {t('kundli.detailed')}
+      </button>
+    </div>
+  );
+}
+
 export function KundliPage() {
   const { t } = useT();
+  const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
   const [formData, setFormData] = useState<BirthDetails>({
     name: '', birthDate: '', birthTime: '', birthPlace: '',
   });
@@ -298,9 +326,12 @@ export function KundliPage() {
           </div>
         </div>
         {profile && (
-          <PremiumButton onClick={handleDownloadPDF} icon={<Download className="w-3.5 h-3.5" />} size="sm">
-            {t('kundli.downloadPdf')}
-          </PremiumButton>
+          <div className="flex items-center gap-2">
+            <ViewToggle view={viewMode} onChange={setViewMode} />
+            <PremiumButton onClick={handleDownloadPDF} icon={<Download className="w-3.5 h-3.5" />} size="sm">
+              {t('kundli.downloadPdf')}
+            </PremiumButton>
+          </div>
         )}
       </motion.div>
 
@@ -446,6 +477,9 @@ export function KundliPage() {
                 </PremiumCard>
               </motion.div>
 
+              {/* Detailed sections */}
+              {viewMode === 'detailed' && (
+              <>
               {/* Planetary Placements */}
               <motion.div variants={itemVariants}>
                 <PremiumCard glass>
@@ -577,6 +611,7 @@ export function KundliPage() {
                   </PremiumCard>
                 </motion.div>
               )}
+              </>)}
             </motion.div>
           ) : (
             <PremiumCard glass className="flex items-center justify-center py-24">

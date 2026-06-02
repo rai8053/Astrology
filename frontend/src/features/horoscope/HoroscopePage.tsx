@@ -14,6 +14,7 @@ const staggerItem = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 
 export function HoroscopePage() {
   const { t } = useT();
   const [selectedRashi, setSelectedRashi] = useState('Mesh');
+  const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
 
   const { data, isLoading } = useQuery({
     queryKey: ['horoscope', selectedRashi],
@@ -24,9 +25,37 @@ export function HoroscopePage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('horoscope.title')}</h1>
-        <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('horoscope.subtitle')}</p>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold">{t('horoscope.title')}</h1>
+          <p className="text-ink/50 dark:text-parchment/50 mt-1">{t('horoscope.subtitle')}</p>
+        </div>
+        {horoscope && (
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border border-ink/10 dark:border-white/[0.06] overflow-hidden">
+              <button
+                onClick={() => setViewMode('summary')}
+                className={`px-3 py-1.5 text-xs font-medium transition-all ${
+                  viewMode === 'summary'
+                    ? 'bg-gold text-white shadow-sm'
+                    : 'text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment hover:bg-ink/5 dark:hover:bg-white/[0.04]'
+                }`}
+              >
+                {t('kundli.summarized')}
+              </button>
+              <button
+                onClick={() => setViewMode('detailed')}
+                className={`px-3 py-1.5 text-xs font-medium transition-all ${
+                  viewMode === 'detailed'
+                    ? 'bg-gold text-white shadow-sm'
+                    : 'text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment hover:bg-ink/5 dark:hover:bg-white/[0.04]'
+                }`}
+              >
+                {t('kundli.detailed')}
+              </button>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
@@ -67,6 +96,7 @@ export function HoroscopePage() {
               <p className="text-base leading-relaxed mt-4 text-ink/70 dark:text-parchment/70">{horoscope.general}</p>
             </PremiumCard>
 
+            {viewMode === 'detailed' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { label: t('horoscope.career'), value: horoscope.career, color: 'from-blue-500/10', border: 'border-l-blue-400' },
@@ -90,6 +120,7 @@ export function HoroscopePage() {
                 </motion.div>
               ))}
             </div>
+            )}
           </div>
 
           <div className="space-y-6">
