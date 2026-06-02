@@ -156,13 +156,11 @@ export function SettingsPage() {
 
   const queryClient = useQueryClient();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [emailHidden, setEmailHidden] = useState(false);
 
   const resetMutation = useMutation({
     mutationFn: () => api.post('/api/user/reset-profile'),
     onSuccess: () => {
       setShowResetConfirm(false);
-      setEmailHidden(true);
       setName('');
       setBirthDate('');
       setBirthTime('');
@@ -238,7 +236,7 @@ export function SettingsPage() {
             </div>
             <div className="space-y-4">
               <Input label={t('settings.nameLabel')} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('settings.namePlaceholder')} />
-              <Input label={t('auth.email')} value={emailHidden ? '' : (user?.email ?? '')} disabled />
+              <Input label={t('auth.email')} value={user?.email ?? ''} disabled />
               <Input label={t('onboarding.dob')} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
               <div className="grid grid-cols-2 gap-4">
                 <Input label={t('onboarding.birthTime')} type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
