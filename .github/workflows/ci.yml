@@ -1,7 +1,7 @@
 name: CI
 
 env:
-  NODE_VERSION: 20
+  NODE_VERSION: 22
 
 on:
   push:
@@ -25,17 +25,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Backend
         uses: ./.github/actions/setup
         with:
           working-directory: backend
+          node-version: '22'
 
       - name: Setup Frontend
         uses: ./.github/actions/setup
         with:
           working-directory: frontend
+          node-version: '22'
 
       - name: Lint Backend
         working-directory: backend
@@ -50,17 +52,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Backend
         uses: ./.github/actions/setup
         with:
           working-directory: backend
+          node-version: '22'
 
       - name: Setup Frontend
         uses: ./.github/actions/setup
         with:
           working-directory: frontend
+          node-version: '22'
 
       - name: Audit Backend
         working-directory: backend
@@ -89,12 +93,13 @@ jobs:
           - 5432:5432
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup
         uses: ./.github/actions/setup
         with:
           working-directory: backend
+          node-version: '22'
 
       - name: Run tests
         working-directory: backend
@@ -108,12 +113,13 @@ jobs:
     needs: [lint, dependency-audit]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup
         uses: ./.github/actions/setup
         with:
           working-directory: frontend
+          node-version: '22'
 
       - name: Run tests
         working-directory: frontend
@@ -125,17 +131,19 @@ jobs:
     needs: [test-backend, test-frontend]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Backend
         uses: ./.github/actions/setup
         with:
           working-directory: backend
+          node-version: '22'
 
       - name: Setup Frontend
         uses: ./.github/actions/setup
         with:
           working-directory: frontend
+          node-version: '22'
 
       - name: Build Backend
         working-directory: backend
@@ -146,7 +154,7 @@ jobs:
         run: npm run build
 
       - name: Upload Frontend Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-dist
           path: frontend/dist
@@ -154,7 +162,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Backend Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: backend-dist
           path: backend/dist
