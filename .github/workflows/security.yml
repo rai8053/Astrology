@@ -18,11 +18,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: npm ci
+
       - name: Audit Backend
         working-directory: backend
         run: |
           npm audit --audit-level=moderate > audit-backend.txt || true
           cat audit-backend.txt
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
 
       - name: Audit Frontend
         working-directory: frontend

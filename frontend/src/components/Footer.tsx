@@ -63,9 +63,14 @@ export function Footer() {
           <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">
             {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
-          <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">
-            hello@somaandsurya.com
-          </p>
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] text-text-tertiary/60 dark:text-dark-text-tertiary/60 font-mono">
+              Build: v{__BUILD_HASH__}
+            </span>
+            <span className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">
+              hello@somaandsurya.com
+            </span>
+          </div>
         </div>
       </div>
     </footer>

@@ -126,16 +126,4 @@ jobs:
           echo "- Backend: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest" >> $GITHUB_STEP_SUMMARY
           echo "- Frontend: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest" >> $GITHUB_STEP_SUMMARY
 
-  preview:
-    name: Preview Deploy
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref != 'refs/heads/main' }}
-    environment:
-      name: preview
-      url: https://preview.somasurya.com
-    steps:
-      - name: Preview Notice
-        run: |
-          echo "## 🧪 Preview Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "Preview deployment triggered for branch \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "Configure Vercel/Railway preview deployments in your provider dashboard." >> $GITHUB_STEP_SUMMARY
+
