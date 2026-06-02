@@ -73,6 +73,17 @@ userRouter.patch('/profile', validate(profileSchema), asyncHandler(async (req, r
   res.json({ success: true, message: 'Profile updated successfully', data: updated });
 }));
 
+userRouter.post('/reset-profile', asyncHandler(async (req, res) => {
+  await prisma.user.update({
+    where: { id: req.user!.userId },
+    data: { name: '', birthDate: null, birthTime: null, birthPlace: null },
+  });
+  prisma.usageRecord.create({
+    data: { userId: req.user!.userId, feature: 'profile_reset', tokensIn: 0, tokensOut: 0, cost: 0 },
+  }).catch((err) => logger.warn({ err }, 'Failed to log profile_reset usage'));
+  res.json({ success: true, message: 'Profile data reset successfully' });
+}));
+
 userRouter.get('/analytics', asyncHandler(async (req, res) => {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const [reportCount, chatCount, usage] = await Promise.all([

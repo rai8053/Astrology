@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { User, Sun, Moon, Globe, Save, ExternalLink, CreditCard, CheckCircle2, XCircle } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { User, Sun, Moon, Globe, Save, ExternalLink, CreditCard, CheckCircle2, XCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
@@ -154,6 +154,27 @@ export function SettingsPage() {
     updateMutation.mutate({ name, birthDate, birthTime, birthPlace, birthState, birthCountry });
   };
 
+  const queryClient = useQueryClient();
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const resetMutation = useMutation({
+    mutationFn: () => api.post('/api/user/reset-profile'),
+    onSuccess: () => {
+      setShowResetConfirm(false);
+      setName('');
+      setBirthDate('');
+      setBirthTime('');
+      setBirthPlace('');
+      setBirthState('');
+      setBirthCountry('');
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      showPremiumToast('success', t('settings.resetDataSuccess'), '');
+    },
+    onError: () => {
+      showPremiumToast('error', t('settings.resetDataError'), '');
+    },
+  });
+
   const hasChanges =
     name !== (profileData?.data?.name ?? '') ||
     birthDate !== (profileData?.data?.birthDate ?? '') ||
@@ -248,8 +269,66 @@ export function SettingsPage() {
                   </motion.p>
                 )}
               </AnimatePresence>
+
+              <div className="pt-4 mt-4 border-t border-border-primary dark:border-dark-border-primary">
+                <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-ink/30 dark:text-parchment/30 mb-2">{t('settings.resetData')}</p>
+                <p className="text-xs text-ink/40 dark:text-parchment/40 mb-3">{t('settings.resetDataDesc')}</p>
+                <PremiumButton
+                  variant="outline"
+                  size="sm"
+                  className="!border-red-400/30 !text-red-400 hover:!bg-red-500/10 w-full"
+                  onClick={() => setShowResetConfirm(true)}
+                  icon={<Trash2 className="w-3 h-3" />}
+                >
+                  {t('settings.resetData')}
+                </PremiumButton>
+              </div>
             </div>
           </PremiumCard>
+
+          <AnimatePresence>
+            {showResetConfirm && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                onClick={() => setShowResetConfirm(false)}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl border border-border-primary dark:border-dark-border-primary p-6 max-w-sm w-full"
+                >
+                  <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle className="w-6 h-6 text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-sans font-semibold text-center text-text-primary dark:text-dark-text-primary mb-2">{t('settings.resetData')}</h3>
+                  <p className="text-sm text-text-secondary text-center mb-6">{t('settings.resetDataConfirm')}</p>
+                  <div className="flex gap-3">
+                    <PremiumButton
+                      variant="ghost"
+                      className="flex-1"
+                      onClick={() => setShowResetConfirm(false)}
+                    >
+                      {t('common.cancel')}
+                    </PremiumButton>
+                    <PremiumButton
+                      variant="primary"
+                      className="flex-1 !bg-red-500 !text-white hover:!bg-red-600"
+                      onClick={() => resetMutation.mutate()}
+                      loading={resetMutation.isPending}
+                      icon={<Trash2 className="w-3.5 h-3.5" />}
+                    >
+                      {t('common.confirm')}
+                    </PremiumButton>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="space-y-6">

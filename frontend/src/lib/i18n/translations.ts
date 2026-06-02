@@ -110,6 +110,9 @@ export type TranslationKey =
   | 'settings.profileUpdatedMsg' | 'settings.saveFailed'
   | 'settings.saveFailedMsg' | 'settings.billingUnavailable'
   | 'settings.invalidPortal'
+  | 'settings.resetData' | 'settings.resetDataDesc'
+  | 'settings.resetDataConfirm' | 'settings.resetDataSuccess'
+  | 'settings.resetDataError'
   | 'billing.title' | 'billing.plan' | 'billing.status' | 'billing.trial'
   | 'billing.manage' | 'billing.upgrade' | 'billing.current'
   | 'billing.free' | 'billing.pro' | 'billing.premium' | 'billing.enterprise'
@@ -466,6 +469,12 @@ const hi: Record<string, string> = {
   'settings.saveFailedMsg': 'Unable to save profile changes. Please try again.',
   'settings.billingUnavailable': 'Billing portal unavailable',
   'settings.invalidPortal': 'Invalid billing portal URL',
+
+  'settings.resetData': 'Reset Profile Data',
+  'settings.resetDataDesc': 'Clear all your birth details. Your account stays active.',
+  'settings.resetDataConfirm': 'Are you sure? This will permanently clear all your birth details.',
+  'settings.resetDataSuccess': 'Profile data cleared successfully',
+  'settings.resetDataError': 'Failed to reset profile data',
   'billing.title': 'Billing', 'billing.plan': 'Plan', 'billing.status': 'Status',
   'billing.trial': 'Trial', 'billing.manage': 'Manage', 'billing.upgrade': 'Upgrade',
   'billing.current': 'Current Plan', 'billing.free': 'Free', 'billing.pro': 'Pro',
@@ -884,6 +893,12 @@ const bn: Record<string, string> = {
   'settings.saveFailedMsg': 'Unable to save profile changes. Please try again.',
   'settings.billingUnavailable': 'Billing portal unavailable',
   'settings.invalidPortal': 'Invalid billing portal URL',
+
+  'settings.resetData': 'Reset Profile Data',
+  'settings.resetDataDesc': 'Clear all your birth details. Your account stays active.',
+  'settings.resetDataConfirm': 'Are you sure? This will permanently clear all your birth details.',
+  'settings.resetDataSuccess': 'Profile data cleared successfully',
+  'settings.resetDataError': 'Failed to reset profile data',
   'billing.title': 'Billing', 'billing.plan': 'Plan', 'billing.status': 'Status',
   'billing.trial': 'Trial', 'billing.manage': 'Manage', 'billing.upgrade': 'Upgrade',
   'billing.current': 'Current Plan', 'billing.free': 'Free', 'billing.pro': 'Pro',
@@ -1246,6 +1261,12 @@ const es: Record<string, string> = {
   'settings.saveFailedMsg': 'Unable to save profile changes. Please try again.',
   'settings.billingUnavailable': 'Billing portal unavailable',
   'settings.invalidPortal': 'Invalid billing portal URL',
+
+  'settings.resetData': 'Restablecer datos del perfil',
+  'settings.resetDataDesc': 'Borre todos sus datos de nacimiento. Su cuenta permanece activa.',
+  'settings.resetDataConfirm': '¿Está seguro? Esto borrará permanentemente todos sus datos de nacimiento.',
+  'settings.resetDataSuccess': 'Datos del perfil borrados con éxito',
+  'settings.resetDataError': 'Error al restablecer los datos del perfil',
   'billing.title': 'Billing', 'billing.plan': 'Plan', 'billing.status': 'Estado',
   'billing.trial': 'Prueba', 'billing.manage': 'Gestionar', 'billing.upgrade': 'Mejorar',
   'billing.current': 'Plan Actual', 'billing.free': 'Gratis', 'billing.pro': 'Pro',
@@ -1612,6 +1633,12 @@ const en: Record<string, string> = {
   'settings.saveFailedMsg': 'Unable to save profile changes. Please try again.',
   'settings.billingUnavailable': 'Billing portal unavailable',
   'settings.invalidPortal': 'Invalid billing portal URL',
+
+  'settings.resetData': 'Reset Profile Data',
+  'settings.resetDataDesc': 'Clear all your birth details. Your account stays active.',
+  'settings.resetDataConfirm': 'Are you sure? This will permanently clear all your birth details.',
+  'settings.resetDataSuccess': 'Profile data cleared successfully',
+  'settings.resetDataError': 'Failed to reset profile data',
   'billing.title': 'Billing', 'billing.plan': 'Plan', 'billing.status': 'Status',
   'billing.trial': 'Trial', 'billing.manage': 'Manage', 'billing.upgrade': 'Upgrade',
   'billing.current': 'Current Plan', 'billing.free': 'Free', 'billing.pro': 'Pro',
@@ -2218,6 +2245,12 @@ const pt: Record<string, string> = {
   'settings.saveFailedMsg': 'Unable to save profile changes. Please try again.',
   'settings.billingUnavailable': 'Billing portal unavailable',
   'settings.invalidPortal': 'Invalid billing portal URL',
+
+  'settings.resetData': 'Redefinir dados do perfil',
+  'settings.resetDataDesc': 'Limpe todos os seus dados de nascimento. Sua conta permanece ativa.',
+  'settings.resetDataConfirm': 'Tem certeza? Isso limpará permanentemente todos os seus dados de nascimento.',
+  'settings.resetDataSuccess': 'Dados do perfil limpos com sucesso',
+  'settings.resetDataError': 'Falha ao redefinir os dados do perfil',
   'billing.title': 'Faturamento', 'billing.plan': 'Plano', 'billing.status': 'Status',
   'billing.trial': 'Teste', 'billing.manage': 'Gerenciar', 'billing.upgrade': 'Melhorar',
   'billing.current': 'Plano Atual', 'billing.free': 'Free', 'billing.pro': 'Pro',
@@ -2580,6 +2613,12 @@ const fr: Record<string, string> = {
   'settings.saveFailedMsg': 'Unable to save profile changes. Please try again.',
   'settings.billingUnavailable': 'Portail de facturation indisponible',
   'settings.invalidPortal': 'URL du portail de facturation invalide',
+
+  'settings.resetData': 'Réinitialiser les données du profil',
+  'settings.resetDataDesc': 'Effacez tous vos détails de naissance. Votre compte reste actif.',
+  'settings.resetDataConfirm': 'Êtes-vous sûr ? Cela effacera définitivement tous vos détails de naissance.',
+  'settings.resetDataSuccess': 'Données du profil effacées avec succès',
+  'settings.resetDataError': 'Échec de la réinitialisation des données du profil',
   'billing.title': 'Facturation', 'billing.plan': 'Forfait', 'billing.status': 'Statut',
   'billing.trial': 'Essai', 'billing.manage': 'Manage', 'billing.upgrade': 'Upgrade',
   'billing.current': 'Forfait actuel', 'billing.free': 'Gratuit', 'billing.pro': 'Pro',
@@ -2943,6 +2982,12 @@ const de: Record<string, string> = {
   'settings.saveFailedMsg': 'Unable to save profile changes. Please try again.',
   'settings.billingUnavailable': 'Billing portal unavailable',
   'settings.invalidPortal': 'Invalid billing portal URL',
+
+  'settings.resetData': 'Profildaten zurücksetzen',
+  'settings.resetDataDesc': 'Löschen Sie alle Ihre Geburtsdaten. Ihr Konto bleibt aktiv.',
+  'settings.resetDataConfirm': 'Sind Sie sicher? Dies wird endgültig alle Ihre Geburtsdaten löschen.',
+  'settings.resetDataSuccess': 'Profildaten erfolgreich gelöscht',
+  'settings.resetDataError': 'Fehler beim Zurücksetzen der Profildaten',
   'billing.title': 'Abrechnung', 'billing.plan': 'Plan', 'billing.status': 'Status',
   'billing.trial': 'Testversion', 'billing.manage': 'Verwalten', 'billing.upgrade': 'Upgraden',
   'billing.current': 'Aktueller Plan', 'billing.free': 'Kostenlos', 'billing.pro': 'Pro',
