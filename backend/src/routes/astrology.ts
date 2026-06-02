@@ -234,7 +234,7 @@ astrologyRouter.post('/vedic-profile', optionalAuth, validate(birthChartSchema),
     if (req.user) {
       await prisma.astrologyReport.create({
         data: { userId: req.user.userId, type: 'vedic_profile', input: { name, birthDate, birthTime, birthPlace }, result: JSON.parse(JSON.stringify(merged)) },
-      }).catch((e) => { logger.error({ err: e }, 'Failed to save vedic_profile report'); });
+      }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save vedic_profile report'); });
     }
     res.json({ success: true, data: merged });
   } catch (error) {
