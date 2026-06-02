@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import type { VedicProfile } from '@shared/types/api';
 type Language = 'en' | 'hi' | 'bn' | 'es' | 'pt' | 'fr' | 'de' | 'ar' | 'ja' | 'zh';
 
@@ -306,13 +306,13 @@ export function generatePremiumReport(profile: VedicProfile) {
   bodyText(t('report.planetaryDesc'));
 
   const tableData = placements.map((p) => [p.planet, p.sign, t('report.houseLabel').replace('{number}', String(p.house)), p.description]);
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: y + 2,
     head: [[t('report.planet'), t('report.sign'), t('report.houseLabel'), t('report.interpretation')]],
     body: tableData,
     margin: { left: M, right: M },
     styles: { fontSize: 7, cellPadding: 2.5 },
-    headStyles: { fillColor: GOLD, textColor: WHITE, fontStyle: 'bold', fontSize: 7 },
+    headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
     columnStyles: { 0: { cellWidth: 38 }, 1: { cellWidth: 28 }, 2: { cellWidth: 16 }, 3: { cellWidth: 'auto' } },
     alternateRowStyles: { fillColor: [249, 250, 251] },
   });
@@ -414,7 +414,7 @@ export function generatePremiumReport(profile: VedicProfile) {
   if (profile.remedies?.length) {
     profile.remedies.forEach((rem) => {
       checkPage(20);
-      doc.setFillColor(245, 158, 11, 0.12 as any);
+      doc.setFillColor(249, 250, 251);
       doc.rect(M, y - 2, CW, 14, 'F');
       doc.setFontSize(8);
       doc.setTextColor(...DARK);
