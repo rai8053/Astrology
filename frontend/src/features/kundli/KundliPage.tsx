@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { useT } from '@/lib/i18n/useT';
+import toast from 'react-hot-toast';
 import type { BirthDetails, VedicProfile, AstroInsight, Remedy, TransitEvent } from '@shared/types/api';
 
 const PLANET_SYMBOLS: Record<string, { symbol: string; color: string }> = {
@@ -259,10 +260,23 @@ export function KundliPage() {
     mutation.mutate(formData);
   };
 
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   const profile = mutation.data?.data;
 
-  const handleDownloadPDF = () => {
-    if (profile) generatePremiumReport(profile);
+  const handleDownloadPDF = async () => {
+    if (!profile || pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      await generatePremiumReport(profile);
+      toast.success('PDF downloaded successfully');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'PDF download failed';
+      console.error('[PDF] Download failed:', err);
+      toast.error(msg);
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const sections = [
@@ -285,8 +299,8 @@ export function KundliPage() {
           </div>
         </div>
         {profile && (
-          <PremiumButton onClick={handleDownloadPDF} icon={<Download className="w-3.5 h-3.5" />} size="sm">
-            {t('kundli.downloadPdf')}
+          <PremiumButton onClick={handleDownloadPDF} loading={pdfLoading} icon={<Download className="w-3.5 h-3.5" />} size="sm">
+            {pdfLoading ? 'Generating...' : t('kundli.downloadPdf')}
           </PremiumButton>
         )}
       </motion.div>

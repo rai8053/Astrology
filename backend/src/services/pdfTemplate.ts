@@ -126,15 +126,15 @@ export function buildReportHtml(profile: VedicProfile): string {
     </tr>`;
   }).join('\n');
 
-  const strengthsHtml = profile.strengths.map(s =>
+  const strengthsHtml = (profile.strengths || []).map(s =>
     `<div style="display:flex;gap:8px;margin-bottom:6px;font-size:10px;color:#374151"><span style="color:${GOLD};flex-shrink:0;margin-top:1px">✦</span><span>${escapeHtml(s)}</span></div>`
   ).join('\n');
 
-  const weaknessesHtml = profile.weaknesses.map(w =>
+  const weaknessesHtml = (profile.weaknesses || []).map(w =>
     `<div style="display:flex;gap:8px;margin-bottom:6px;font-size:10px;color:#374151"><span style="color:#f472b6;flex-shrink:0;margin-top:1px">◈</span><span>${escapeHtml(w)}</span></div>`
   ).join('\n');
 
-  const insightsHtml = profile.insights.map(ins =>
+  const insightsHtml = (profile.insights || []).map(ins =>
     `<div style="margin-bottom:12px;break-inside:avoid">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         <div style="width:3px;height:12px;background:${GOLD};border-radius:1.5px;flex-shrink:0"></div>
@@ -145,14 +145,14 @@ export function buildReportHtml(profile: VedicProfile): string {
     </div>`
   ).join('\n');
 
-  const remediesHtml = profile.remedies.map(rem =>
+  const remediesHtml = (profile.remedies || []).map(rem =>
     `<div style="margin-bottom:8px;padding:8px 10px;background:#f9fafb;border-radius:6px;break-inside:avoid">
       <div style="font-size:10px;font-weight:700;color:${DARK};margin-bottom:2px">${escapeHtml(rem.title)}</div>
       <div style="font-size:9px;color:${MID};line-height:1.5">${escapeHtml(rem.description)}</div>
     </div>`
   ).join('\n');
 
-  const transitHtml = profile.transitTimeline.map(evt => {
+  const transitHtml = (profile.transitTimeline || []).map(evt => {
     const impactColors: Record<string, string> = {
       positive: '#34d399',
       challenging: '#f87171',
