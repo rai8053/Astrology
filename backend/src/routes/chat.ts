@@ -8,6 +8,8 @@ import { generateAIResponse } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../lib/logger.js';
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 export const chatRouter = Router();
 
 const chatSchema = z.object({
@@ -35,10 +37,14 @@ chatRouter.post('/', authenticate, requirePremium, validate(chatSchema), asyncHa
   const prompt = `Previous conversation:\n${context}\n\nUser: ${message}`;
 
   try {
+    logger.info({ sessionId: session.id, messageLength: message.length, hasLanguage: !!language }, 'Chat request starting AI generation');
+
     const aiResponse = await generateAIResponse(
       prompt,
       `You are a wise Vedic astrologer and spiritual guide. Provide compassionate, insightful answers about astrology, numerology, and spiritual matters. Keep responses helpful, grounded, and respectful.${language ? ` Respond in the user's selected language: ${language}.` : ''}`,
     );
+
+    logger.info({ provider: aiResponse.provider, model: aiResponse.model }, 'Chat AI response succeeded');
 
     const updatedMessages = [
       ...messages,
@@ -57,13 +63,21 @@ chatRouter.post('/', authenticate, requirePremium, validate(chatSchema), asyncHa
 
     res.json({ success: true, data: { reply: aiResponse.text, sessionId: session.id, provider: aiResponse.provider } });
   } catch (error) {
-    logger.error({ error }, 'Chat AI failed');
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errStack = error instanceof Error ? error.stack : '';
+    logger.error({ errMsg, errStack, sessionId: session.id }, 'Chat AI failed');
+
     const fallbackMsg = 'The cosmic energies are shifting. Please try again in a moment.';
     await prisma.chatSession.update({
       where: { id: session.id },
       data: { messages: JSON.parse(JSON.stringify([...messages, { role: 'user', content: message }, { role: 'assistant', content: fallbackMsg }])) },
     }).catch(() => {});
-    res.json({ success: true, data: { reply: fallbackMsg, sessionId: session.id } });
+
+    if (isDev) {
+      res.json({ success: true, data: { reply: `[DEV ERROR] ${errMsg}`, sessionId: session.id } });
+    } else {
+      res.json({ success: true, data: { reply: fallbackMsg, sessionId: session.id } });
+    }
   }
 }));
 

@@ -43,6 +43,14 @@ class OpenRouterService implements ProviderClient {
       ? envFallback.split(',').map(s => s.trim()).filter(Boolean)
       : DEFAULT_FALLBACK_MODELS;
     this.maxRetries = Math.max(1, parseInt(process.env.OPENROUTER_MAX_RETRIES || '3', 10));
+    logger.info({
+      preferredModel: this.preferredModel,
+      fallbackModels: this.fallbackModels,
+      maxRetries: this.maxRetries,
+      apiKeyPrefix: apiKey.substring(0, 8) + '...',
+      appUrl: process.env.APP_URL || 'http://localhost:5173',
+      baseURL: 'https://openrouter.ai/api/v1',
+    }, 'OpenRouterService initialized');
   }
 
   async generateContent(params: {
@@ -54,6 +62,8 @@ class OpenRouterService implements ProviderClient {
     const modelsToTry = this.buildModelList(params.model);
     const systemInstruction = params.config?.systemInstruction as string | undefined;
     let lastError: Error | null = null;
+
+    logger.info({ modelsToTry, hasSystemInstruction: !!systemInstruction, contentLength: params.contents.length }, 'generateContent starting');
 
     for (const model of modelsToTry) {
       for (let attempt = 0; attempt < this.maxRetries; attempt++) {
@@ -88,8 +98,10 @@ class OpenRouterService implements ProviderClient {
           return { text, model, usage };
         } catch (error) {
           lastError = error as Error;
+          const errMsg = error instanceof Error ? error.message : String(error);
+          const errStack = error instanceof Error ? error.stack : '';
           const status = (error as any)?.status;
-          logger.warn({ error, model, attempt: attempt + 1, status }, `OpenRouter model "${model}" failed`);
+          logger.warn({ errMsg, errStack, status, model, attempt: attempt + 1, maxRetries: this.maxRetries }, `OpenRouter model "${model}" attempt ${attempt + 1}/${this.maxRetries} failed`);
 
           if (status === 400 || status === 401 || status === 403 || status === 404) break;
 
@@ -100,7 +112,9 @@ class OpenRouterService implements ProviderClient {
       }
     }
 
-    logger.error({ modelsTried: modelsToTry, error: lastError }, 'All OpenRouter models exhausted');
+    const lastErrMsg = lastError instanceof Error ? lastError.message : String(lastError);
+    const lastErrStack = lastError instanceof Error ? lastError.stack : '';
+    logger.error({ modelsTried: modelsToTry, lastErrMsg, lastErrStack }, 'All OpenRouter models exhausted');
     throw lastError || new Error('All OpenRouter models exhausted');
   }
 
@@ -147,6 +161,19 @@ function resolveProvider(): OpenRouterService {
 }
 
 export async function generateAIResponse(prompt: string, systemInstruction?: string): Promise<{ text: string; provider: string; model: string }> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKeyPrefix = apiKey ? apiKey.substring(0, 8) + '...' : 'NOT SET';
+  const modelName = process.env.OPENROUTER_MODEL || DEFAULT_FALLBACK_MODELS[0];
+  const appUrl = process.env.APP_URL || 'http://localhost:5173';
+
+  logger.info({
+    apiKeyPrefix,
+    modelName,
+    appUrl,
+    hasSystemInstruction: !!systemInstruction,
+    promptLength: prompt.length,
+  }, 'generateAIResponse starting');
+
   const provider = resolveProvider();
   const config: Record<string, unknown> = {};
   if (systemInstruction) config.systemInstruction = systemInstruction;
@@ -154,9 +181,13 @@ export async function generateAIResponse(prompt: string, systemInstruction?: str
   const timeout = setTimeout(() => controller.abort(), 30000);
   try {
     const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
+    logger.info({ model: response.model, textLength: response.text.length }, 'generateAIResponse succeeded');
     return { text: response.text, provider: 'openrouter', model: response.model };
   } catch (error) {
-    logger.error({ error }, 'AI provider failed');
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errStack = error instanceof Error ? error.stack : '';
+    const errStatus = (error as any)?.status;
+    logger.error({ errMsg, errStack, errStatus, apiKeyPrefix, modelName }, 'generateAIResponse failed');
     throw error;
   } finally {
     clearTimeout(timeout);
