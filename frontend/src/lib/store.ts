@@ -59,6 +59,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/login', { email, password });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
+    if (user.name) localStorage.setItem('googleName', user.name);
     set({ user, accessToken, isAuthenticated: true, isLoading: false });
   },
 
@@ -66,6 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/register', { name, email, password, ...options });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
+    if (user.name) localStorage.setItem('googleName', user.name);
     set({ user, accessToken, isAuthenticated: true, isLoading: false });
   },
 
@@ -73,6 +75,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/google', { credential });
     const { user, accessToken } = res.data;
     localStorage.setItem('accessToken', accessToken);
+    if (user.name) localStorage.setItem('googleName', user.name);
     try {
       const payload = JSON.parse(atob(credential.split('.')[1]!));
       if (payload.name) localStorage.setItem('googleName', payload.name);
@@ -93,7 +96,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await api.get<User>('/api/auth/me');
       const user = res.data;
-      if (!user.name) {
+      if (user.name) {
+        localStorage.setItem('googleName', user.name);
+      } else {
         const googleName = localStorage.getItem('googleName');
         if (googleName) user.name = googleName;
       }

@@ -73,6 +73,7 @@ export function SettingsPage() {
   const { theme, setTheme } = useThemeStore();
   const { language, setLanguage } = useI18nStore();
   const [name, setName] = useState('');
+  const nameTouched = useRef(false);
   const [email, setEmail] = useState('');
   const emailTouched = useRef(false);
   const [birthDate, setBirthDate] = useState('');
@@ -124,7 +125,6 @@ export function SettingsPage() {
     const p = profileData?.data;
     if (p && !initializedRef.current) {
       initializedRef.current = true;
-      setName(p.name ?? '');
       setBirthDate(p.birthDate ?? '');
       setBirthTime(p.birthTime ?? '');
       setBirthPlace(p.birthPlace ?? '');
@@ -134,18 +134,20 @@ export function SettingsPage() {
   }, [profileData]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: { name: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string }) =>
+    mutationFn: (data: { name?: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string }) =>
       api.patch<{ message: string } & UserProfile>('/api/user/profile', data),
     onSuccess: (res) => {
       setSaveState('success');
-      setUser({ ...user!, name: res.data?.name ?? name });
+      const savedName = res.data?.name ?? name;
+      setUser({ ...user!, name: savedName });
+      if (savedName) localStorage.setItem('googleName', savedName);
       showPremiumToast('success', t('settings.profileUpdated'), t('settings.profileUpdatedMsg'));
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
       successTimerRef.current = setTimeout(() => setSaveState('idle'), 2000);
     },
-    onError: () => {
+    onError: (err) => {
       setSaveState('error');
-      showPremiumToast('error', t('settings.saveFailed'), t('settings.saveFailedMsg'));
+      showPremiumToast('error', t('settings.saveFailed'), err instanceof Error ? err.message : t('settings.saveFailedMsg'));
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
       successTimerRef.current = setTimeout(() => setSaveState('idle'), 3000);
     },
@@ -154,7 +156,8 @@ export function SettingsPage() {
   const handleSave = () => {
     if (saveState === 'loading') return;
     setSaveState('loading');
-    const payload: { name: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string } = { name, birthDate, birthTime, birthPlace, birthState, birthCountry };
+    const payload: { name?: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string } = { birthDate, birthTime, birthPlace, birthState, birthCountry };
+    if (nameTouched.current && name) payload.name = name;
     if (emailTouched.current && email) payload.email = email;
     updateMutation.mutate(payload);
   };
@@ -185,6 +188,7 @@ export function SettingsPage() {
     onSuccess: () => {
       setShowResetConfirm(false);
       setName('');
+      nameTouched.current = false;
       setEmail('');
       setBirthDate('');
       setBirthTime('');
@@ -200,7 +204,7 @@ export function SettingsPage() {
   });
 
   const hasChanges =
-    name !== (profileData?.data?.name ?? '') ||
+    nameTouched.current ||
     birthDate !== (profileData?.data?.birthDate ?? '') ||
     birthTime !== (profileData?.data?.birthTime ?? '') ||
     birthPlace !== (profileData?.data?.birthPlace ?? '') ||
@@ -259,7 +263,7 @@ export function SettingsPage() {
               <h3 className="font-sans text-lg font-semibold">{t('settings.profile')}</h3>
             </div>
             <div className="space-y-4">
-              <Input label={t('settings.nameLabel')} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('settings.namePlaceholder')} />
+              <Input label={t('settings.nameLabel')} value={name} onChange={(e) => { setName(e.target.value); nameTouched.current = true; }} placeholder={t('settings.namePlaceholder')} />
               <Input label={t('auth.email')} value={email} onChange={(e) => { setEmail(e.target.value); emailTouched.current = true; }} placeholder={t('auth.emailPlaceholder')} />
               <Input label={t('onboarding.dob')} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
               <div className="grid grid-cols-2 gap-4">

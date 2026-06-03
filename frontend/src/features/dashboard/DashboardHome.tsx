@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Moon, Sun, Heart, MessageCircle, ArrowRight, Sparkles, Star, Zap, Hash, Palette, Gem, Flame, Calendar, TrendingUp, Clock, BarChart3 } from 'lucide-react';
+import { Moon, Sun, Heart, MessageCircle, ArrowRight, Sparkles, Star, Zap, Flame, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
@@ -13,10 +13,6 @@ import { staggerContainer, staggerItem } from '@/lib/animations';
 import { StatsSkeleton } from '@/components/Skeleton';
 import { usePersonalDashboard } from './components/usePersonalDashboard';
 import { useStreak } from '@/lib/useStreak';
-import { AstrologySnapshotCard } from './components/AstrologySnapshot';
-import { HoroscopeSection } from './components/HoroscopeSection';
-import { CosmicEnergyCard } from './components/CosmicEnergyScore';
-import { TransitAlertsCard } from './components/TransitAlerts';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -29,7 +25,7 @@ export function DashboardHome() {
   const { t } = useT();
   const { user } = useAuthStore();
   const greeting = getGreeting();
-  const { data: dashData, isLoading: dashLoading, error: dashError, period, changePeriod } = usePersonalDashboard();
+  const { error: dashError } = usePersonalDashboard();
   const [showMoreActions, setShowMoreActions] = useState(false);
   const streak = useStreak();
 
@@ -66,7 +62,7 @@ export function DashboardHome() {
           <greeting.icon className="w-6 h-6 text-accent" />
         </motion.div>
         <div>
-          <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">{t(greeting.key)}, <span className="accent-gradient">{user?.name?.split(' ')[0] ?? t('common.seekerFallback')}</span></h1>
+          <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">{t(greeting.key)}, <span className="accent-gradient">{user?.name?.split(' ')[0] || localStorage.getItem('googleName')?.split(' ')[0] || t('common.seekerFallback')}</span></h1>
           <p className="text-text-secondary mt-1 flex items-center gap-2">
             <span>{t('dashboard.subtitle')}</span>
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
@@ -93,82 +89,40 @@ export function DashboardHome() {
         </PremiumCard>
       ) : null}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <HoroscopeSection data={dashData?.horoscope} isLoading={dashLoading} period={period} onPeriodChange={changePeriod} />
-          <TransitAlertsCard data={dashData?.transitAlerts} isLoading={dashLoading} />
-        </div>
-        <div className="space-y-6">
-          <AstrologySnapshotCard data={dashData?.snapshot} isLoading={dashLoading} />
-          <CosmicEnergyCard data={dashData?.cosmicEnergy} isLoading={dashLoading} />
-
-          {dashData?.horoscope && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <PremiumCard glass>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <Gem className="w-3.5 h-3.5 text-accent" />
-                  </div>
-                  <h3 className="font-sans text-base font-semibold tracking-tight text-text-primary dark:text-dark-text-primary">{t('dashboard.luckyElements')}</h3>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] text-center">
-                    <Hash className="w-4 h-4 text-accent/60 mx-auto mb-1" />
-                    <p className="text-caption mb-0.5">{t('dashboard.luckyNumber')}</p>
-                    <p className="text-lg font-bold font-sans text-accent">{dashData.horoscope.luckyNumber}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] text-center">
-                    <Palette className="w-4 h-4 text-accent/60 mx-auto mb-1" />
-                    <p className="text-caption mb-0.5">{t('dashboard.luckyColor')}</p>
-                    <p className="text-xs font-bold font-sans text-accent truncate">{dashData.horoscope.luckyColor.split('/')[0]?.trim()}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] text-center">
-                    <Gem className="w-4 h-4 text-accent/60 mx-auto mb-1" />
-                    <p className="text-caption mb-0.5">{t('dashboard.luckyGemstone')}</p>
-                    <p className="text-xs font-bold font-sans text-accent truncate">{dashData?.snapshot?.element === 'Fire' ? t('dashboard.gemstoneRuby') : dashData?.snapshot?.element === 'Water' ? t('dashboard.gemstonePearl') : dashData?.snapshot?.element === 'Air' ? t('dashboard.gemstoneEmerald') : t('dashboard.gemstoneSapphire')}</p>
-                  </div>
-                </div>
-              </PremiumCard>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <PremiumCard glass>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Flame className="w-3.5 h-3.5 text-accent" />
+            </div>
+            <h3 className="font-sans text-base font-semibold tracking-tight text-text-primary dark:text-dark-text-primary">{t('dashboard.streak')}</h3>
+          </div>
+          <div className="flex items-center gap-4">
+            <motion.div
+              key={streak.currentStreak}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 12 }}
+              className="text-4xl font-bold font-sans text-accent"
+            >
+              {streak.currentStreak}
             </motion.div>
-          )}
-
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <PremiumCard glass>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <Flame className="w-3.5 h-3.5 text-accent" />
-                </div>
-                <h3 className="font-sans text-base font-semibold tracking-tight text-text-primary dark:text-dark-text-primary">{t('dashboard.streak')}</h3>
-              </div>
-              <div className="flex items-center gap-4">
-                <motion.div
-                  key={streak.currentStreak}
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-                  className="text-4xl font-bold font-sans text-accent"
-                >
-                  {streak.currentStreak}
-                </motion.div>
-                <div>
-                  <p className="text-xs text-text-secondary leading-snug">{streak.currentStreak === 0 ? t('dashboard.streakStart') : `${streak.currentStreak === 1 ? t('dashboard.streakDays') : t('dashboard.streakConsecutive')} ${t('dashboard.ofCosmicConnection')}`}</p>
-                  <p className="text-[9px] text-text-tertiary mt-0.5">{t('dashboard.streakBest')} {streak.longestStreak} {t('dashboard.streakDays')}</p>
-                </div>
-              </div>
-            </PremiumCard>
-          </motion.div>
-        </div>
-      </div>
+            <div>
+              <p className="text-xs text-text-secondary leading-snug">{streak.currentStreak === 0 ? t('dashboard.streakStart') : `${streak.currentStreak === 1 ? t('dashboard.streakDays') : t('dashboard.streakConsecutive')} ${t('dashboard.ofCosmicConnection')}`}</p>
+              <p className="text-[9px] text-text-tertiary mt-0.5">{t('dashboard.streakBest')} {streak.longestStreak} {t('dashboard.streakDays')}</p>
+            </div>
+          </div>
+        </PremiumCard>
+      </motion.div>
 
       {analyticsLoading ? (
         <StatsSkeleton />
       ) : (
-        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           {[
             { label: t('dashboard.statReports'), value: analytics?.data?.reportsGenerated ?? 0, icon: Sparkles, color: 'text-accent' },
             { label: t('dashboard.statChatSessions'), value: analytics?.data?.chatSessions ?? 0, icon: MessageCircle, color: 'text-blue-400' },
             { label: t('dashboard.statActivePlan'), value: sub?.data?.plan ?? 'Free', icon: Zap, color: 'text-purple-400', isString: true },
-            { label: t('dashboard.statWeeklyScore'), value: dashData?.cosmicEnergy?.score ?? 0, icon: BarChart3, color: 'text-emerald-400', suffix: t('common.of100') },
           ].map((stat, i) => (
             <motion.div key={i} variants={staggerItem}>
               <PremiumCard glass>
@@ -180,7 +134,7 @@ export function DashboardHome() {
                     <motion.p className="text-2xl font-bold font-sans text-text-primary dark:text-dark-text-primary">
                       {stat.isString ? stat.value : <AnimatedCounter to={stat.value as number} duration={2} delay={i * 0.15} />}
                     </motion.p>
-                    <p className="text-xs text-text-secondary">{stat.label} {stat.suffix || ''}</p>
+                    <p className="text-xs text-text-secondary">{stat.label}</p>
                   </div>
                 </div>
               </PremiumCard>

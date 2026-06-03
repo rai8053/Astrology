@@ -641,7 +641,7 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
     return;
   }
   const details = calculateBirthDetails(user.birthDate, user.birthTime);
-  const { rashiKey, nakshatraName, lagnaKey } = details;
+  const { rashiKey, nakshatraName, nakshatraIndex, lagnaKey, rashiIndex } = details;
   const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
   const ld = RASHI_DATA[lagnaKey] || RASHI_DATA.Mesh;
   const now = new Date();
@@ -653,10 +653,10 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
     case 'month': { daySeed = now.getFullYear() * 100 + (now.getMonth() + 1); dateLabel = 'This Month'; break; }
     default: { daySeed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate(); dateLabel = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); break; }
   }
-  const baseSeed = daySeed + details.rashiIndex * 1000;
+  const baseSeed = daySeed + rashiIndex * 1000;
   const snapshot: PersonalDashboardData['snapshot'] = {
     ascendant: `${lagnaKey} (${ld.translation})`, moonRashi: `${rashiKey} (${rd.translation})`, nakshatra: nakshatraName,
-    nakshatraLord: NAKSHATRA_LORDS[details.nakshatraIndex % 9], rashiLord: rd.lord, element: rd.element, doshaDominance: rd.dosha,
+    nakshatraLord: NAKSHATRA_LORDS[nakshatraIndex % 9], rashiLord: rd.lord, element: rd.element, doshaDominance: rd.dosha,
   };
   const horoscope = buildHoroscope(rashiKey, rd.element, baseSeed);
   const cosmicEnergy = buildCosmicEnergy(rd.element, baseSeed + 100);
