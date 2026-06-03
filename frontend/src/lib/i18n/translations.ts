@@ -114,6 +114,7 @@ export type TranslationKey =
   | 'settings.resetDataConfirm' | 'settings.resetDataSuccess'
   | 'settings.resetDataError'
   | 'settings.currency' | 'settings.currencyDesc' | 'settings.currencyUpdated'
+  | 'pricing.locationTitle' | 'pricing.locationDesc' | 'pricing.locationAllow' | 'pricing.locationNotNow'
   | 'billing.title' | 'billing.plan' | 'billing.status' | 'billing.trial'
   | 'billing.manage' | 'billing.upgrade' | 'billing.current'
   | 'billing.free' | 'billing.pro' | 'billing.premium' | 'billing.enterprise'
@@ -617,6 +618,10 @@ const hi: Record<string, string> = {
   'pricing.perMonth': '/mo',
   'pricing.getStarted': 'Get Started',
   'pricing.subscribe': 'Subscribe',
+  'pricing.locationTitle': 'Enable location access for localized pricing?',
+  'pricing.locationDesc': 'Allow location access to see prices in your local currency and available payment methods.',
+  'pricing.locationAllow': 'Allow',
+  'pricing.locationNotNow': 'Not Now',
   'pricing.redirecting': 'Redirecting...',
   'pricing.faqTitle': 'Frequently Asked Questions',
   'pricing.freeTrialNote': 'All plans come with a 7-day free trial. Cancel anytime.',
@@ -1044,6 +1049,10 @@ const bn: Record<string, string> = {
   'pricing.perMonth': '/mo',
   'pricing.getStarted': 'Get Started',
   'pricing.subscribe': 'Subscribe',
+  'pricing.locationTitle': 'Enable location access for localized pricing?',
+  'pricing.locationDesc': 'Allow location access to see prices in your local currency and available payment methods.',
+  'pricing.locationAllow': 'Allow',
+  'pricing.locationNotNow': 'Not Now',
   'pricing.redirecting': 'Redirecting...',
   'pricing.faqTitle': 'Frequently Asked Questions',
   'pricing.freeTrialNote': 'All plans come with a 7-day free trial. Cancel anytime.',
@@ -1786,6 +1795,10 @@ const en: Record<string, string> = {
   'pricing.perMonth': '/mo',
   'pricing.getStarted': 'Get Started',
   'pricing.subscribe': 'Subscribe',
+  'pricing.locationTitle': 'Enable location access for localized pricing?',
+  'pricing.locationDesc': 'Allow location access to see prices in your local currency and available payment methods.',
+  'pricing.locationAllow': 'Allow',
+  'pricing.locationNotNow': 'Not Now',
   'pricing.redirecting': 'Redirecting...',
   'pricing.faqTitle': 'Frequently Asked Questions',
   'pricing.freeTrialNote': 'All plans come with a 7-day free trial. Cancel anytime.',

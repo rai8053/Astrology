@@ -7,6 +7,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Navbar } from '@/components/Navbar';
 import { getDetectedCountry, getCurrencyInfo, getPlans, formatPrice, REGIONAL_PRICING, setManualCountryOverride } from '@/lib/pricing';
+import { getCountryName } from '@shared/config/pricing';
 import { Footer } from '@/components/Footer';
 import { PremiumButton } from '@/components/PremiumButton';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
@@ -715,6 +716,15 @@ function PricingSection() {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-accent/5 border border-accent/10 text-accent">
+            <span>{localConfig.flag}</span>
+            <span className="font-medium">{getCountryName(effectiveCountry)}</span>
+            <span className="w-1 h-1 rounded-full bg-accent/30" />
+            <span>Prices in {currencyInfo.code} ({currencyInfo.symbol})</span>
           </div>
         </div>
 

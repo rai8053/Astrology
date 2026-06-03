@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/store';
 import { api } from '@/lib/api';
 import { getDetectedCountry, setManualCountryOverride, getCurrencyInfo, formatPrice, REGIONAL_PRICING } from '@/lib/pricing';
+import { getCountryName } from '@shared/config/pricing';
 import type { CountryCode } from '@shared/config/pricing';
 import toast from 'react-hot-toast';
 import { useT } from '@/lib/i18n/useT';
@@ -145,6 +146,15 @@ export function PricingPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-accent/5 border border-accent/10 text-accent">
+              <span>{currentConfig.flag}</span>
+              <span className="font-medium">{getCountryName(detectedCountry)}</span>
+              <span className="w-1 h-1 rounded-full bg-accent/30" />
+              <span>Prices in {currencyInfo.code} ({currencyInfo.symbol})</span>
             </div>
           </div>
 

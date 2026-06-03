@@ -29,9 +29,9 @@ export const REGIONAL_PRICING: Record<string, CountryConfig> = {
     flag: '🇮🇳',
     plans: {
       FREE: { monthly: 0, yearly: 0 },
-      PRO: { monthly: 299, yearly: 1999 },
-      PREMIUM: { monthly: 699, yearly: 3999 },
-      ENTERPRISE: { monthly: 2499, yearly: 14999 },
+      PRO: { monthly: 199, yearly: 1999 },
+      PREMIUM: { monthly: 499, yearly: 3999 },
+      ENTERPRISE: { monthly: 1499, yearly: 14999 },
     },
   },
   US: {
@@ -235,9 +235,40 @@ export const COUNTRY_NAME_MAP: Record<string, string> = {
   'china': 'CN',
 };
 
-export function getCountryCode(countryName?: string | null): string {
-  if (!countryName) return 'US';
-  return COUNTRY_NAME_MAP[countryName.toLowerCase().trim()] || 'US';
+let _countryCodeMap: Record<string, string> | null = null;
+
+function getCountryCodeMap(): Record<string, string> {
+  if (_countryCodeMap) return _countryCodeMap;
+  _countryCodeMap = {};
+  for (const [name, code] of Object.entries(COUNTRY_NAME_MAP)) {
+    _countryCodeMap[code] = name;
+  }
+  for (const code of Object.keys(REGIONAL_PRICING)) {
+    if (!_countryCodeMap[code]) {
+      _countryCodeMap[code] = code;
+    }
+  }
+  return _countryCodeMap;
+}
+
+export function getCountryCode(input?: string | null): string {
+  if (!input) return 'US';
+  const trimmed = input.trim();
+  const upper = trimmed.toUpperCase();
+
+  // Direct country code match (IN, US, GB, etc.)
+  if (REGIONAL_PRICING[upper]) return upper;
+
+  // Country name match (india, united states, etc.)
+  const lower = trimmed.toLowerCase();
+  if (COUNTRY_NAME_MAP[lower]) return COUNTRY_NAME_MAP[lower]!;
+
+  return 'US';
+}
+
+export function getCountryName(countryCode: string): string {
+  const upper = countryCode.toUpperCase();
+  return getCountryCodeMap()[upper] || upper;
 }
 
 export function getPricing(countryCode?: string | null): CountryConfig {

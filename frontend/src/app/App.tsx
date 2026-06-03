@@ -9,6 +9,7 @@ import { easeOut } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CosmicBackground } from '@/components/CosmicBackground';
+import { LocationPopup } from '@/components/LocationPopup';
 import { fetchGoogleClientId } from '@/lib/google';
 import { Landing } from '@/features/landing/Landing';
 import { LoginPage } from '@/features/auth/LoginPage';
@@ -181,6 +182,7 @@ export default function App() {
         Skip to main content
       </a>
       <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>
+      <LocationPopup />
     </HelmetProvider>
   );
 }
