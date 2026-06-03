@@ -3,7 +3,7 @@ WORKDIR /app
 COPY backend/package*.json ./backend/
 RUN cd backend && npm ci
 COPY . .
-RUN cd backend && npx prisma generate && npm run build
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/soma_surya?schema=public"`nRUN cd backend && npx prisma generate && npm run build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
