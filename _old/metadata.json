@@ -1,6 +1,0 @@
-{
-  "name": "Vedic Astrology & Moon Tracker",
-  "description": "Personalized Vedic Astrology readings, daily horoscopes, Indian compatibility analysis, and live moon phase tracking.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

@@ -209,18 +209,4 @@ export function getCurrencyForCountry(country: string): { code: string; symbol: 
   return config.currency;
 }
 
-export function getLocalizedPrice(basePriceUSD: number, currencyCode: string): number {
-  const usdConfig = REGIONAL_PRICING.US!;
-  const targetConfig = Object.values(REGIONAL_PRICING).find((c) => c.currency.code === currencyCode);
-  if (!targetConfig) return basePriceUSD;
-
-  const proRatio = targetConfig.plans.PRO.monthly / usdConfig.plans.PRO.monthly;
-  const premiumRatio = targetConfig.plans.PREMIUM.monthly / usdConfig.plans.PREMIUM.monthly;
-  const enterpriseRatio = targetConfig.plans.ENTERPRISE.monthly / usdConfig.plans.ENTERPRISE.monthly;
-
-  const avgRatio = (proRatio + premiumRatio + enterpriseRatio) / 3;
-  const converted = basePriceUSD * avgRatio;
-  return currencyCode === 'JPY' ? Math.round(converted) : Math.round(converted * 100) / 100;
-}
-
 export { REGIONAL_PRICING, COUNTRY_NAME_MAP, type CountryCode, type CurrencyInfo, type CountryConfig };
