@@ -65,19 +65,24 @@ chatRouter.post('/', authenticate, requirePremium, validate(chatSchema), asyncHa
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
     const errStack = error instanceof Error ? error.stack : '';
-    logger.error({ errMsg, errStack, sessionId: session.id }, 'Chat AI failed');
+    const isCreditError = errMsg.toLowerCase().includes('credit') || errMsg.includes('402') || errMsg.toLowerCase().includes('payment');
+    logger.error({ errMsg, errStack, sessionId: session.id, isCreditError }, 'Chat AI failed');
 
-    const fallbackMsg = 'The cosmic energies are shifting. Please try again in a moment.';
+    let userMessage: string;
+    if (isCreditError) {
+      userMessage = 'The AI service is currently unavailable due to credit limits. Please try again later or contact support.';
+    } else if (isDev) {
+      userMessage = `[DEV ERROR] ${errMsg}`;
+    } else {
+      userMessage = 'The cosmic energies are shifting. Please try again in a moment.';
+    }
+
     await prisma.chatSession.update({
       where: { id: session.id },
-      data: { messages: JSON.parse(JSON.stringify([...messages, { role: 'user', content: message }, { role: 'assistant', content: fallbackMsg }])) },
+      data: { messages: JSON.parse(JSON.stringify([...messages, { role: 'user', content: message }, { role: 'assistant', content: userMessage }])) },
     }).catch(() => {});
 
-    if (isDev) {
-      res.json({ success: true, data: { reply: `[DEV ERROR] ${errMsg}`, sessionId: session.id } });
-    } else {
-      res.json({ success: true, data: { reply: fallbackMsg, sessionId: session.id } });
-    }
+    res.json({ success: true, data: { reply: userMessage, sessionId: session.id } });
   }
 }));
 

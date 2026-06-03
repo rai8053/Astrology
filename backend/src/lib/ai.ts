@@ -22,6 +22,19 @@ const DEFAULT_FALLBACK_MODELS = [
   'anthropic/claude-sonnet-4',
 ];
 
+const FREE_MODELS = [
+  'google/gemini-2.0-flash-exp:free',
+  'mistralai/mistral-7b-instruct:free',
+  'meta-llama/llama-3.2-3b-instruct:free',
+  'microsoft/phi-3-mini-4k-instruct:free',
+];
+
+function calculateMaxTokens(contentLength: number): number {
+  const base = 64;
+  const perChar = Math.ceil(contentLength / 4);
+  return Math.min(192, base + perChar);
+}
+
 class OpenRouterService implements ProviderClient {
   private client: OpenAI;
   private preferredModel: string;
@@ -61,9 +74,13 @@ class OpenRouterService implements ProviderClient {
   }): Promise<{ text: string; model: string; usage?: AIUsage }> {
     const modelsToTry = this.buildModelList(params.model);
     const systemInstruction = params.config?.systemInstruction as string | undefined;
+    const maxTokens = params.config?.max_tokens
+      ? (params.config.max_tokens as number)
+      : calculateMaxTokens(params.contents.length);
     let lastError: Error | null = null;
+    let hadCreditError = false;
 
-    logger.info({ modelsToTry, hasSystemInstruction: !!systemInstruction, contentLength: params.contents.length }, 'generateContent starting');
+    logger.info({ modelsToTry, hasSystemInstruction: !!systemInstruction, contentLength: params.contents.length, maxTokens }, 'generateContent starting');
 
     for (const model of modelsToTry) {
       for (let attempt = 0; attempt < this.maxRetries; attempt++) {
@@ -79,7 +96,7 @@ class OpenRouterService implements ProviderClient {
               model,
               messages,
               temperature: 0.7,
-              max_tokens: 4096,
+              max_tokens: maxTokens,
             },
             { signal: params.signal, timeout: 30000 },
           );
@@ -101,10 +118,13 @@ class OpenRouterService implements ProviderClient {
           const errMsg = error instanceof Error ? error.message : String(error);
           const errStack = error instanceof Error ? error.stack : '';
           const status = (error as any)?.status;
-          logger.warn({ errMsg, errStack, status, model, attempt: attempt + 1, maxRetries: this.maxRetries }, `OpenRouter model "${model}" attempt ${attempt + 1}/${this.maxRetries} failed`);
+          logger.warn({ errMsg, errStack, status, model, maxTokens, attempt: attempt + 1, maxRetries: this.maxRetries }, `OpenRouter model "${model}" attempt ${attempt + 1}/${this.maxRetries} failed`);
 
           if (status === 400 || status === 401 || status === 403 || status === 404) break;
-
+          if (status === 402) {
+            hadCreditError = true;
+            break;
+          }
           if (attempt < this.maxRetries - 1) {
             await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
           }
@@ -114,7 +134,10 @@ class OpenRouterService implements ProviderClient {
 
     const lastErrMsg = lastError instanceof Error ? lastError.message : String(lastError);
     const lastErrStack = lastError instanceof Error ? lastError.stack : '';
-    logger.error({ modelsTried: modelsToTry, lastErrMsg, lastErrStack }, 'All OpenRouter models exhausted');
+    logger.error({ modelsTried: modelsToTry, lastErrMsg, lastErrStack, hadCreditError }, 'All OpenRouter models exhausted');
+    if (hadCreditError) {
+      throw new Error('The AI service has run out of credits. Please try a different model or add credits to your OpenRouter account.');
+    }
     throw lastError || new Error('All OpenRouter models exhausted');
   }
 
@@ -131,8 +154,11 @@ class OpenRouterService implements ProviderClient {
     }
     messages.push({ role: 'user', content: params.contents });
 
+    const maxTokens = calculateMaxTokens(params.contents.length);
+    logger.info({ model, contentLength: params.contents.length, maxTokens }, 'streamContent starting');
+
     const stream = await this.client.chat.completions.create(
-      { model, messages, stream: true, temperature: 0.7, max_tokens: 4096 },
+      { model, messages, stream: true, temperature: 0.7, max_tokens: maxTokens },
       { signal: params.signal, timeout: 60000 },
     );
 
@@ -146,7 +172,10 @@ class OpenRouterService implements ProviderClient {
     if (override) return [override];
     const models = [this.preferredModel];
     for (const m of this.fallbackModels) {
-      if (m !== this.preferredModel) models.push(m);
+      if (m !== this.preferredModel && !models.includes(m)) models.push(m);
+    }
+    for (const m of FREE_MODELS) {
+      if (!models.includes(m)) models.push(m);
     }
     return models;
   }
@@ -175,19 +204,21 @@ export async function generateAIResponse(prompt: string, systemInstruction?: str
   }, 'generateAIResponse starting');
 
   const provider = resolveProvider();
+  const maxTokens = calculateMaxTokens(prompt.length);
   const config: Record<string, unknown> = {};
   if (systemInstruction) config.systemInstruction = systemInstruction;
+  config.max_tokens = maxTokens;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
   try {
     const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
-    logger.info({ model: response.model, textLength: response.text.length }, 'generateAIResponse succeeded');
+    logger.info({ model: response.model, textLength: response.text.length, maxTokens }, 'generateAIResponse succeeded');
     return { text: response.text, provider: 'openrouter', model: response.model };
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
     const errStack = error instanceof Error ? error.stack : '';
     const errStatus = (error as any)?.status;
-    logger.error({ errMsg, errStack, errStatus, apiKeyPrefix, modelName }, 'generateAIResponse failed');
+    logger.error({ errMsg, errStack, errStatus, apiKeyPrefix, modelName, maxTokens }, 'generateAIResponse failed');
     throw error;
   } finally {
     clearTimeout(timeout);
