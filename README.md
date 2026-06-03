@@ -155,7 +155,7 @@ Astrology/
 │   └── Dockerfile                     # Multi-stage build
 │
 ├── shared/types/                      # TypeScript interfaces shared across stack
-├── docker/nginx.conf                  # Reverse proxy config
+├── frontend/nginx.conf                # Nginx reverse proxy config
 ├── docker-compose.yml                 # 5 services: db, redis, backend, frontend
 ├── scripts/                           # deploy.sh, setup.sh, setup.ps1
 ├── .github/workflows/                 # CI + Deploy + Security workflows

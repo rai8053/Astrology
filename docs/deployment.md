@@ -48,7 +48,7 @@ cd soma-surya
 docker-compose -f docker-compose.prod.yml up -d
 
 # Configure Nginx as reverse proxy
-# (see docker/nginx.conf for reference)
+# (see frontend/nginx.conf for reference)
 
 # SSL with Certbot
 certbot --nginx -d somasurya.com
