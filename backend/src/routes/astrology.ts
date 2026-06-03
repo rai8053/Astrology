@@ -455,7 +455,7 @@ astrologyRouter.post('/daily-horoscope', optionalAuth, validate(horoscopeSchema)
     if (req.user) {
       await prisma.astrologyReport.create({
         data: { userId: req.user.userId, type: 'daily_horoscope', input: { rashi }, result: JSON.parse(JSON.stringify(merged)) },
-      }).catch((e) => { logger.error({ err: e }, 'Failed to save daily_horoscope report'); });
+      }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save daily_horoscope report'); });
     }
     res.json({ success: true, data: merged });
   } catch (error: unknown) {
@@ -510,7 +510,7 @@ astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchem
     if (req.user) {
       await prisma.astrologyReport.create({
         data: { userId: req.user.userId, type: 'compatibility', input: { partnerA, partnerB }, result: JSON.parse(JSON.stringify(merged)) },
-      }).catch((e) => { logger.error({ err: e }, 'Failed to save compatibility report'); });
+      }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save compatibility report'); });
     }
     res.json({ success: true, data: merged });
   } catch (error: unknown) {
@@ -549,7 +549,7 @@ astrologyRouter.post('/moon-phase', optionalAuth, validate(moonPhaseSchema), asy
     if (req.user) {
       await prisma.astrologyReport.create({
         data: { userId: req.user.userId, type: 'moon_phase', input: { date }, result: JSON.parse(JSON.stringify(merged)) },
-      }).catch((e) => { logger.error({ err: e }, 'Failed to save moon_phase report'); });
+      }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save moon_phase report'); });
     }
     res.json({ success: true, data: merged });
   } catch (error: unknown) {

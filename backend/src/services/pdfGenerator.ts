@@ -60,7 +60,7 @@ export async function generatePdf(profile: VedicProfile): Promise<Buffer> {
   } finally {
     if (browser) {
       console.log('[PDF] Closing browser...');
-      await browser.close().catch(e => console.error('[PDF] Error closing browser:', e));
+      await browser.close().catch((e: unknown) => console.error('[PDF] Error closing browser:', e));
       console.log('[PDF] Browser closed');
     }
   }
