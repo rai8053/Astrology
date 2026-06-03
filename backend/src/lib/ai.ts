@@ -30,9 +30,9 @@ const FREE_MODELS = [
 ];
 
 function calculateMaxTokens(contentLength: number): number {
-  const base = 64;
-  const perChar = Math.ceil(contentLength / 4);
-  return Math.min(192, base + perChar);
+  const base = 256;
+  const perChar = Math.ceil(contentLength / 3);
+  return Math.min(800, base + perChar);
 }
 
 class OpenRouterService implements ProviderClient {

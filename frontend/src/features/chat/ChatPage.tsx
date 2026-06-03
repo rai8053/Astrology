@@ -1,7 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Send, MessageCircle, Sparkles, Trash2, Bot, User, Stars } from 'lucide-react';
+import { Send, MessageCircle, Sparkles, Trash2, Bot, User, Stars, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { api } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
@@ -18,17 +20,15 @@ interface ChatSession {
   updatedAt: string;
 }
 
+const DAILY_FREE_LIMIT = 10;
+
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="flex items-end gap-2 max-w-[85%] md:max-w-[75%]">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="w-7 h-7 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center mb-1"
-        >
+      <div className="flex items-end gap-2 max-w-[88%] md:max-w-[78%]">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center mb-1 shrink-0">
           <Bot className="w-3.5 h-3.5 text-gold" />
-        </motion.div>
+        </div>
         <div className="glass-card rounded-2xl rounded-bl-md px-5 py-3.5">
           <div className="flex gap-1.5">
             {[0, 1, 2].map((i) => (
@@ -46,41 +46,45 @@ function TypingIndicator() {
   );
 }
 
+function MarkdownContent({ content }: { content: string }) {
+  return (
+    <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-gold prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2 prose-p:leading-relaxed prose-p:my-1.5 prose-strong:text-gold/90 prose-ul:my-1 prose-li:my-0.5 prose-code:text-gold/80 prose-code:bg-white/5 prose-code:px-1 prose-code:rounded prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
 function ChatBubble({ message, index }: { message: ChatMessage; index: number }) {
   const isUser = message.role === 'user';
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.3, delay: index * 0.03 }}
-      className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}
+      transition={{ duration: 0.35, delay: index * 0.04 }}
+      className={`flex items-start gap-3 mb-5 ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       {!isUser && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="w-7 h-7 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center mb-1 shrink-0"
-        >
-          <Bot className="w-3.5 h-3.5 text-gold" />
-        </motion.div>
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center mt-1 shrink-0 border border-gold/10">
+          <Bot className="w-4 h-4 text-gold" />
+        </div>
       )}
-      <div className={`max-w-[85%] md:max-w-[75%] p-3.5 rounded-2xl text-sm leading-relaxed ${
+      <div className={`${
         isUser
-          ? 'bg-gradient-to-br from-gold to-amber-400 text-cosmic shadow-lg shadow-gold/20 rounded-br-md'
-          : 'glass-card rounded-bl-md'
-      }`}>
-        <p className="whitespace-pre-wrap">{message.content}</p>
+          ? 'bg-gradient-to-br from-gold to-amber-400 text-cosmic shadow-lg shadow-gold/20 rounded-2xl rounded-br-md'
+          : 'glass-card-premium rounded-2xl rounded-bl-md border border-white/[0.04] shadow-premium'
+      } max-w-[88%] md:max-w-[78%] p-4 text-sm leading-relaxed`}>
+        {isUser ? (
+          <p className="font-medium">{message.content}</p>
+        ) : (
+          <MarkdownContent content={message.content} />
+        )}
       </div>
       {isUser && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="w-7 h-7 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center mb-1 shrink-0"
-        >
-          <User className="w-3.5 h-3.5 text-gold" />
-        </motion.div>
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center mt-1 shrink-0 border border-gold/10">
+          <User className="w-4 h-4 text-gold" />
+        </div>
       )}
     </motion.div>
   );
@@ -99,7 +103,10 @@ export function ChatPage() {
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [streaming, setStreaming] = useState(false);
+  const [streamText, setStreamText] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [dailyUsed, setDailyUsed] = useState(0);
+  const [isPremium, setIsPremium] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -108,39 +115,203 @@ export function ChatPage() {
     queryFn: () => api.get<ChatSession[]>('/api/chat/sessions'),
   });
 
-  const chatMutation = useMutation({
-    mutationFn: (message: string) => {
-      const payload: Record<string, unknown> = { message, language };
-      if (sessionId) payload.sessionId = sessionId;
-      return api.post<{ reply: string; sessionId: string }>('/api/chat', payload);
-    },
-    onSuccess: (data) => {
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.data.reply }]);
-      if (data.data.sessionId !== sessionId) setSessionId(data.data.sessionId);
-      refetchSessions();
-      setError(null);
-    },
-    onError: (err) => setError(err instanceof Error ? err.message : t('chat.failedResponse')),
+  const { data: subData } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: () => api.get<{ plan: string; status: string }>('/api/payments/subscription'),
   });
 
-  const handleSend = (msg?: string) => {
+  useEffect(() => {
+    if (subData?.data) {
+      setIsPremium(subData.data.plan !== 'FREE' || subData.data.status === 'TRIALING');
+    }
+  }, [subData]);
+
+  const chatMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const payload: Record<string, unknown> = { message, language };
+      if (sessionId) payload.sessionId = sessionId;
+
+      // Use streaming
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = '';
+      const res = await fetch(`${baseUrl}/api/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`Server returned ${res.status}${text ? ': ' + text.slice(0, 200) : ''}`);
+      }
+
+      const contentType = res.headers.get('Content-Type') || '';
+
+      if (contentType.includes('text/event-stream')) {
+        return await consumeStream(res);
+      }
+
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Request failed');
+      return data.data;
+    },
+    onSuccess: (data) => {
+      if (data?.reply) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+      }
+      if (data?.sessionId && data.sessionId !== sessionId) setSessionId(data.sessionId);
+      if (data?.dailyUsed) setDailyUsed(data.dailyUsed);
+      refetchSessions();
+      setError(null);
+      setStreamText('');
+    },
+    onError: (err) => {
+      setError(err instanceof Error ? err.message : t('chat.failedResponse'));
+      setStreamText('');
+    },
+  });
+
+  const consumeStream = useCallback(async (response: Response): Promise<{ reply: string; sessionId: string; dailyUsed: number }> => {
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('Stream not available');
+
+    const decoder = new TextDecoder();
+    let result = { reply: '', sessionId: '', dailyUsed: 0 };
+
+    setStreaming(true);
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.done) {
+              if (data.sessionId) result.sessionId = data.sessionId;
+              if (data.dailyUsed) result.dailyUsed = data.dailyUsed;
+              return { reply: result.reply || '', sessionId: result.sessionId, dailyUsed: result.dailyUsed };
+            }
+            if (data.error) {
+              result.reply = data.text || '';
+              return { reply: result.reply, sessionId: result.sessionId, dailyUsed: result.dailyUsed };
+            }
+            if (data.text) {
+              result.reply = data.text;
+              setStreamText(data.text);
+            }
+          } catch { /* skip malformed JSON */ }
+        }
+      }
+    } finally {
+      setStreaming(false);
+    }
+
+    return { reply: result.reply || '', sessionId: result.sessionId, dailyUsed: result.dailyUsed };
+  }, []);
+
+  const handleSend = async (msg?: string) => {
     const text = msg ?? input;
     if (!text.trim() || streaming) return;
     setMessages((prev) => [...prev, { role: 'user', content: text }]);
+    setInput('');
     setStreaming(true);
-    chatMutation.mutate(text, {
-      onSettled: () => { setStreaming(false); setInput(''); inputRef.current?.focus(); },
-    });
+    setStreamText('');
+
+    try {
+      const payload: Record<string, unknown> = { message: text, language };
+      if (sessionId) payload.sessionId = sessionId;
+
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+      const contentType = res.headers.get('Content-Type') || '';
+
+      if (contentType.includes('text/event-stream')) {
+        const reader = res.body?.getReader();
+        if (!reader) throw new Error('Stream not available');
+        const decoder = new TextDecoder();
+        let reply = '';
+        let sid = sessionId;
+        let used = dailyUsed;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split('\n')) {
+            if (!line.startsWith('data: ')) continue;
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.done) {
+                if (data.sessionId) sid = data.sessionId;
+                if (data.dailyUsed) used = data.dailyUsed;
+                break;
+              }
+              if (data.error) {
+                reply = data.text || '';
+                break;
+              }
+              if (data.text) {
+                reply = data.text;
+                setStreamText(data.text);
+              }
+            } catch { /* skip */ }
+          }
+        }
+
+        setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+        if (sid && sid !== sessionId) setSessionId(sid);
+        if (used) setDailyUsed(used);
+        refetchSessions();
+        setError(null);
+      } else {
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Request failed');
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.data.reply }]);
+        if (data.data.sessionId && data.data.sessionId !== sessionId) setSessionId(data.data.sessionId);
+        if (data.data.dailyUsed) setDailyUsed(data.data.dailyUsed);
+        refetchSessions();
+        setError(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('chat.failedResponse'));
+    } finally {
+      setStreaming(false);
+      setStreamText('');
+      inputRef.current?.focus();
+    }
   };
 
   const newSession = () => {
     setMessages([]);
     setSessionId(null);
+    setStreamText('');
   };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streaming]);
+  }, [messages, streaming, streamText]);
 
   const loadSession = async (id: string) => {
     try {
@@ -158,48 +329,51 @@ export function ChatPage() {
     } catch { /* ignore */ }
   };
 
+  const limitRemaining = isPremium ? Infinity : DAILY_FREE_LIMIT - dailyUsed;
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
       >
         <div className="flex items-center gap-3">
-          <motion.div
-            animate={{ rotate: [0, 5, 0, -5, 0] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center"
-          >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center">
             <Stars className="w-5 h-5 text-gold" />
-          </motion.div>
+          </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-sans font-bold">{t('chat.title')}</h1>
-            <p className="text-ink/50 dark:text-parchment/50 mt-0.5 text-sm">{t('chat.subtitle')}</p>
+            <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight">{t('chat.title')}</h1>
+            <p className="text-ink/50 dark:text-parchment/50 text-xs mt-0.5">{t('chat.subtitle')}</p>
           </div>
         </div>
-        <PremiumButton variant="ghost" size="sm" icon={<Sparkles className="w-4 h-4" />} onClick={newSession}>
-          {t('chat.newChat')}
-        </PremiumButton>
+        <div className="flex items-center gap-2">
+          {!isPremium && dailyUsed > 0 && (
+            <span className="text-[10px] text-gold/60 font-mono bg-gold/5 px-2.5 py-1 rounded-full border border-gold/10">
+              {limitRemaining}/{DAILY_FREE_LIMIT}
+            </span>
+          )}
+          {isPremium && (
+            <span className="text-[10px] text-gold font-mono bg-gold/10 px-2.5 py-1 rounded-full border border-gold/20 flex items-center gap-1">
+              <Crown className="w-3 h-3" /> Premium
+            </span>
+          )}
+          <PremiumButton variant="ghost" size="sm" icon={<Sparkles className="w-4 h-4" />} onClick={newSession}>
+            {t('chat.newChat')}
+          </PremiumButton>
+        </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1 space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+        <div className="lg:col-span-1 space-y-2 order-2 lg:order-1">
           <PremiumCard glass className="p-3">
-            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/40 dark:text-parchment/40 mb-3 px-1">{t('chat.history')}</h3>
+            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/40 dark:text-parchment/40 mb-3 px-1">
+              {t('chat.history')}
+            </h3>
             {sessionsData?.data?.length ? (
-              <div className="space-y-1 max-h-[400px] overflow-y-scroll">
+              <div className="space-y-1 max-h-[300px] lg:max-h-[400px] overflow-y-auto scrollbar-thin">
                 {sessionsData.data.map((s) => (
-                  <motion.div
-                    key={s.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="group flex items-center gap-1"
-                  >
+                  <div key={s.id} className="group flex items-center gap-1">
                     <button
                       onClick={() => loadSession(s.id)}
                       className="flex-1 text-left text-xs p-2 rounded-lg hover:bg-gold/10 dark:hover:bg-white/[0.04] truncate transition-colors text-ink/60 dark:text-parchment/60 hover:text-gold"
@@ -212,7 +386,7 @@ export function ChatPage() {
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -221,28 +395,25 @@ export function ChatPage() {
           </PremiumCard>
         </div>
 
-        <div className="lg:col-span-3">
-          <PremiumCard glass className="h-[600px] flex flex-col p-0 overflow-hidden">
-            <div className="flex-1 overflow-y-scroll p-4 md:p-6 space-y-4">
-              <AnimatePresence>
-                {messages.length === 0 && !streaming && (
+        <div className="lg:col-span-3 order-1 lg:order-2">
+          <PremiumCard glass className="h-[550px] md:h-[600px] flex flex-col p-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-4 md:p-5 scrollbar-thin">
+              <AnimatePresence mode="wait">
+                {messages.length === 0 && !streaming && !streamText && (
                   <motion.div
+                    key="empty"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-center py-16"
+                    className="text-center py-12 md:py-16"
                   >
-                    <motion.div
-                      animate={{ scale: [1, 1.05, 1] }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                      className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gold/15 to-amber-400/15 flex items-center justify-center"
-                    >
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gold/15 to-amber-400/15 flex items-center justify-center">
                       <MessageCircle className="w-8 h-8 text-gold/40" />
-                    </motion.div>
-                    <p className="text-ink/40 dark:text-parchment/40 text-sm mb-6 max-w-sm mx-auto">
+                    </div>
+                    <p className="text-ink/40 dark:text-parchment/40 text-sm mb-6 max-w-sm mx-auto px-4">
                       {t('chat.emptyPrompt')}
                     </p>
-                    <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
+                    <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto px-2">
                       {suggestedPrompts.map((q, i) => (
                         <motion.button
                           key={i}
@@ -251,7 +422,7 @@ export function ChatPage() {
                           transition={{ delay: i * 0.1 }}
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
-                          onClick={() => { handleSend(q); }}
+                          onClick={() => handleSend(q)}
                           className="px-4 py-2 text-xs border border-gold/20 rounded-full hover:border-gold/50 hover:bg-gold/5 transition-all text-ink/50 dark:text-parchment/50"
                         >
                           {q}
@@ -266,17 +437,42 @@ export function ChatPage() {
                 <ChatBubble key={i} message={m} index={i} />
               ))}
 
-              {streaming && <TypingIndicator />}
+              {streamText && (
+                <div className="flex items-start gap-3 mb-5 justify-start">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center mt-1 shrink-0 border border-gold/10">
+                    <Bot className="w-4 h-4 text-gold" />
+                  </div>
+                  <div className="glass-card-premium rounded-2xl rounded-bl-md border border-white/[0.04] shadow-premium max-w-[88%] md:max-w-[78%] p-4 text-sm leading-relaxed">
+                    <MarkdownContent content={streamText} />
+                  </div>
+                </div>
+              )}
+
+              {streaming && !streamText && <TypingIndicator />}
               <div ref={messagesEndRef} />
             </div>
 
-            {error && (
+            {!isPremium && !streaming && dailyUsed > 0 && dailyUsed >= DAILY_FREE_LIMIT - 2 && (
               <div className="px-4 md:px-5 pt-2">
-                <p className="text-xs text-red-500 flex items-center gap-1"><span>&#9888;</span> {error}</p>
+                <p className="text-[10px] text-gold/60 flex items-center gap-1">
+                  <Crown className="w-3 h-3" />
+                  {limitRemaining <= 0
+                    ? 'Daily limit reached. Upgrade to Premium for unlimited chat.'
+                    : `${limitRemaining} free ${limitRemaining === 1 ? 'question' : 'questions'} remaining today`}
+                </p>
               </div>
             )}
-            <div className="border-t border-ink/10 dark:border-white/[0.06] p-4 md:p-5">
-              <div className="flex gap-3 items-center">
+
+            {error && (
+              <div className="px-4 md:px-5 pt-2">
+                <p className="text-xs text-red-400/80 flex items-center gap-1">
+                  <span>&#9888;</span> {error}
+                </p>
+              </div>
+            )}
+
+            <div className="border-t border-ink/10 dark:border-white/[0.06] p-3 md:p-4">
+              <div className="flex gap-2 items-center">
                 <input
                   ref={inputRef}
                   autoFocus
@@ -284,12 +480,14 @@ export function ChatPage() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   placeholder={t('chat.placeholder')}
-                  className="flex-1 bg-transparent border-b border-ink/20 dark:border-white/10 outline-none focus:border-gold py-2.5 text-sm font-sans placeholder:text-ink/30 dark:placeholder:text-parchment/30 transition-colors"
+                  disabled={streaming}
+                  className="flex-1 bg-transparent border border-ink/10 dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-sans placeholder:text-ink/30 dark:placeholder:text-parchment/30 transition-colors focus:border-gold/40 focus:outline-none disabled:opacity-50"
                 />
                 <PremiumButton
                   size="sm"
                   onClick={() => handleSend()}
-                  loading={chatMutation.isPending}
+                  loading={streaming}
+                  disabled={streaming || !input.trim()}
                   icon={<Send className="w-4 h-4" />}
                 />
               </div>
