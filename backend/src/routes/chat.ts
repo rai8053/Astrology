@@ -12,7 +12,7 @@ export const chatRouter = Router();
 
 const chatSchema = z.object({
   message: z.string().min(1, 'Message is required').max(5000, 'Message too long (max 5000 chars)'),
-  sessionId: z.string().optional(),
+  sessionId: z.string().nullish(),
   language: z.string().optional(),
 });
 

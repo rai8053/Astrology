@@ -109,8 +109,11 @@ export function ChatPage() {
   });
 
   const chatMutation = useMutation({
-    mutationFn: (message: string) =>
-      api.post<{ reply: string; sessionId: string }>('/api/chat', { message, sessionId, language }),
+    mutationFn: (message: string) => {
+      const payload: Record<string, unknown> = { message, language };
+      if (sessionId) payload.sessionId = sessionId;
+      return api.post<{ reply: string; sessionId: string }>('/api/chat', payload);
+    },
     onSuccess: (data) => {
       setMessages((prev) => [...prev, { role: 'assistant', content: data.data.reply }]);
       if (data.data.sessionId !== sessionId) setSessionId(data.data.sessionId);
