@@ -72,9 +72,9 @@ export function SettingsPage() {
   const { user, setUser } = useAuthStore();
   const { theme, setTheme } = useThemeStore();
   const { language, setLanguage } = useI18nStore();
-  const [name, setName] = useState('');
+  const [name, setName] = useState(user?.name || '');
   const nameTouched = useRef(false);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(user?.email || '');
   const emailTouched = useRef(false);
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');

@@ -1,6 +1,9 @@
 // Pure JavaScript Vedic Ephemeris Engine
 // All calculations are deterministic — same input always produces identical results
 // Based on astronomical algorithms (Jean Meeus, VSOP87 simplified)
+// Lahiri ayanamsa = 24.133° (approx for 2000-2025 epoch, precesses ~0.0139°/yr)
+
+const LAHIRI_AYANAMSA = 24.133;
 
 export interface PlanetaryPosition {
   longitude: number;
@@ -11,6 +14,8 @@ export interface PlanetaryPosition {
   house: number;
   degrees: number;
   minutes: number;
+  navamsaSignIndex: number;
+  navamsaSignName: string;
 }
 
 export interface EphemerisResult {
@@ -21,6 +26,8 @@ export interface EphemerisResult {
   mars: PlanetaryPosition;
   jupiter: PlanetaryPosition;
   saturn: PlanetaryPosition;
+  rahu: PlanetaryPosition;
+  ketu: PlanetaryPosition;
   ascendant: PlanetaryPosition;
   lagnaLord: string;
   moonNakshatraLord: string;
@@ -219,6 +226,7 @@ function toPlanetaryPosition(longitude: number, house: number): PlanetaryPositio
   const deg = degreesInSign(longitude);
   const degWhole = Math.floor(deg);
   const min = Math.round((deg - degWhole) * 60);
+  const { navamsaSignIndex } = calculateNavamsaSignIndex(signIdx, deg);
   return {
     longitude,
     signIndex: signIdx,
@@ -228,6 +236,8 @@ function toPlanetaryPosition(longitude: number, house: number): PlanetaryPositio
     house,
     degrees: degWhole,
     minutes: min,
+    navamsaSignIndex,
+    navamsaSignName: RASHI_NAMES[navamsaSignIndex],
   };
 }
 
@@ -268,22 +278,62 @@ function calculateKarana(sunLon: number, moonLon: number): { index: number; name
   return { index, name: KARANA_NAMES[index] || 'Unknown' };
 }
 
+// Apply Lahiri ayanamsa to convert tropical → sidereal
+function toSidereal(tropicalLon: number): number {
+  return normalizeAngle(tropicalLon - LAHIRI_AYANAMSA);
+}
+
+// Calculate Rahu (Mean North Lunar Node) longitude — simplified formula
+function rahuLongitude(jd: number): number {
+  const T = (jd - 2451545.0) / 36525;
+  return normalizeAngle(125.044547 - 1934.136289 * T + 0.0020708 * T * T + T * T * T / 450000);
+}
+
+// Calculate Ketu (South Lunar Node) = Rahu + 180°
+function ketuLongitude(jd: number): number {
+  return normalizeAngle(rahuLongitude(jd) + 180);
+}
+
+// Navamsa (D9) calculation: divide each 30° sign into 9 parts of 3°20'
+// Movable signs (0,3,6,9): navamsa starts from same sign
+// Fixed signs (1,4,7,10): navamsa starts from 9th sign (+8)
+// Dual signs (2,5,8,11): navamsa starts from 5th sign (+4)
+function calculateNavamsaSignIndex(signIndex: number, degInSign: number): { navamsaSignIndex: number; navamsaPada: number } {
+  const NAVAMSA_DEG = 30 / 9; // 3.3333°
+  const pada = Math.floor(degInSign / NAVAMSA_DEG);
+  const signType = signIndex % 3;
+  const offset = signType === 0 ? 0 : signType === 1 ? 8 : 4;
+  const navamsaSignIndex = (signIndex + offset + pada) % 12;
+  return { navamsaSignIndex, navamsaPada: pada };
+}
+
 export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.0760, lon = 72.8777): EphemerisResult {
   const dateObj = new Date(`${dateStr}T${timeStr}:00`);
   const jd = toJD(dateObj);
 
-  const sunLon = sunLongitude(jd);
-  const moonLon = moonLongitude(jd);
-  const sunPos = toPlanetaryPosition(sunLon, 1);
-  const moonPos = toPlanetaryPosition(moonLon, 7);
+  // Calculate tropical longitudes
+  const sunLonT = sunLongitude(jd);
+  const moonLonT = moonLongitude(jd);
+  const mercLonT = getPlanetLongitude(jd, 'mercury');
+  const venLonT = getPlanetLongitude(jd, 'venus');
+  const marsLonT = getPlanetLongitude(jd, 'mars');
+  const jupLonT = getPlanetLongitude(jd, 'jupiter');
+  const satLonT = getPlanetLongitude(jd, 'saturn');
+  const rahuLonT = rahuLongitude(jd);
+  const ketuLonT = ketuLongitude(jd);
 
-  const mercLon = getPlanetLongitude(jd, 'mercury');
-  const venLon = getPlanetLongitude(jd, 'venus');
-  const marsLon = getPlanetLongitude(jd, 'mars');
-  const jupLon = getPlanetLongitude(jd, 'jupiter');
-  const satLon = getPlanetLongitude(jd, 'saturn');
+  // Apply ayanamsa to get sidereal (Vedic) longitudes
+  const sunLon = toSidereal(sunLonT);
+  const moonLon = toSidereal(moonLonT);
+  const mercLon = toSidereal(mercLonT);
+  const venLon = toSidereal(venLonT);
+  const marsLon = toSidereal(marsLonT);
+  const jupLon = toSidereal(jupLonT);
+  const satLon = toSidereal(satLonT);
+  const rahuLon = toSidereal(rahuLonT);
+  const ketuLon = toSidereal(ketuLonT);
 
-  // House assignment (simplified: 1=Ascendant sign, rest follow)
+  // Ascendant is calculated from local sidereal time (already sidereal)
   const ascLon = calculateAscendant(jd, lat, lon);
   const ascSignIdx = toRashiIndex(ascLon);
   function getHouse(planetLon: number): number {
@@ -291,12 +341,16 @@ export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.07
     return Math.floor(diff / 30) + 1;
   }
 
+  const sunPos = toPlanetaryPosition(sunLon, getHouse(sunLon));
+  const moonPos = toPlanetaryPosition(moonLon, getHouse(moonLon));
   const ascPos = toPlanetaryPosition(ascLon, 1);
   const mercPos = toPlanetaryPosition(mercLon, getHouse(mercLon));
   const venPos = toPlanetaryPosition(venLon, getHouse(venLon));
   const marsPos = toPlanetaryPosition(marsLon, getHouse(marsLon));
   const jupPos = toPlanetaryPosition(jupLon, getHouse(jupLon));
   const satPos = toPlanetaryPosition(satLon, getHouse(satLon));
+  const rahuPos = toPlanetaryPosition(rahuLon, getHouse(rahuLon));
+  const ketuPos = toPlanetaryPosition(ketuLon, getHouse(ketuLon));
 
   const moonRashiKey = RASHI_KEYS[moonPos.signIndex];
   const lagnaKey = RASHI_KEYS[ascPos.signIndex];
@@ -309,6 +363,7 @@ export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.07
     sun: sunPos, moon: moonPos,
     mercury: mercPos, venus: venPos, mars: marsPos,
     jupiter: jupPos, saturn: satPos,
+    rahu: rahuPos, ketu: ketuPos,
     ascendant: ascPos,
     lagnaLord: PLANET_LORDS[lagnaKey] || 'Unknown',
     moonNakshatraLord: NAKSHATRA_LORDS[toNakshatraLordIndex(moonPos.nakshatraIndex)],

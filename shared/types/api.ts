@@ -23,6 +23,8 @@ export interface PlanetaryPlacement {
   sign: string;
   house: number;
   description: string;
+  navamsaSign?: string;
+  navamsaHouse?: number;
 }
 
 export interface AstroInsight {
@@ -149,11 +151,33 @@ export interface TransitAlert {
   impact: 'positive' | 'neutral' | 'challenging';
 }
 
+export interface DashboardPlanet {
+  name: string;
+  sign: string;
+  signFull: string;
+  degrees: number;
+  minutes: number;
+  house: number;
+}
+
+export interface DashboardDasha {
+  mahadasha: string;
+  mahadashaStart: string;
+  mahadashaEnd: string;
+  antardasha: string;
+  antardashaStart: string;
+  antardashaEnd: string;
+}
+
 export interface PersonalDashboardData {
   snapshot: AstrologySnapshot;
   horoscope: PersonalHoroscope;
   cosmicEnergy: CosmicEnergy;
   transitAlerts: TransitAlert[];
+  planets?: DashboardPlanet[];
+  dasha?: DashboardDasha | null;
+  tithi?: { index: number; name: string; paksha: string };
+  yoga?: { index: number; name: string };
 }
 
 export interface MoonPhaseInfo {

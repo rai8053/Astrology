@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { validate } from '../middleware/validate.js';
 import { optionalAuth, authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
-import { RASHI_DATA, RASHI_KEYS, NAKSHATRA_LORDS, NAKSHATRAS } from '../services/astrology/constants.js';
+import { RASHI_DATA, RASHI_KEYS, NAKSHATRA_LORDS } from '../services/astrology/constants.js';
 import { calculateBirthDetails, getMoonPhase } from '../services/astrology/calculator.js';
 import { generateStructuredJSON } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
@@ -152,7 +152,8 @@ function buildTransitTimeline(rashiKey: string, nakshatra: string): TransitEvent
 }
 
 function buildFallbackProfile(name: string, birthDate: string, birthTime: string, birthPlace: string): VedicProfile {
-  const { rashiIndex, rashiKey, nakshatraIndex, nakshatraName, lagnaKey, ascendant, sun, moon, mercury, venus, mars, jupiter, saturn } = calculateBirthDetails(birthDate, birthTime);
+  const details = calculateBirthDetails(birthDate, birthTime);
+  const { rashiIndex, rashiKey, nakshatraIndex, nakshatraName, lagnaKey, ascendant, sun, moon, mercury, venus, mars, jupiter, saturn, rahu, ketu } = details;
   const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
   const ld = RASHI_DATA[lagnaKey] || RASHI_DATA.Mesh;
   const ni = getNakshatraInfo(nakshatraName);
@@ -164,12 +165,21 @@ function buildFallbackProfile(name: string, birthDate: string, birthTime: string
   const marsKey = RASHI_KEYS[mars.signIndex];
   const jupKey = RASHI_KEYS[jupiter.signIndex];
   const satKey = RASHI_KEYS[saturn.signIndex];
+  const rahuKey = RASHI_KEYS[rahu.signIndex];
+  const ketuKey = RASHI_KEYS[ketu.signIndex];
   const sunLd = RASHI_DATA[sunKey]?.lord || 'Sun';
   const mercLd = RASHI_DATA[mercKey]?.lord || 'Mercury';
   const venLd = RASHI_DATA[venKey]?.lord || 'Venus';
   const marsLd = RASHI_DATA[marsKey]?.lord || 'Mars';
   const jupLd = RASHI_DATA[jupKey]?.lord || 'Jupiter';
   const satLd = RASHI_DATA[satKey]?.lord || 'Saturn';
+  const rahuLd = RASHI_DATA[rahuKey]?.lord || 'Rahu';
+  const ketuLd = RASHI_DATA[ketuKey]?.lord || 'Ketu';
+  const sns = (p: { navamsaSignName: string }) => RASHI_KEYS[p.navamsaSignIndex] || 'Unknown';
+  function calcNavamsaHouse(ascNav: number, planetNav: number): number {
+    const diff = (planetNav - ascNav + 12) % 12;
+    return diff + 1;
+  }
   return {
     name, birthDate, birthTime, birthPlace,
     rashi: `${rashiKey} (${rd.translation})`,
@@ -197,14 +207,14 @@ function buildFallbackProfile(name: string, birthDate: string, birthTime: string
     luckyColor: element === 'Fire' ? 'Crimson Red / Gold' : element === 'Water' ? 'Royal Blue / Sea Green' : element === 'Air' ? 'Emerald Green / Silver' : 'Saffron / Earthy Yellow',
     gemstone: element === 'Fire' ? 'Ruby (Manik)' : element === 'Water' ? 'Pearl (Moti)' : element === 'Air' ? 'Emerald (Panna)' : 'Yellow Sapphire (Pukhraj)',
     planetaryPlacements: [
-      { planet: 'Lagna (Ascendant)', sign: lagnaKey, house: 1, description: `${ld.translation} rising at ${ascendant.degrees}°${ascendant.minutes}' — shapes your outward personality and life approach with ${ld.element.toLowerCase()} energy.` },
-      { planet: 'Moon (Chandra)', sign: rashiKey, house: moon.house, description: `Moon in ${rashiKey} at ${moon.degrees}°${moon.minutes}' in house ${moon.house} — governs emotions, intuition, and your inner world. Ruled by ${rashiLord}.` },
-      { planet: 'Sun (Surya)', sign: sunKey, house: sun.house, description: `Sun in ${sunKey} at ${sun.degrees}°${sun.minutes}' in house ${sun.house} — represents your core identity, vitality, and life purpose. Ruled by ${sunLd}.` },
-      { planet: 'Mercury (Budha)', sign: mercKey, house: mercury.house, description: `Mercury in ${mercKey} at ${mercury.degrees}°${mercury.minutes}' in house ${mercury.house} — governs communication, intellect, and analytical abilities. Ruled by ${mercLd}.` },
-      { planet: 'Venus (Shukra)', sign: venKey, house: venus.house, description: `Venus in ${venKey} at ${venus.degrees}°${venus.minutes}' in house ${venus.house} — blesses creativity, romance, and artistic expression. Ruled by ${venLd}.` },
-      { planet: 'Jupiter (Guru)', sign: jupKey, house: jupiter.house, description: `Jupiter in ${jupKey} at ${jupiter.degrees}°${jupiter.minutes}' in house ${jupiter.house} — expands wisdom, fortune, and spiritual growth. Ruled by ${jupLd}.` },
-      { planet: 'Saturn (Shani)', sign: satKey, house: saturn.house, description: `Saturn in ${satKey} at ${saturn.degrees}°${saturn.minutes}' in house ${saturn.house} — brings discipline, life lessons, and karmic responsibility. Ruled by ${satLd}.` },
-      { planet: 'Mars (Mangal)', sign: marsKey, house: mars.house, description: `Mars in ${marsKey} at ${mars.degrees}°${mars.minutes}' in house ${mars.house} — drives ambition, energy, and assertiveness. Ruled by ${marsLd}.` },
+      { planet: 'Lagna (Ascendant)', sign: lagnaKey, house: 1, description: `${ld.translation} rising at ${ascendant.degrees}°${ascendant.minutes}' — shapes your outward personality and life approach with ${ld.element.toLowerCase()} energy.`, navamsaSign: sns(ascendant), navamsaHouse: 1 },
+      { planet: 'Moon (Chandra)', sign: rashiKey, house: moon.house, description: `Moon in ${rashiKey} at ${moon.degrees}°${moon.minutes}' in house ${moon.house} — governs emotions, intuition, and your inner world. Ruled by ${rashiLord}.`, navamsaSign: sns(moon), navamsaHouse: calcNavamsaHouse(ascendant.navamsaSignIndex, moon.navamsaSignIndex) },
+      { planet: 'Sun (Surya)', sign: sunKey, house: sun.house, description: `Sun in ${sunKey} at ${sun.degrees}°${sun.minutes}' in house ${sun.house} — represents your core identity, vitality, and life purpose. Ruled by ${sunLd}.`, navamsaSign: sns(sun), navamsaHouse: calcNavamsaHouse(ascendant.navamsaSignIndex, sun.navamsaSignIndex) },
+      { planet: 'Mercury (Budha)', sign: mercKey, house: mercury.house, description: `Mercury in ${mercKey} at ${mercury.degrees}°${mercury.minutes}' in house ${mercury.house} — governs communication, intellect, and analytical abilities. Ruled by ${mercLd}.`, navamsaSign: sns(mercury), navamsaHouse: calcNavamsaHouse(ascendant.navamsaSignIndex, mercury.navamsaSignIndex) },
+      { planet: 'Venus (Shukra)', sign: venKey, house: venus.house, description: `Venus in ${venKey} at ${venus.degrees}°${venus.minutes}' in house ${venus.house} — blesses creativity, romance, and artistic expression. Ruled by ${venLd}.`, navamsaSign: sns(venus), navamsaHouse: calcNavamsaHouse(ascendant.navamsaSignIndex, venus.navamsaSignIndex) },
+      { planet: 'Jupiter (Guru)', sign: jupKey, house: jupiter.house, description: `Jupiter in ${jupKey} at ${jupiter.degrees}°${jupiter.minutes}' in house ${jupiter.house} — expands wisdom, fortune, and spiritual growth. Ruled by ${jupLd}.`, navamsaSign: sns(jupiter), navamsaHouse: calcNavamsaHouse(ascendant.navamsaSignIndex, jupiter.navamsaSignIndex) },
+      { planet: 'Saturn (Shani)', sign: satKey, house: saturn.house, description: `Saturn in ${satKey} at ${saturn.degrees}°${saturn.minutes}' in house ${saturn.house} — brings discipline, life lessons, and karmic responsibility. Ruled by ${satLd}.`, navamsaSign: sns(saturn), navamsaHouse: calcNavamsaHouse(ascendant.navamsaSignIndex, saturn.navamsaSignIndex) },
+      { planet: 'Mars (Mangal)', sign: marsKey, house: mars.house, description: `Mars in ${marsKey} at ${mars.degrees}°${mars.minutes}' in house ${mars.house} — drives ambition, energy, and assertiveness. Ruled by ${marsLd}.`, navamsaSign: sns(mars), navamsaHouse: calcNavamsaHouse(ascendant.navamsaSignIndex, mars.navamsaSignIndex) },
     ],
     insights: buildInsights(rashiKey, element, nakshatraName, NAKSHATRA_LORDS[nakshatraIndex % 9]),
     remedies: buildRemedies(element, rashiLord, rashiKey),
@@ -481,13 +491,159 @@ const compatibilitySchema = z.object({
   partnerB: z.object({ name: z.string().min(1), birthDate: dateStr, birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'), birthPlace: z.string().min(1).max(200) }),
 });
 
+// ─── Real Ashta Koota (Gun Milan) Calculation ──────────────────────────────
+const NAKSHATRA_GANA: Record<string, number> = {
+  Ashwini: 0, Bharani: 2, Krittika: 1, Rohini: 0, Mrigashira: 1, Ardra: 2,
+  Punarvasu: 0, Pushya: 0, Ashlesha: 2, Magha: 2, 'Purva Phalguni': 1, 'Uttara Phalguni': 1,
+  Hasta: 0, Chitra: 1, Swati: 0, Vishakha: 2, Anuradha: 0, Jyeshtha: 2,
+  Mula: 2, 'Purva Ashadha': 1, 'Uttara Ashadha': 1, Shravana: 0, Dhanishta: 2, Shatabhisha: 1,
+  'Purva Bhadrapada': 1, 'Uttara Bhadrapada': 0, Revati: 0,
+};
+const NAKSHATRA_INDEX: Record<string, number> = {
+  Ashwini: 0, Bharani: 1, Krittika: 2, Rohini: 3, Mrigashira: 4, Ardra: 5,
+  Punarvasu: 6, Pushya: 7, Ashlesha: 8, Magha: 9, 'Purva Phalguni': 10, 'Uttara Phalguni': 11,
+  Hasta: 12, Chitra: 13, Swati: 14, Vishakha: 15, Anuradha: 16, Jyeshtha: 17,
+  Mula: 18, 'Purva Ashadha': 19, 'Uttara Ashadha': 20, Shravana: 21, Dhanishta: 22, Shatabhisha: 23,
+  'Purva Bhadrapada': 24, 'Uttara Bhadrapada': 25, Revati: 26,
+};
+const NAKSHATRA_YONI: Record<string, string> = {
+  Ashwini: 'Horse', Bharani: 'Elephant', Krittika: 'Sheep', Rohini: 'Serpent', Mrigashira: 'Serpent', Ardra: 'Dog',
+  Punarvasu: 'Cat', Pushya: 'Sheep', Ashlesha: 'Cat', Magha: 'Rat', 'Purva Phalguni': 'Rat', 'Uttara Phalguni': 'Cow',
+  Hasta: 'Buffalo', Chitra: 'Tiger', Swati: 'Buffalo', Vishakha: 'Tiger', Anuradha: 'Deer', Jyeshtha: 'Deer',
+  Mula: 'Dog', 'Purva Ashadha': 'Monkey', 'Uttara Ashadha': 'Mongoose', Shravana: 'Monkey', Dhanishta: 'Lion', Shatabhisha: 'Horse',
+  'Purva Bhadrapada': 'Lion', 'Uttara Bhadrapada': 'Cow', Revati: 'Elephant',
+};
+// Yoni compatibility: friend, enemy, neutral (1, 0, 0.5)
+const YONI_COMPAT: Record<string, Record<string, number>> = {
+  Horse: { Horse: 1, Elephant: 0.5, Sheep: 0, Serpent: 0.5, Dog: 1, Cat: 0, Rat: 0, Cow: 0, Buffalo: 0.5, Tiger: 0, Deer: 0, Monkey: 0.5, Mongoose: 0, Lion: 0 },
+  Elephant: { Horse: 0.5, Elephant: 1, Sheep: 0.5, Serpent: 0, Dog: 0, Cat: 0.5, Rat: 1, Cow: 0, Buffalo: 0, Tiger: 0.5, Deer: 1, Monkey: 0, Mongoose: 0.5, Lion: 0 },
+  Sheep: { Horse: 0, Elephant: 0.5, Sheep: 1, Serpent: 0.5, Dog: 0.5, Cat: 0, Rat: 0, Cow: 1, Buffalo: 0, Tiger: 0, Deer: 0, Monkey: 0.5, Mongoose: 0, Lion: 0.5 },
+  Serpent: { Horse: 0.5, Elephant: 0, Serpent: 1, Sheep: 0, Dog: 0.5, Cat: 0, Rat: 0, Cow: 0.5, Buffalo: 0.5, Tiger: 0, Deer: 0, Monkey: 0, Mongoose: 1, Lion: 0 },
+  Dog: { Horse: 1, Elephant: 0, Sheep: 0.5, Serpent: 0.5, Dog: 1, Cat: 0.5, Rat: 0.5, Cow: 0, Buffalo: 0, Tiger: 0, Deer: 1, Monkey: 0, Mongoose: 0, Lion: 0.5 },
+  Cat: { Horse: 0, Elephant: 0.5, Sheep: 0, Serpent: 0, Dog: 0.5, Cat: 1, Rat: 0.5, Cow: 0, Buffalo: 1, Tiger: 0.5, Deer: 0, Monkey: 0.5, Mongoose: 0, Lion: 0 },
+  Rat: { Horse: 0, Elephant: 1, Sheep: 0, Serpent: 0, Dog: 0.5, Cat: 0.5, Rat: 1, Cow: 0.5, Buffalo: 0, Tiger: 0, Deer: 0, Monkey: 0, Mongoose: 0.5, Lion: 0 },
+  Cow: { Horse: 0, Elephant: 0, Sheep: 1, Serpent: 0.5, Dog: 0, Cat: 0, Rat: 0.5, Cow: 1, Buffalo: 0, Tiger: 0.5, Deer: 0.5, Monkey: 0, Mongoose: 0, Lion: 0.5 },
+  Buffalo: { Horse: 0.5, Elephant: 0, Sheep: 0, Serpent: 0.5, Dog: 0, Cat: 1, Rat: 0, Buffalo: 0, Tiger: 0.5, Deer: 0, Monkey: 0, Mongoose: 0.5, Lion: 0 },
+  Tiger: { Horse: 0, Elephant: 0.5, Sheep: 0, Serpent: 0, Dog: 0, Cat: 0.5, Rat: 0.5, Cow: 0.5, Buffalo: 0, Tiger: 1, Deer: 0, Monkey: 0.5, Mongoose: 0, Lion: 0.5 },
+  Deer: { Horse: 0, Elephant: 1, Sheep: 0, Serpent: 0, Dog: 1, Cat: 0, Rat: 0, Cow: 0.5, Buffalo: 0, Tiger: 0, Deer: 1, Monkey: 0.5, Mongoose: 0, Lion: 0 },
+  Monkey: { Horse: 0.5, Elephant: 0, Sheep: 0.5, Serpent: 0, Dog: 0, Cat: 0.5, Rat: 0, Cow: 0, Buffalo: 0, Tiger: 0.5, Deer: 0.5, Monkey: 1, Mongoose: 0.5, Lion: 0.5 },
+  Mongoose: { Horse: 0, Elephant: 0.5, Sheep: 0, Serpent: 1, Dog: 0, Cat: 0, Rat: 0.5, Cow: 0, Buffalo: 0.5, Tiger: 0, Deer: 0, Monkey: 0.5, Mongoose: 1, Lion: 0 },
+  Lion: { Horse: 0, Elephant: 0, Sheep: 0.5, Serpent: 0, Dog: 0.5, Cat: 0, Rat: 0, Cow: 0.5, Buffalo: 0, Tiger: 0.5, Deer: 0, Monkey: 0.5, Mongoose: 0, Lion: 1 },
+};
+const RASHI_ORDER = ['Mesh', 'Vrishabh', 'Mithun', 'Kark', 'Simha', 'Kanya', 'Tula', 'Vrishchik', 'Dhanu', 'Makar', 'Kumbha', 'Meen'];
+// Planetary friendship: temporary (same/different element) + natural (by graha)
+const PLANET_FRIENDS: Record<string, Record<string, 'friend' | 'enemy' | 'neutral'>> = {
+  'Sun': { Sun: 'friend', Moon: 'friend', Mars: 'enemy', Mercury: 'friend', Jupiter: 'friend', Venus: 'enemy', Saturn: 'enemy' },
+  'Moon': { Sun: 'friend', Moon: 'friend', Mars: 'neutral', Mercury: 'friend', Jupiter: 'friend', Venus: 'enemy', Saturn: 'enemy' },
+  'Mars': { Sun: 'enemy', Moon: 'neutral', Mars: 'friend', Mercury: 'enemy', Jupiter: 'friend', Venus: 'neutral', Saturn: 'friend' },
+  'Mercury': { Sun: 'enemy', Moon: 'friend', Mars: 'enemy', Mercury: 'friend', Jupiter: 'friend', Venus: 'friend', Saturn: 'neutral' },
+  'Jupiter': { Sun: 'friend', Moon: 'friend', Mars: 'friend', Mercury: 'friend', Jupiter: 'friend', Venus: 'enemy', Saturn: 'enemy' },
+  'Venus': { Sun: 'enemy', Moon: 'friend', Mars: 'neutral', Mercury: 'friend', Jupiter: 'enemy', Venus: 'friend', Saturn: 'neutral' },
+  'Saturn': { Sun: 'enemy', Moon: 'enemy', Mars: 'friend', Mercury: 'neutral', Jupiter: 'enemy', Venus: 'neutral', Saturn: 'friend' },
+};
+const PLANET_TO_LORD: Record<string, string> = {
+  'Mars / Mangal': 'Mars', 'Venus / Shukra': 'Venus', 'Mercury / Budha': 'Mercury',
+  'Moon / Chandra': 'Moon', 'Sun / Surya': 'Sun', 'Jupiter / Guru': 'Jupiter', 'Saturn / Shani': 'Saturn',
+};
+
+function calculateAshtaKoota(nakIdxA: number, nakIdxB: number, rashiKeyA: string, rashiKeyB: string): { guns: number; kootas: { name: string; description: string; scored: number; max: number }[] } {
+  const kootas: { name: string; description: string; scored: number; max: number }[] = [];
+  let totalGuns = 0;
+
+  // 1. Varna (1 pt) — Varna of the Rashi lord (Brahmin=0, Kshatriya=1, Vaishya=2, Shudra=3)
+  const varnaMap: Record<string, number> = { Mars: 1, Venus: 0, Mercury: 2, Moon: 0, Sun: 1, Jupiter: 0, Saturn: 3 };
+  const lordA = RASHI_DATA[rashiKeyA]?.lord || '';
+  const lordB = RASHI_DATA[rashiKeyB]?.lord || '';
+  const varnaA = varnaMap[PLANET_TO_LORD[lordA] || ''] ?? 0;
+  const varnaB = varnaMap[PLANET_TO_LORD[lordB] || ''] ?? 0;
+  const varnaDiff = Math.abs(varnaA - varnaB);
+  const varnaScored = varnaDiff <= 1 ? 1 : 0;
+  kootas.push({ name: 'Varna (1)', description: 'Spiritual compatibility', scored: varnaScored, max: 1 });
+  totalGuns += varnaScored;
+
+  // 2. Vashya (2 pts) — Controllability type
+  const vashyaMap: Record<string, string> = {
+    Mesh: 'Chatushpada', Vrishabh: 'Chatushpada', Mithun: 'DwiPada', Kark: 'Jalchara',
+    Simha: 'Chatushpada', Kanya: 'DwiPada', Tula: 'DwiPada', Vrishchik: 'Kita',
+    Dhanu: 'DwiPada', Makar: 'Jalchara', Kumbha: 'DwiPada', Meen: 'Jalchara',
+  };
+  const vashyaCompat: Record<string, Record<string, number>> = {
+    Chatushpada: { Chatushpada: 2, DwiPada: 1, Jalchara: 0, Kita: 0 },
+    DwiPada: { Chatushpada: 1, DwiPada: 2, Jalchara: 0, Kita: 0 },
+    Jalchara: { Chatushpada: 0, DwiPada: 0, Jalchara: 2, Kita: 1 },
+    Kita: { Chatushpada: 0, DwiPada: 0, Jalchara: 1, Kita: 2 },
+  };
+  const vA = vashyaMap[rashiKeyA] || 'DwiPada';
+  const vB = vashyaMap[rashiKeyB] || 'DwiPada';
+  const vashyaScored = vashyaCompat[vA]?.[vB] ?? 0;
+  kootas.push({ name: 'Vashya (2)', description: 'Mutual attraction & influence', scored: vashyaScored, max: 2 });
+  totalGuns += vashyaScored;
+
+  // 3. Tara (3 pts) — Birth star compatibility
+  const taraDiff = (nakIdxB - nakIdxA + 27) % 27;
+  const taraRem = taraDiff % 9;
+  const taraScored = (taraRem === 0 || taraRem === 3 || taraRem === 5) ? 3 : (taraRem === 2 || taraRem === 4 || taraRem === 7) ? 0 : 1.5;
+  kootas.push({ name: 'Tara (3)', description: 'Health, longevity & fortune', scored: taraScored, max: 3 });
+  totalGuns += taraScored;
+
+  // 4. Yoni (4 pts) — Animal compatibility
+  const yoniA = NAKSHATRA_YONI[NAKSHATRA_NAMES[nakIdxA]] || 'Horse';
+  const yoniB = NAKSHATRA_YONI[NAKSHATRA_NAMES[nakIdxB]] || 'Horse';
+  const yoniRaw = YONI_COMPAT[yoniA]?.[yoniB] ?? 0.5;
+  const yoniScored = Math.round(yoniRaw * 4);
+  kootas.push({ name: 'Yoni (4)', description: 'Physical & intimate compatibility', scored: yoniScored, max: 4 });
+  totalGuns += yoniScored;
+
+  // 5. Graha Maitri (5 pts) — Planetary friendship
+  const grahaA = PLANET_TO_LORD[lordA] || 'Moon';
+  const grahaB = PLANET_TO_LORD[lordB] || 'Moon';
+  const friendship = PLANET_FRIENDS[grahaA]?.[grahaB] || 'neutral';
+  const gunaScored = friendship === 'friend' ? 5 : friendship === 'neutral' ? 3 : 0;
+  kootas.push({ name: 'Graha Maitri (5)', description: 'Intellectual & emotional alignment', scored: gunaScored, max: 5 });
+  totalGuns += gunaScored;
+
+  // 6. Gana (6 pts) — Temperament (Deva=0, Manushya=1, Rakshasa=2)
+  const ganaA = NAKSHATRA_GANA[NAKSHATRA_NAMES[nakIdxA]] ?? 0;
+  const ganaB = NAKSHATRA_GANA[NAKSHATRA_NAMES[nakIdxB]] ?? 0;
+  const ganaDiff = Math.abs(ganaA - ganaB);
+  const ganaScored = ganaDiff === 0 ? 6 : ganaDiff === 1 ? 3 : 0;
+  kootas.push({ name: 'Gana (6)', description: 'Temperament & nature compatibility', scored: ganaScored, max: 6 });
+  totalGuns += ganaScored;
+
+  // 7. Bhakoot (7 pts) — Rashi compatibility
+  const rashiIdxA = RASHI_ORDER.indexOf(rashiKeyA);
+  const rashiIdxB = RASHI_ORDER.indexOf(rashiKeyB);
+  const rashiDiff = (rashiIdxB - rashiIdxA + 12) % 12;
+  // 2nd/12th = 0, 5th/9th = 5, 4th/8th = 5, 3rd/11th = 3, 6th/8th = 1, 7th = 5, 1st = 7
+  const bhakootMap: Record<number, number> = { 0: 7, 1: 0, 2: 3, 3: 5, 4: 5, 5: 3, 6: 5, 7: 1, 8: 0, 9: 5, 10: 3, 11: 0 };
+  const bhakootScored = bhakootMap[rashiDiff] ?? 0;
+  kootas.push({ name: 'Bhakoot (7)', description: 'Family, wealth & emotional bond', scored: bhakootScored, max: 7 });
+  totalGuns += bhakootScored;
+
+  // 8. Nadi (8 pts) — Nakshatra pada dosha
+  const nadiA = nakIdxA % 3;
+  const nadiB = nakIdxB % 3;
+  const nadiScored = nadiA !== nadiB ? 8 : 0;
+  kootas.push({ name: 'Nadi (8)', description: 'Genetic health & progeny', scored: nadiScored, max: 8 });
+  totalGuns += nadiScored;
+
+  return { guns: Math.round(totalGuns), kootas };
+}
+
+const NAKSHATRA_NAMES = [
+  'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha',
+  'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
+  'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
+];
+
 astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchema), asyncHandler(async (req, res) => {
   const { partnerA, partnerB } = req.body as z.infer<typeof compatibilitySchema>;
-  const { rashiKey: rashiA, nakshatraName: nakshatraA } = calculateBirthDetails(partnerA.birthDate, partnerA.birthTime);
-  const { rashiKey: rashiB, nakshatraName: nakshatraB } = calculateBirthDetails(partnerB.birthDate, partnerB.birthTime);
+  const detA = calculateBirthDetails(partnerA.birthDate, partnerA.birthTime);
+  const detB = calculateBirthDetails(partnerB.birthDate, partnerB.birthTime);
+  const { rashiKey: rashiA, nakshatraName: nakshatraA, nakshatraIndex: nakIdxA } = detA;
+  const { rashiKey: rashiB, nakshatraName: nakshatraB, nakshatraIndex: nakIdxB } = detB;
 
-  const rawSum = new Date(partnerA.birthDate).getDate() + new Date(partnerB.birthDate).getDate();
-  const gunsMatched = 12 + (rawSum % 21);
+  const { guns: gunsMatched, kootas } = calculateAshtaKoota(nakIdxA, nakIdxB, rashiA, rashiB);
   const compatibilityScore = Math.round((gunsMatched / 36) * 100);
   let verdict = 'Medium Alignment (Moderate Compatibility)';
   if (gunsMatched >= 25) verdict = 'Auspicious Union (High Celestial Harmony)';
@@ -499,16 +655,9 @@ astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchem
     partnerA_Nakshatra: nakshatraA,
     partnerB_Nakshatra: nakshatraB,
     compatibilityScore, gunsMatched, verdict,
-    gunAnalysis: [
-      { kootaName: 'Varna (1)', description: 'Spiritual compatibility', pointsScored: rawSum % 2 ? 1 : 0, maxPoints: 1 },
-      { kootaName: 'Vashya (2)', description: 'Mutual attraction', pointsScored: rawSum % 3 === 0 ? 2 : rawSum % 3 === 1 ? 1 : 0, maxPoints: 2 },
-      { kootaName: 'Tara (3)', description: 'Health & longevity', pointsScored: (rawSum % 3) + 1, maxPoints: 3 },
-      { kootaName: 'Yoni (4)', description: 'Physical compatibility', pointsScored: (rawSum % 4) + 1, maxPoints: 4 },
-      { kootaName: 'Graha Maitri (5)', description: 'Intellectual alignment', pointsScored: (rawSum % 5) + 1, maxPoints: 5 },
-      { kootaName: 'Gana (6)', description: 'Temperament matching', pointsScored: rawSum % 2 === 0 ? 6 : 0, maxPoints: 6 },
-      { kootaName: 'Bhakoot (7)', description: 'Family & wealth', pointsScored: rawSum % 3 === 1 ? 7 : 0, maxPoints: 7 },
-      { kootaName: 'Nadi (8)', description: 'Genetic health', pointsScored: rawSum % 2 === 1 ? 8 : 0, maxPoints: 8 },
-    ],
+    gunAnalysis: kootas.map(k => ({
+      kootaName: k.name, description: k.description, pointsScored: k.scored, maxPoints: k.max,
+    })),
     strengths: `${partnerA.name}'s element (${RASHI_DATA[rashiA].element}) blends with ${partnerB.name}'s (${RASHI_DATA[rashiB].element}).`,
     challenges: `Communication differences when Ayurvedic ${RASHI_DATA[rashiA].dosha} clashes with ${RASHI_DATA[rashiB].dosha}.`,
     remedy: 'Chant Gayatri Mantra 11 times on Sundays for harmony.',
@@ -670,6 +819,34 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
     ascendant: `${lagnaKey} (${ld.translation})`, moonRashi: `${rashiKey} (${rd.translation})`, nakshatra: nakshatraName,
     nakshatraLord: NAKSHATRA_LORDS[nakshatraIndex % 9], rashiLord: rd.lord, element: rd.element, doshaDominance: rd.dosha,
   };
+
+  // Planet positions for dashboard
+  const planetList = [
+    { name: 'Sun (Surya)', pos: details.sun },
+    { name: 'Moon (Chandra)', pos: details.moon },
+    { name: 'Mercury (Budha)', pos: details.mercury },
+    { name: 'Venus (Shukra)', pos: details.venus },
+    { name: 'Mars (Mangal)', pos: details.mars },
+    { name: 'Jupiter (Guru)', pos: details.jupiter },
+    { name: 'Saturn (Shani)', pos: details.saturn },
+    { name: 'Rahu', pos: details.rahu },
+    { name: 'Ketu', pos: details.ketu },
+  ];
+  const planets = planetList.map(p => ({
+    name: p.name, sign: RASHI_KEYS[p.pos.signIndex], signFull: p.pos.signName,
+    degrees: p.pos.degrees, minutes: p.pos.minutes, house: p.pos.house,
+  }));
+
+  // Dasha info
+  const dashaInfo = details.currentDasha ? {
+    mahadasha: details.currentDasha.dasha.planet,
+    mahadashaStart: details.currentDasha.dasha.startDate.toISOString(),
+    mahadashaEnd: details.currentDasha.dasha.endDate.toISOString(),
+    antardasha: details.currentDasha.antardasha.planet,
+    antardashaStart: details.currentDasha.antardasha.startDate.toISOString(),
+    antardashaEnd: details.currentDasha.antardasha.endDate.toISOString(),
+  } : null;
+
   const horoscope = buildHoroscope(rashiKey, rd.element, baseSeed);
   const cosmicEnergy = buildCosmicEnergy(rd.element, baseSeed + 100);
   const transitAlerts = buildTransitAlerts(rashiKey, baseSeed + 200);
@@ -677,9 +854,9 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
     const prompt = `Write a personalized Vedic horoscope for someone with Moon in ${rashiKey} (${rd.translation}), Nakshatra ${nakshatraName}, ${rd.element} element, ruled by ${rd.lord}. Period: ${dateLabel}. Return flat JSON with fields: prediction (2-3 sentence personalized reading for ${dateLabel}), love (0-100), career (0-100), health (0-100), finance (0-100), luckyNumber (1-9), luckyColor, dailyAdvice. Do NOT change the rashi or nakshatra.`;
     const aiResult = await generateStructuredJSON<PersonalDashboardData['horoscope']>(prompt, 'You are a Vedic astrologer. Return flat JSON only. No nesting, no markdown.');
     const mergedHoroscope = { ...horoscope, ...aiResult, moonRashi: rashiKey };
-    res.json({ success: true, data: { snapshot, horoscope: mergedHoroscope, cosmicEnergy, transitAlerts } });
+    res.json({ success: true, data: { snapshot, horoscope: mergedHoroscope, cosmicEnergy, transitAlerts, planets, dasha: dashaInfo, tithi: details.tithi, yoga: details.yoga } });
   } catch (error: unknown) {
     logger.warn({ error }, 'AI dashboard horoscope fallback');
-    res.json({ success: true, data: { snapshot, horoscope, cosmicEnergy, transitAlerts } });
+    res.json({ success: true, data: { snapshot, horoscope, cosmicEnergy, transitAlerts, planets, dasha: dashaInfo, tithi: details.tithi, yoga: details.yoga } });
   }
 }));

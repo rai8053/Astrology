@@ -10,6 +10,7 @@ import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { useT } from '@/lib/i18n/useT';
 import { useI18nStore } from '@/lib/i18n/store';
+import { NavamsaChart } from './NavamsaChart';
 import type { BirthDetails, VedicProfile, AstroInsight, Remedy, TransitEvent } from '@shared/types/api';
 
 const PLANET_SYMBOLS: Record<string, { symbol: string; color: string }> = {
@@ -544,6 +545,11 @@ export function KundliPage() {
                     </div>
                   </div>
                 </PremiumCard>
+              </motion.div>
+
+              {/* Navamsa Chart */}
+              <motion.div variants={itemVariants}>
+                <NavamsaChart placements={profile.planetaryPlacements} />
               </motion.div>
 
               {/* Planetary Placements */}
