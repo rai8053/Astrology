@@ -24,9 +24,9 @@ RUN apk add --no-cache \
   libxrender \
   libxshmfence \
   libxtst \
-  libglib-2.0 \
-  libnss3 \
-  libnspr4 \
+  glib \
+  nss \
+  nspr \
   dbus \
   at-spi2-core \
   cups-libs \
