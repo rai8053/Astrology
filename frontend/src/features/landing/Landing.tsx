@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Navbar } from '@/components/Navbar';
-import { getCurrencyForCountry, formatPrice } from '@/lib/pricing';
+import { getDetectedCountry, getCurrencyInfo, getPlans, formatPrice, REGIONAL_PRICING, setManualCountryOverride } from '@/lib/pricing';
 import { Footer } from '@/components/Footer';
 import { PremiumButton } from '@/components/PremiumButton';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
@@ -594,15 +594,23 @@ function PricingSection() {
   const [yearly, setYearly] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
+  const [detectedCountry, setDetectedCountry] = useState<string>('US');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+
+  useEffect(() => {
+    getDetectedCountry().then(setDetectedCountry);
+  }, []);
+
+  const effectiveCountry = user?.country || detectedCountry;
 
   const { data: plansData } = useQuery({
-    queryKey: ['plans', user?.country],
-    queryFn: () => api.get<any[]>('/api/payments/plans' + (user?.country ? `?country=${encodeURIComponent(user.country)}` : '')),
+    queryKey: ['plans', effectiveCountry],
+    queryFn: () => api.get<any[]>('/api/payments/plans' + `?country=${encodeURIComponent(effectiveCountry)}`),
     staleTime: 300000,
   });
 
   const checkoutMutation = useMutation({
-    mutationFn: (planId: string) => api.post<{ url: string }>('/api/payments/create-checkout', { plan: planId, currency: user?.country ? undefined : 'USD' }),
+    mutationFn: (planId: string) => api.post<{ url: string }>('/api/payments/create-checkout', { plan: planId }),
     onSuccess: (data) => {
       if (data.data?.url?.startsWith('https://')) window.location.href = data.data.url;
       else toast.error(t('errors.invalidCheckoutUrl'));
@@ -620,12 +628,20 @@ function PricingSection() {
     checkoutMutation.mutate(planName);
   };
 
-  const currencyInfo = user?.country ? getCurrencyForCountry(user.country) : { code: 'USD', symbol: '$', locale: 'en-US' };
+  const handleCountryChange = (countryCode: string) => {
+    setManualCountryOverride(countryCode);
+    setDetectedCountry(countryCode);
+    setShowCountryPicker(false);
+  };
+
+  const localConfig = REGIONAL_PRICING[effectiveCountry]! || REGIONAL_PRICING.US!;
+  const currencyInfo = localConfig.currency;
+  const localPlans = getPlans(effectiveCountry);
   const plans = plansData?.data || [
-    { id: 'FREE', name: 'Free', price: 0, currency: 'USD', interval: 'month', features: [t('pricing.freeFeature1'), t('pricing.freeFeature2'), t('pricing.freeFeature3'), t('pricing.freeFeature4')], highlighted: false },
-    { id: 'PRO', name: 'Pro', price: 9.99, currency: 'USD', interval: 'month', features: [t('pricing.proFeature1'), t('pricing.proFeature2'), t('pricing.proFeature3'), t('pricing.proFeature4'), t('pricing.proFeature5')], highlighted: true },
-    { id: 'PREMIUM', name: 'Premium', price: 19.99, currency: 'USD', interval: 'month', features: [t('pricing.premiumFeature1'), t('pricing.premiumFeature2'), t('pricing.premiumFeature3'), t('pricing.premiumFeature4'), t('pricing.premiumFeature5')], highlighted: false },
-    { id: 'ENTERPRISE', name: 'Enterprise', price: 49.99, currency: 'USD', interval: 'month', features: [t('pricing.enterpriseFeature1'), t('pricing.enterpriseFeature2'), t('pricing.enterpriseFeature3'), t('pricing.enterpriseFeature4'), t('pricing.enterpriseFeature5')], highlighted: false },
+    { id: 'FREE', name: 'Free', price: 0, currency: currencyInfo.code, interval: 'month', features: [t('pricing.freeFeature1'), t('pricing.freeFeature2'), t('pricing.freeFeature3'), t('pricing.freeFeature4')], highlighted: false },
+    { id: 'PRO', name: 'Pro', price: localPlans.PRO.monthly, currency: currencyInfo.code, interval: 'month', features: [t('pricing.proFeature1'), t('pricing.proFeature2'), t('pricing.proFeature3'), t('pricing.proFeature4'), t('pricing.proFeature5')], highlighted: true },
+    { id: 'PREMIUM', name: 'Premium', price: localPlans.PREMIUM.monthly, currency: currencyInfo.code, interval: 'month', features: [t('pricing.premiumFeature1'), t('pricing.premiumFeature2'), t('pricing.premiumFeature3'), t('pricing.premiumFeature4'), t('pricing.premiumFeature5')], highlighted: false },
+    { id: 'ENTERPRISE', name: 'Enterprise', price: localPlans.ENTERPRISE.monthly, currency: currencyInfo.code, interval: 'month', features: [t('pricing.enterpriseFeature1'), t('pricing.enterpriseFeature2'), t('pricing.enterpriseFeature3'), t('pricing.enterpriseFeature4'), t('pricing.enterpriseFeature5')], highlighted: false },
   ];
 
   return (
@@ -639,7 +655,7 @@ function PricingSection() {
           </SectionSubtitle>
         </motion.div>
 
-        <div className="flex items-center justify-center gap-3 mb-12">
+        <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
           <motion.span
             animate={{ color: yearly ? 'var(--tw-text-tertiary)' : 'var(--tw-text-primary)' }}
             className="text-sm text-text-primary dark:text-dark-text-primary font-medium"
@@ -661,6 +677,44 @@ function PricingSection() {
             <span className="px-2 py-0.5 text-[10px] font-medium bg-accent/10 text-accent border border-accent/20 rounded-full">
               {t('pricing.savePercent')}
             </span>
+          </div>
+
+          <div className="w-px h-5 bg-border-primary dark:bg-dark-border-primary mx-2" />
+
+          <div className="relative">
+            <button
+              onClick={() => setShowCountryPicker(!showCountryPicker)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border-primary dark:border-dark-border-primary hover:border-accent/30 transition-colors"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>{localConfig.flag} {currencyInfo.code}</span>
+              <span className="text-text-tertiary">{currencyInfo.symbol}</span>
+            </button>
+            <AnimatePresence>
+              {showCountryPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-56 max-h-72 overflow-y-auto card-border rounded-xl premium-shadow z-50 bg-bg-primary dark:bg-dark-bg-primary"
+                >
+                  {Object.entries(REGIONAL_PRICING).map(([code, cfg]) => (
+                    <button
+                      key={code}
+                      onClick={() => handleCountryChange(code)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-accent/5 ${
+                        code === effectiveCountry ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary'
+                      }`}
+                    >
+                      <span className="text-base">{cfg.flag}</span>
+                      <span className="flex-1 text-left">{cfg.currency.code}</span>
+                      <span className="text-xs text-text-tertiary">{cfg.currency.symbol}</span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 

@@ -113,6 +113,7 @@ export type TranslationKey =
   | 'settings.resetData' | 'settings.resetDataDesc'
   | 'settings.resetDataConfirm' | 'settings.resetDataSuccess'
   | 'settings.resetDataError'
+  | 'settings.currency' | 'settings.currencyDesc' | 'settings.currencyUpdated'
   | 'billing.title' | 'billing.plan' | 'billing.status' | 'billing.trial'
   | 'billing.manage' | 'billing.upgrade' | 'billing.current'
   | 'billing.free' | 'billing.pro' | 'billing.premium' | 'billing.enterprise'
@@ -475,6 +476,9 @@ const hi: Record<string, string> = {
   'settings.resetDataConfirm': 'Are you sure? This will permanently clear all your birth details.',
   'settings.resetDataSuccess': 'Profile data cleared successfully',
   'settings.resetDataError': 'Failed to reset profile data',
+  'settings.currency': 'Currency & Region',
+  'settings.currencyDesc': 'Set your preferred currency for pricing display.',
+  'settings.currencyUpdated': 'Currency preference saved',
   'billing.title': 'Billing', 'billing.plan': 'Plan', 'billing.status': 'Status',
   'billing.trial': 'Trial', 'billing.manage': 'Manage', 'billing.upgrade': 'Upgrade',
   'billing.current': 'Current Plan', 'billing.free': 'Free', 'billing.pro': 'Pro',
@@ -899,6 +903,9 @@ const bn: Record<string, string> = {
   'settings.resetDataConfirm': 'Are you sure? This will permanently clear all your birth details.',
   'settings.resetDataSuccess': 'Profile data cleared successfully',
   'settings.resetDataError': 'Failed to reset profile data',
+  'settings.currency': 'Currency & Region',
+  'settings.currencyDesc': 'Set your preferred currency for pricing display.',
+  'settings.currencyUpdated': 'Currency preference saved',
   'billing.title': 'Billing', 'billing.plan': 'Plan', 'billing.status': 'Status',
   'billing.trial': 'Trial', 'billing.manage': 'Manage', 'billing.upgrade': 'Upgrade',
   'billing.current': 'Current Plan', 'billing.free': 'Free', 'billing.pro': 'Pro',
@@ -1639,6 +1646,9 @@ const en: Record<string, string> = {
   'settings.resetDataConfirm': 'Are you sure? This will permanently clear all your birth details.',
   'settings.resetDataSuccess': 'Profile data cleared successfully',
   'settings.resetDataError': 'Failed to reset profile data',
+  'settings.currency': 'Currency & Region',
+  'settings.currencyDesc': 'Set your preferred currency for pricing display.',
+  'settings.currencyUpdated': 'Currency preference saved',
   'billing.title': 'Billing', 'billing.plan': 'Plan', 'billing.status': 'Status',
   'billing.trial': 'Trial', 'billing.manage': 'Manage', 'billing.upgrade': 'Upgrade',
   'billing.current': 'Current Plan', 'billing.free': 'Free', 'billing.pro': 'Pro',

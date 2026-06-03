@@ -5,6 +5,7 @@ import { asyncHandler } from '../lib/asyncHandler.js';
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
+import { getPricing, getCountryCode, REGIONAL_PRICING } from '../../../shared/config/pricing.js';
 
 export const paymentRouter = Router();
 
@@ -12,38 +13,28 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-04-15' as Stripe.LatestApiVersion })
   : null;
 
-const CURRENCY_RATES: Record<string, number> = {
-  USD: 1, INR: 83, GBP: 0.79, EUR: 0.92, BDT: 109, JPY: 149, CNY: 7.24, AED: 3.67, AUD: 1.53, CAD: 1.36, BRL: 5.05,
-};
-
-const COUNTRY_CURRENCY: Record<string, string> = {
-  india: 'INR', 'united states': 'USD', usa: 'USD', 'united kingdom': 'GBP', uk: 'GBP', germany: 'EUR',
-  france: 'EUR', spain: 'EUR', italy: 'EUR', netherlands: 'EUR', bangladesh: 'BDT', japan: 'JPY',
-  china: 'CNY', 'united arab emirates': 'AED', uae: 'AED', australia: 'AUD', canada: 'CAD', brazil: 'BRL',
-};
-
-function getCurrencyForCountry(country?: string | null): string {
-  if (!country) return 'USD';
-  const key = country.toLowerCase().trim();
-  return COUNTRY_CURRENCY[key] || 'USD';
-}
-
-function convertPrice(priceUSD: number, currency: string): number {
-  const rate = CURRENCY_RATES[currency] || 1;
-  const converted = priceUSD * rate;
-  return currency === 'JPY' ? Math.round(converted) : Math.round(converted * 100) / 100;
-}
+paymentRouter.get('/currencies', (_req, res) => {
+  const currencies = Object.entries(REGIONAL_PRICING).map(([code, config]) => ({
+    countryCode: code,
+    currency: config.currency,
+    flag: config.flag,
+    plans: config.plans,
+  }));
+  res.json({ success: true, data: currencies });
+});
 
 paymentRouter.get('/plans', (req, res) => {
-  const country = typeof req.query.country === 'string' ? req.query.country.slice(0, 100) : undefined;
-  const currency = getCurrencyForCountry(country);
+  const countryName = typeof req.query.country === 'string' ? req.query.country.slice(0, 100) : undefined;
+  const countryCode = getCountryCode(countryName);
+  const config = getPricing(countryCode);
+  const { currency } = config;
   const basePlans = [
-    { id: 'FREE', name: 'Free', price: 0, currency, interval: 'month', features: ['Daily horoscope', 'Basic birth chart', 'Moon phase tracker'], highlighted: false },
-    { id: 'PRO', name: 'Pro', price: 9.99, currency, interval: 'month', features: ['Everything in Free', 'AI chat astrologer', 'Compatibility analysis', 'Detailed birth chart', 'Weekly predictions'], highlighted: true },
-    { id: 'PREMIUM', name: 'Premium', price: 19.99, currency, interval: 'month', features: ['Everything in Pro', 'Unlimited AI chats', 'Numerology report', 'Tarot readings', 'Priority support', 'Ad-free'], highlighted: false },
-    { id: 'ENTERPRISE', name: 'Enterprise', price: 49.99, currency, interval: 'month', features: ['Everything in Premium', 'API access', 'White-label reports', 'Dedicated astrologer', 'Custom integrations', 'SLA guarantee'], highlighted: false },
+    { id: 'FREE', name: 'Free', price: 0, currency: currency.code, interval: 'month', features: ['Daily horoscope', 'Basic birth chart', 'Moon phase tracker'], highlighted: false },
+    { id: 'PRO', name: 'Pro', price: config.plans.PRO.monthly, currency: currency.code, interval: 'month', features: ['Everything in Free', 'AI chat astrologer', 'Compatibility analysis', 'Detailed birth chart', 'Weekly predictions'], highlighted: true },
+    { id: 'PREMIUM', name: 'Premium', price: config.plans.PREMIUM.monthly, currency: currency.code, interval: 'month', features: ['Everything in Pro', 'Unlimited AI chats', 'Numerology report', 'Tarot readings', 'Priority support', 'Ad-free'], highlighted: false },
+    { id: 'ENTERPRISE', name: 'Enterprise', price: config.plans.ENTERPRISE.monthly, currency: currency.code, interval: 'month', features: ['Everything in Premium', 'API access', 'White-label reports', 'Dedicated astrologer', 'Custom integrations', 'SLA guarantee'], highlighted: false },
   ];
-  const data = basePlans.map((p) => ({ ...p, price: convertPrice(p.price, currency), displayPrice: p.price === 0 ? 0 : convertPrice(p.price, currency) }));
+  const data = basePlans.map((p) => ({ ...p, price: p.price, displayPrice: p.price }));
   res.json({ success: true, data });
 });
 
@@ -75,7 +66,7 @@ paymentRouter.post('/create-checkout', authenticate, asyncHandler(async (req, re
   const priceId = process.env[priceEnvKey];
   if (!priceId) throw new AppError(500, `Payment configuration missing for ${plan} plan`);
 
-  const userCurrency = reqCurrency || getCurrencyForCountry(user.country);
+  const userCurrency = reqCurrency || getPricing(getCountryCode(user.country)).currency.code;
   const session = await stripe.checkout.sessions.create({
     customer: stripeCustomerId,
     mode: 'subscription',

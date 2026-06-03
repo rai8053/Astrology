@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, Sparkles, ArrowRight, Star, Zap, Crown, Globe, ChevronDown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,7 +9,8 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/store';
 import { api } from '@/lib/api';
-import { getCurrencyForCountry, formatPrice } from '@/lib/pricing';
+import { getDetectedCountry, setManualCountryOverride, getCurrencyInfo, formatPrice, REGIONAL_PRICING } from '@/lib/pricing';
+import type { CountryCode } from '@shared/config/pricing';
 import toast from 'react-hot-toast';
 import { useT } from '@/lib/i18n/useT';
 
@@ -18,6 +19,12 @@ export function PricingPage() {
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
   const { t } = useT();
+  const [detectedCountry, setDetectedCountry] = useState<string>('US');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+
+  useEffect(() => {
+    getDetectedCountry().then(setDetectedCountry);
+  }, []);
 
   const faqs = [
     { q: t('pricing.faq1q'), a: t('pricing.faq1a') },
@@ -26,14 +33,17 @@ export function PricingPage() {
     { q: t('pricing.faq4q'), a: t('pricing.faq4a') },
   ];
 
+  const effectiveCountry = (user?.country || detectedCountry);
+  const countryForQuery = effectiveCountry;
+
   const { data: plansData } = useQuery({
-    queryKey: ['plans-page', user?.country],
-    queryFn: () => api.get<{ id: string; name: string; price: number; currency: string; interval: string; features: string[]; highlighted: boolean; displayPrice: number }[]>('/api/payments/plans' + (user?.country ? `?country=${encodeURIComponent(user.country)}` : '')),
+    queryKey: ['plans-page', countryForQuery],
+    queryFn: () => api.get<{ id: string; name: string; price: number; currency: string; interval: string; features: string[]; highlighted: boolean; displayPrice: number }[]>('/api/payments/plans' + `?country=${encodeURIComponent(countryForQuery)}`),
     staleTime: 300000,
   });
 
   const checkoutMutation = useMutation({
-    mutationFn: (planId: string) => api.post<{ url: string }>('/api/payments/create-checkout', { plan: planId, currency: user?.country ? undefined : 'USD' }),
+    mutationFn: (planId: string) => api.post<{ url: string }>('/api/payments/create-checkout', { plan: planId }),
     onSuccess: (data) => {
       if (data.data?.url?.startsWith('https://')) window.location.href = data.data.url;
        else toast.error(t('pricing.invalidUrl'));
@@ -51,8 +61,15 @@ export function PricingPage() {
     checkoutMutation.mutate(planName);
   };
 
-  const currencyInfo = user?.country ? getCurrencyForCountry(user.country) : { code: 'USD', symbol: '$', locale: 'en-US' };
+  const handleCountryChange = (countryCode: string) => {
+    setManualCountryOverride(countryCode);
+    setDetectedCountry(countryCode);
+    setShowCountryPicker(false);
+  };
+
+  const currencyInfo = getCurrencyInfo(countryForQuery);
   const plans = plansData?.data || [];
+  const currentConfig = REGIONAL_PRICING[detectedCountry]! || REGIONAL_PRICING.US!;
 
   return (
     <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
@@ -73,7 +90,7 @@ export function PricingPage() {
             </p>
           </motion.div>
 
-          <div className="flex items-center justify-center gap-3 mb-12">
+          <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
             <span className="text-sm font-medium">{t('pricing.monthly')}</span>
             <button
               onClick={() => setYearly(!yearly)}
@@ -90,6 +107,44 @@ export function PricingPage() {
               <span className="px-2 py-0.5 text-[10px] font-medium bg-accent/10 text-accent border border-accent/20 rounded-full">
                 {t('pricing.savePercent')}
               </span>
+            </div>
+
+            <div className="w-px h-5 bg-border-primary dark:bg-dark-border-primary mx-2" />
+
+            <div className="relative">
+              <button
+                onClick={() => setShowCountryPicker(!showCountryPicker)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border-primary dark:border-dark-border-primary hover:border-accent/30 transition-colors"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>{currentConfig.flag} {currencyInfo.code}</span>
+                <span className="text-text-tertiary">{currencyInfo.symbol}</span>
+              </button>
+              <AnimatePresence>
+                {showCountryPicker && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-56 max-h-72 overflow-y-auto card-border rounded-xl premium-shadow z-50 bg-bg-primary dark:bg-dark-bg-primary"
+                  >
+                    {Object.entries(REGIONAL_PRICING).map(([code, cfg]) => (
+                      <button
+                        key={code}
+                        onClick={() => handleCountryChange(code)}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-accent/5 ${
+                          code === detectedCountry ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary'
+                        }`}
+                      >
+                        <span className="text-base">{cfg.flag}</span>
+                        <span className="flex-1 text-left">{cfg.currency.code}</span>
+                        <span className="text-xs text-text-tertiary">{cfg.currency.symbol}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 

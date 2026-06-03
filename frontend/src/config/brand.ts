@@ -17,8 +17,8 @@ export const brand = {
 
   plans: {
     free: { name: 'Free', monthlyCredits: 5 },
-    pro: { name: 'Pro', price: 9.99, monthlyCredits: 50 },
-    premium: { name: 'Premium', price: 19.99, monthlyCredits: 200 },
-    enterprise: { name: 'Enterprise', price: 49.99, monthlyCredits: -1 },
+    pro: { name: 'Pro', monthlyCredits: 50 },
+    premium: { name: 'Premium', monthlyCredits: 200 },
+    enterprise: { name: 'Enterprise', monthlyCredits: -1 },
   },
 };

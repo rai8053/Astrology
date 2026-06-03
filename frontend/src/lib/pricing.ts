@@ -1,75 +1,226 @@
-export const SUPPORTED_CURRENCIES = {
-  IN: { code: 'INR', symbol: '₹', locale: 'en-IN' },
-  US: { code: 'USD', symbol: '$', locale: 'en-US' },
-  GB: { code: 'GBP', symbol: '£', locale: 'en-GB' },
-  DE: { code: 'EUR', symbol: '€', locale: 'de-DE' },
-  FR: { code: 'EUR', symbol: '€', locale: 'fr-FR' },
-  ES: { code: 'EUR', symbol: '€', locale: 'es-ES' },
-  IT: { code: 'EUR', symbol: '€', locale: 'it-IT' },
-  NL: { code: 'EUR', symbol: '€', locale: 'nl-NL' },
-  BD: { code: 'BDT', symbol: '৳', locale: 'bn-BD' },
-  JP: { code: 'JPY', symbol: '¥', locale: 'ja-JP' },
-  CN: { code: 'CNY', symbol: '¥', locale: 'zh-CN' },
-  AE: { code: 'AED', symbol: 'د.إ', locale: 'ar-AE' },
-  AU: { code: 'AUD', symbol: 'A$', locale: 'en-AU' },
-  CA: { code: 'CAD', symbol: 'C$', locale: 'en-CA' },
-  BR: { code: 'BRL', symbol: 'R$', locale: 'pt-BR' },
-} as const;
+import {
+  REGIONAL_PRICING,
+  COUNTRY_NAME_MAP,
+  getPricing,
+  getCurrencyForCountryCode,
+  formatPrice as formatPriceShared,
+  type CountryCode,
+  type CurrencyInfo,
+  type CountryConfig,
+} from '@shared/config/pricing';
 
-export type CountryCode = keyof typeof SUPPORTED_CURRENCIES;
+const STORAGE_KEY = 'soma_currency_override';
 
-export const COUNTRY_CURRENCY_MAP: Record<string, CountryCode> = {
-  india: 'IN',
-  'united states': 'US',
-  usa: 'US',
-  'united kingdom': 'GB',
-  uk: 'GB',
-  germany: 'DE',
-  france: 'FR',
-  spain: 'ES',
-  italy: 'IT',
-  netherlands: 'NL',
-  bangladesh: 'BD',
-  japan: 'JP',
-  china: 'CN',
-  'united arab emirates': 'AE',
-  uae: 'AE',
-  australia: 'AU',
-  canada: 'CA',
-  brazil: 'BR',
+const TIMEZONE_COUNTRY_MAP: Record<string, string> = {
+  'Asia/Kolkata': 'IN',
+  'Asia/Dhaka': 'BD',
+  'Asia/Kathmandu': 'NP',
+  'Asia/Karachi': 'PK',
+  'Asia/Dubai': 'AE',
+  'Europe/London': 'GB',
+  'Europe/Berlin': 'DE',
+  'Europe/Paris': 'FR',
+  'Europe/Madrid': 'ES',
+  'Europe/Rome': 'IT',
+  'Europe/Amsterdam': 'NL',
+  'America/New_York': 'US',
+  'America/Chicago': 'US',
+  'America/Denver': 'US',
+  'America/Los_Angeles': 'US',
+  'America/Toronto': 'CA',
+  'America/Vancouver': 'CA',
+  'America/Sao_Paulo': 'BR',
+  'Australia/Sydney': 'AU',
+  'Australia/Melbourne': 'AU',
+  'Asia/Tokyo': 'JP',
+  'Asia/Shanghai': 'CN',
+  'Asia/Hong_Kong': 'CN',
 };
 
-export function getCurrencyForCountry(country: string): { code: string; symbol: string; locale: string } {
-  const normalized = country.toLowerCase().trim();
-  const cc = COUNTRY_CURRENCY_MAP[normalized];
-  if (cc) return SUPPORTED_CURRENCIES[cc];
-  return SUPPORTED_CURRENCIES.US;
+function detectCountryFromLocale(): string | null {
+  try {
+    const locale = navigator.language;
+    if (!locale) return null;
+    const parts = locale.split('-');
+    const region = parts[parts.length - 1]?.toUpperCase();
+    if (region && region.length === 2 && REGIONAL_PRICING[region]) {
+      return region;
+    }
+    if (region === 'IN' || region === 'IN') return region;
+    return null;
+  } catch {
+    return null;
+  }
 }
 
-export function getLocalizedPrice(basePriceUSD: number, currencyCode: string): number {
-  const rates: Record<string, number> = {
-    USD: 1,
-    INR: 83,
-    GBP: 0.79,
-    EUR: 0.92,
-    BDT: 109,
-    JPY: 149,
-    CNY: 7.24,
-    AED: 3.67,
-    AUD: 1.53,
-    CAD: 1.36,
-    BRL: 5.05,
-  };
-  const rate = rates[currencyCode] || 1;
-  const converted = basePriceUSD * rate;
-  if (currencyCode === 'JPY') return Math.round(converted);
-  return Math.round(converted * 100) / 100;
+function detectCountryFromTimezone(): string | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!tz) return null;
+    return TIMEZONE_COUNTRY_MAP[tz] || null;
+  } catch {
+    return null;
+  }
+}
+
+let ipDetectedCountry: string | null = null;
+let ipDetectionPromise: Promise<string | null> | null = null;
+
+async function detectCountryFromIP(): Promise<string | null> {
+  try {
+    const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const code = data?.country_code;
+    if (code && REGIONAL_PRICING[code]) {
+      return code;
+    }
+    const name = data?.country_name;
+    if (name) {
+      const mapped = COUNTRY_NAME_MAP[name.toLowerCase().trim()];
+      if (mapped) return mapped;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function detectCountryFromIPFallback(): Promise<string | null> {
+  try {
+    const res = await fetch('https://ip-api.com/json/?fields=countryCode', { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const code = data?.countryCode;
+    if (code && REGIONAL_PRICING[code]) {
+      return code;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+let detectionInitialized = false;
+
+export async function detectCountry(): Promise<string> {
+  if (detectionInitialized && ipDetectedCountry) return ipDetectedCountry;
+
+  const override = getManualCountryOverride();
+  if (override) {
+    detectionInitialized = true;
+    return override;
+  }
+
+  const fromTz = detectCountryFromTimezone();
+  if (fromTz && REGIONAL_PRICING[fromTz]) {
+    detectionInitialized = true;
+    return fromTz;
+  }
+
+  if (!ipDetectedCountry && !ipDetectionPromise) {
+    ipDetectionPromise = (async () => {
+      const fromIP = await detectCountryFromIP();
+      if (fromIP) {
+        ipDetectedCountry = fromIP;
+        detectionInitialized = true;
+        return fromIP;
+      }
+      const fromIPFallback = await detectCountryFromIPFallback();
+      if (fromIPFallback) {
+        ipDetectedCountry = fromIPFallback;
+        detectionInitialized = true;
+        return fromIPFallback;
+      }
+      const fromLocale = detectCountryFromLocale();
+      if (fromLocale) {
+        ipDetectedCountry = fromLocale;
+        detectionInitialized = true;
+        return fromLocale;
+      }
+      ipDetectedCountry = 'US';
+      detectionInitialized = true;
+      return 'US';
+    })();
+  }
+
+  return (await ipDetectionPromise) || 'US';
+}
+
+let cachedCountry: string | null = null;
+
+export async function getDetectedCountry(): Promise<string> {
+  if (cachedCountry) return cachedCountry;
+  cachedCountry = await detectCountry();
+  return cachedCountry;
+}
+
+export function getManualCountryOverride(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY) || null;
+  } catch {
+    return null;
+  }
+}
+
+export function setManualCountryOverride(countryCode: string): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, countryCode);
+    cachedCountry = null;
+    ipDetectedCountry = null;
+    ipDetectionPromise = null;
+    detectionInitialized = false;
+  } catch {
+  }
+}
+
+export function clearManualCountryOverride(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    cachedCountry = null;
+    ipDetectedCountry = null;
+    ipDetectionPromise = null;
+    detectionInitialized = false;
+  } catch {
+  }
+}
+
+export function getCurrencyInfo(countryCode?: string | null): CurrencyInfo {
+  if (countryCode && REGIONAL_PRICING[countryCode]) {
+    return REGIONAL_PRICING[countryCode]!.currency;
+  }
+  const override = getManualCountryOverride();
+  if (override && REGIONAL_PRICING[override]) {
+    return REGIONAL_PRICING[override]!.currency;
+  }
+  return REGIONAL_PRICING.US!.currency;
+}
+
+export function getPlans(countryCode?: string | null): CountryConfig['plans'] {
+  return getPricing(countryCode || undefined).plans;
 }
 
 export function formatPrice(amount: number, currency: string, locale: string): string {
-  try {
-    return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: currency === 'JPY' ? 0 : 2, maximumFractionDigits: currency === 'JPY' ? 0 : 2 }).format(amount);
-  } catch {
-    return `${currency === 'INR' ? '₹' : '$'}${amount.toFixed(2)}`;
-  }
+  return formatPriceShared(amount, currency, locale);
 }
+
+export function getCurrencyForCountry(country: string): { code: string; symbol: string; locale: string } {
+  const config = getPricing(country);
+  return config.currency;
+}
+
+export function getLocalizedPrice(basePriceUSD: number, currencyCode: string): number {
+  const usdConfig = REGIONAL_PRICING.US!;
+  const targetConfig = Object.values(REGIONAL_PRICING).find((c) => c.currency.code === currencyCode);
+  if (!targetConfig) return basePriceUSD;
+
+  const proRatio = targetConfig.plans.PRO.monthly / usdConfig.plans.PRO.monthly;
+  const premiumRatio = targetConfig.plans.PREMIUM.monthly / usdConfig.plans.PREMIUM.monthly;
+  const enterpriseRatio = targetConfig.plans.ENTERPRISE.monthly / usdConfig.plans.ENTERPRISE.monthly;
+
+  const avgRatio = (proRatio + premiumRatio + enterpriseRatio) / 3;
+  const converted = basePriceUSD * avgRatio;
+  return currencyCode === 'JPY' ? Math.round(converted) : Math.round(converted * 100) / 100;
+}
+
+export { REGIONAL_PRICING, COUNTRY_NAME_MAP, type CountryCode, type CurrencyInfo, type CountryConfig };

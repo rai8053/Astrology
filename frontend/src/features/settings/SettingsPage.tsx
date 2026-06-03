@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Sun, Moon, Globe, Save, ExternalLink, CreditCard, CheckCircle2, XCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Sun, Moon, Globe, Save, ExternalLink, CreditCard, CheckCircle2, XCircle, Trash2, AlertTriangle, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
@@ -11,6 +11,7 @@ import { useAuthStore, useThemeStore } from '@/lib/store';
 import { useI18nStore } from '@/lib/i18n/store';
 import type { Language } from '@/lib/i18n/translations';
 import { useT } from '@/lib/i18n/useT';
+import { REGIONAL_PRICING, setManualCountryOverride, getDetectedCountry } from '@/lib/pricing';
 import toast from 'react-hot-toast';
 
 interface UserProfile {
@@ -157,6 +158,24 @@ export function SettingsPage() {
     if (emailTouched.current && email) payload.email = email;
     updateMutation.mutate(payload);
   };
+
+  const [detectedCountry, setDetectedCountry] = useState('US');
+
+  const currencyMutation = useMutation({
+    mutationFn: (currencyCode: string) => api.patch('/api/user/profile', { currency: REGIONAL_PRICING[currencyCode as keyof typeof REGIONAL_PRICING]?.currency.code || 'USD', country: detectedCountry }),
+  });
+
+  const handleCurrencyChange = (countryCode: string) => {
+    setDetectedCountry(countryCode);
+    setManualCountryOverride(countryCode);
+    const currencyCode = REGIONAL_PRICING[countryCode as keyof typeof REGIONAL_PRICING]?.currency.code || 'USD';
+    currencyMutation.mutate(currencyCode);
+    toast.success(t('settings.currencyUpdated'));
+  };
+
+  useEffect(() => {
+    getDetectedCountry().then(setDetectedCountry);
+  }, []);
 
   const queryClient = useQueryClient();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -390,6 +409,30 @@ export function SettingsPage() {
                   { code: 'zh' as Language, label: '🇨🇳 中文' },
                 ].map((opt) => (
                   <option key={opt.code} value={opt.code}>{opt.label}</option>
+                ))}
+              </select>
+              <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40 dark:text-parchment/40 pointer-events-none" />
+            </div>
+          </PremiumCard>
+
+          <PremiumCard glass>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-gold" />
+              </div>
+              <h3 className="font-sans text-lg font-semibold">{t('settings.currency')}</h3>
+            </div>
+            <p className="text-xs text-ink/40 dark:text-parchment/40 mb-3">{t('settings.currencyDesc')}</p>
+            <div className="relative">
+              <select
+                value={detectedCountry}
+                onChange={(e) => handleCurrencyChange(e.target.value)}
+                className="w-full bg-transparent border border-ink/20 dark:border-white/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-gold transition-colors appearance-none cursor-pointer"
+              >
+                {Object.entries(REGIONAL_PRICING).map(([code, cfg]) => (
+                  <option key={code} value={code}>
+                    {cfg.flag} {cfg.currency.code} ({cfg.currency.symbol}) — {cfg.currency.locale}
+                  </option>
                 ))}
               </select>
               <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40 dark:text-parchment/40 pointer-events-none" />

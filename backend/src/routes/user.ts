@@ -56,6 +56,8 @@ const profileSchema = z.object({
   birthPlace: z.string().optional(),
   timezone: z.string().optional(),
   language: z.string().optional(),
+  currency: z.string().length(3).optional(),
+  country: z.string().max(100).optional(),
 });
 
 userRouter.patch('/profile', validate(profileSchema), asyncHandler(async (req, res) => {
