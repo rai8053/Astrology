@@ -133,14 +133,19 @@ export function SettingsPage() {
     }
   }, [profileData]);
 
+  const queryClient = useQueryClient();
+
   const updateMutation = useMutation({
     mutationFn: (data: { name?: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string }) =>
       api.patch<{ message: string } & UserProfile>('/api/user/profile', data),
     onSuccess: (res) => {
       setSaveState('success');
-      const savedName = res.data?.name ?? name;
-      setUser({ ...user!, name: savedName });
-      if (savedName) localStorage.setItem('googleName', savedName);
+      const saved = res.data;
+      if (saved) {
+        setUser({ ...user!, name: saved.name ?? user!.name, birthDate: saved.birthDate ?? user!.birthDate, birthTime: saved.birthTime ?? user!.birthTime, birthPlace: saved.birthPlace ?? user!.birthPlace });
+        if (saved.name) localStorage.setItem('googleName', saved.name);
+      }
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       showPremiumToast('success', t('settings.profileUpdated'), t('settings.profileUpdatedMsg'));
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
       successTimerRef.current = setTimeout(() => setSaveState('idle'), 2000);
@@ -180,7 +185,6 @@ export function SettingsPage() {
     getDetectedCountry().then(setDetectedCountry);
   }, []);
 
-  const queryClient = useQueryClient();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const resetMutation = useMutation({
