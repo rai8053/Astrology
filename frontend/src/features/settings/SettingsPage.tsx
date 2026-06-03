@@ -73,6 +73,7 @@ export function SettingsPage() {
   const { language, setLanguage } = useI18nStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const emailTouched = useRef(false);
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [birthPlace, setBirthPlace] = useState('');
@@ -123,7 +124,6 @@ export function SettingsPage() {
     if (p && !initializedRef.current) {
       initializedRef.current = true;
       setName(p.name ?? '');
-      setEmail(p.email ?? '');
       setBirthDate(p.birthDate ?? '');
       setBirthTime(p.birthTime ?? '');
       setBirthPlace(p.birthPlace ?? '');
@@ -153,18 +153,18 @@ export function SettingsPage() {
   const handleSave = () => {
     if (saveState === 'loading') return;
     setSaveState('loading');
-    updateMutation.mutate({ name, email, birthDate, birthTime, birthPlace, birthState, birthCountry });
+    const payload: { name: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string } = { name, birthDate, birthTime, birthPlace, birthState, birthCountry };
+    if (emailTouched.current && email) payload.email = email;
+    updateMutation.mutate(payload);
   };
 
   const queryClient = useQueryClient();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [emailHidden, setEmailHidden] = useState(false);
 
   const resetMutation = useMutation({
     mutationFn: () => api.post('/api/user/reset-profile'),
     onSuccess: () => {
       setShowResetConfirm(false);
-      setEmailHidden(true);
       setName('');
       setEmail('');
       setBirthDate('');
@@ -241,7 +241,7 @@ export function SettingsPage() {
             </div>
             <div className="space-y-4">
               <Input label={t('settings.nameLabel')} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('settings.namePlaceholder')} />
-              <Input label={t('auth.email')} value={emailHidden ? '' : email} onChange={(e) => setEmail(e.target.value)} placeholder={t('auth.emailPlaceholder')} />
+              <Input label={t('auth.email')} value={email} onChange={(e) => { setEmail(e.target.value); emailTouched.current = true; }} placeholder={t('auth.emailPlaceholder')} />
               <Input label={t('onboarding.dob')} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
               <div className="grid grid-cols-2 gap-4">
                 <Input label={t('onboarding.birthTime')} type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />

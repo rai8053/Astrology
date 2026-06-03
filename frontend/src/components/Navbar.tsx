@@ -89,8 +89,9 @@ export function Navbar() {
     { label: t('nav.faq'), href: '#faq' },
   ] : [];
 
-  const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const displayName = user?.name?.trim() || localStorage.getItem('googleName') || '';
+  const initials = displayName
+    ? displayName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U';
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
@@ -147,7 +148,7 @@ export function Navbar() {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-accent/5 transition-colors"
-                    aria-label={user?.name || (t as any)('nav.userMenu')}
+                    aria-label={displayName || (t as any)('nav.userMenu')}
                   >
                     <div className="w-7 h-7 rounded-md bg-accent/10 flex items-center justify-center text-[11px] font-semibold text-accent">
                       {initials}
@@ -166,7 +167,7 @@ export function Navbar() {
                         className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden"
                       >
                         <div className="px-4 py-3 border-b border-border-primary dark:border-dark-border-primary">
-                          <p className="text-sm font-medium truncate">{user?.name}</p>
+                          <p className="text-sm font-medium truncate">{displayName}</p>
                           <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary truncate">{user?.email}</p>
                         </div>
                         <div className="p-1.5">
@@ -247,7 +248,7 @@ export function Navbar() {
                     {initials}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-sm font-medium">{displayName}</p>
                     <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">{user?.email}</p>
                   </div>
                 </div>

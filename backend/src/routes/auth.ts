@@ -86,10 +86,14 @@ authRouter.post('/google', authLimiter, asyncHandler(async (req, res) => {
     ?? await prisma.user.findUnique({ where: { email } });
 
   if (user) {
-    if (!user.googleId) {
+    const updateData: Record<string, any> = {};
+    if (!user.googleId) updateData.googleId = googleId;
+    if (name && name !== user.name) updateData.name = name;
+    if (picture && picture !== user.avatar) updateData.avatar = picture;
+    if (Object.keys(updateData).length > 0) {
       user = await prisma.user.update({
         where: { id: user.id },
-        data: { googleId, avatar: picture || user.avatar },
+        data: updateData,
       });
     }
   } else {

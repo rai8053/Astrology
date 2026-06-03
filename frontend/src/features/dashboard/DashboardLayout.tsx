@@ -218,8 +218,9 @@ export function DashboardLayout() {
     navigate('/');
   };
 
-  const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const displayName = user?.name?.trim() || localStorage.getItem('googleName') || '';
+  const initials = displayName
+    ? displayName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U';
 
   const allNavItems = [...navItems, ...secondaryItems, ...(isAdmin ? adminItems : [])];
@@ -296,7 +297,7 @@ export function DashboardLayout() {
                       className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden z-50"
                     >
                       <div className="px-4 py-3 border-b border-border-primary dark:border-dark-border-primary">
-                        <p className="text-sm font-medium truncate">{user?.name}</p>
+                        <p className="text-sm font-medium truncate">{displayName}</p>
                         <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary truncate">{user?.email}</p>
                       </div>
                       <div className="p-1.5">
@@ -411,7 +412,7 @@ export function DashboardLayout() {
               <User className="w-4 h-4 text-accent" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.name}</p>
+              <p className="text-sm font-medium truncate">{displayName}</p>
               <p className="text-xs text-text-tertiary truncate">{user?.email}</p>
             </div>
             <LanguageSelector />
