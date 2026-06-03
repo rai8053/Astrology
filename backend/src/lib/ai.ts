@@ -113,7 +113,7 @@ class OpenRouterService implements ProviderClient {
           logger.info({ model, provider: 'openrouter', usage }, 'OpenRouter AI response');
 
           return { text, model, usage };
-        } catch (error) {
+        } catch (error: unknown) {
           lastError = error as Error;
           const errMsg = error instanceof Error ? error.message : String(error);
           const errStack = error instanceof Error ? error.stack : '';
@@ -214,7 +214,7 @@ export async function generateAIResponse(prompt: string, systemInstruction?: str
     const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
     logger.info({ model: response.model, textLength: response.text.length, maxTokens }, 'generateAIResponse succeeded');
     return { text: response.text, provider: 'openrouter', model: response.model };
-  } catch (error) {
+  } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
     const errStack = error instanceof Error ? error.stack : '';
     const errStatus = (error as any)?.status;
@@ -242,7 +242,7 @@ export async function generateStructuredJSON<T>(prompt: string, systemInstructio
     const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
     const extracted = extractJSON(response.text || '{}');
     return JSON.parse(extracted) as T;
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error({ error }, 'Structured AI generation failed');
     throw error;
   } finally {

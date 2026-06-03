@@ -164,7 +164,7 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
         dailyLimit: limit.limit,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
     const errStack = error instanceof Error ? error.stack : '';
     const isCreditError = errMsg.toLowerCase().includes('credit') || errMsg.includes('402') || errMsg.toLowerCase().includes('payment');
@@ -255,7 +255,7 @@ chatRouter.post('/stream', authenticate, validate(chatSchema), asyncHandler(asyn
 
     res.write(`data: ${JSON.stringify({ done: true, sessionId: session.id, dailyUsed: limit.used + 1, dailyLimit: limit.limit })}\n\n`);
     res.end();
-  } catch (error) {
+  } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
     logger.error({ errMsg, sessionId: session.id }, 'Chat stream failed');
     res.write(`data: ${JSON.stringify({ error: true, text: fullText || 'The cosmic energies are shifting. Please try again in a moment.' })}\n\n`);

@@ -16,7 +16,7 @@ export async function requirePremium(req: Request, _res: Response, next: NextFun
       throw new AppError(403, 'Upgrade to Premium to access this feature');
     }
     next();
-  } catch (err) {
+  } catch (err: unknown) {
     next(err);
   }
 }

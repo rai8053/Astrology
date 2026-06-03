@@ -141,7 +141,7 @@ paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
       }
     }
     res.json({ received: true });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error({ error }, 'Webhook handling failed');
     res.status(500).json({ success: false, error: 'Webhook handling failed' });
   }

@@ -12,7 +12,7 @@ export async function generatePdf(profile: VedicProfile): Promise<Buffer> {
   try {
     browser = await chromium.launch({ headless: true });
     console.log('[PDF] 2/6 Chromium launched successfully');
-  } catch (launchErr) {
+  } catch (launchErr: unknown) {
     console.error('[PDF] 2/6 FAILED to launch Chromium:', launchErr);
     throw new Error(`Chromium launch failed: ${launchErr instanceof Error ? launchErr.message : launchErr}`);
   }
@@ -23,7 +23,7 @@ export async function generatePdf(profile: VedicProfile): Promise<Buffer> {
     try {
       page = await browser.newPage();
       console.log('[PDF] 3/6 Page created');
-    } catch (pageErr) {
+    } catch (pageErr: unknown) {
       console.error('[PDF] 3/6 FAILED to create page:', pageErr);
       throw new Error(`Page creation failed: ${pageErr instanceof Error ? pageErr.message : pageErr}`);
     }
@@ -32,7 +32,7 @@ export async function generatePdf(profile: VedicProfile): Promise<Buffer> {
     try {
       await page.setContent(html, { waitUntil: 'networkidle', timeout: 30000 });
       console.log('[PDF] 4/6 Page content set, network idle');
-    } catch (contentErr) {
+    } catch (contentErr: unknown) {
       console.error('[PDF] 4/6 FAILED to set content:', contentErr);
       throw new Error(`Page setContent failed: ${contentErr instanceof Error ? contentErr.message : contentErr}`);
     }
@@ -48,7 +48,7 @@ export async function generatePdf(profile: VedicProfile): Promise<Buffer> {
         preferCSSPageSize: true,
       });
       console.log(`[PDF] 5/6 PDF generated (${pdfBuffer.length} bytes)`);
-    } catch (pdfErr) {
+    } catch (pdfErr: unknown) {
       console.error('[PDF] 5/6 FAILED to generate PDF:', pdfErr);
       throw new Error(`PDF generation failed: ${pdfErr instanceof Error ? pdfErr.message : pdfErr}`);
     }

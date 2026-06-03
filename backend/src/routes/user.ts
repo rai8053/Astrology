@@ -71,7 +71,7 @@ userRouter.patch('/profile', validate(profileSchema), asyncHandler(async (req, r
 
   prisma.usageRecord.create({
     data: { userId: req.user!.userId, feature: 'settings_saved', tokensIn: 0, tokensOut: 0, cost: 0 },
-  }).catch((err) => logger.warn({ err }, 'Failed to log settings_saved usage'));
+  }).catch((err: unknown) => logger.warn({ err }, 'Failed to log settings_saved usage'));
 
   res.json({ success: true, message: 'Profile updated successfully', data: updated });
 }));
@@ -83,7 +83,7 @@ userRouter.post('/reset-profile', asyncHandler(async (req, res) => {
   });
   prisma.usageRecord.create({
     data: { userId: req.user!.userId, feature: 'profile_reset', tokensIn: 0, tokensOut: 0, cost: 0 },
-  }).catch((err) => logger.warn({ err }, 'Failed to log profile_reset usage'));
+  }).catch((err: unknown) => logger.warn({ err }, 'Failed to log profile_reset usage'));
   res.json({ success: true, message: 'Profile data reset successfully' });
 }));
 

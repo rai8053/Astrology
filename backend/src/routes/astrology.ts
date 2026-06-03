@@ -416,7 +416,7 @@ Write in the language corresponding to code: "${language}". For "hi" write in Hi
         data: { userId: req.user.userId, type: 'vedic_profile_detailed', input: { name, birthDate, birthTime, birthPlace }, result: { detailedReport: html } },
       }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save detailed report'); });
     }
-  }).catch((error) => {
+  }).catch((error: unknown) => {
     logger.warn({ error }, 'AI detailed report failed');
     aiDetailedCache.set(key, { done: true, html: fallbackDetailed });
   });
@@ -458,7 +458,7 @@ astrologyRouter.post('/daily-horoscope', optionalAuth, validate(horoscopeSchema)
       }).catch((e) => { logger.error({ err: e }, 'Failed to save daily_horoscope report'); });
     }
     res.json({ success: true, data: merged });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.warn({ error }, 'AI horoscope fallback');
     res.json({ success: true, data: fallback });
   }
@@ -513,7 +513,7 @@ astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchem
       }).catch((e) => { logger.error({ err: e }, 'Failed to save compatibility report'); });
     }
     res.json({ success: true, data: merged });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.warn({ error }, 'AI compatibility fallback');
     res.json({ success: true, data: fallback });
   }
@@ -552,7 +552,7 @@ astrologyRouter.post('/moon-phase', optionalAuth, validate(moonPhaseSchema), asy
       }).catch((e) => { logger.error({ err: e }, 'Failed to save moon_phase report'); });
     }
     res.json({ success: true, data: merged });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.warn({ error }, 'AI moon phase fallback');
     res.json({ success: true, data: fallback });
   }
@@ -666,7 +666,7 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
     const aiResult = await generateStructuredJSON<PersonalDashboardData['horoscope']>(prompt, 'You are a Vedic astrologer. Return flat JSON only. No nesting, no markdown.');
     const mergedHoroscope = { ...horoscope, ...aiResult, moonRashi: rashiKey };
     res.json({ success: true, data: { snapshot, horoscope: mergedHoroscope, cosmicEnergy, transitAlerts } });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.warn({ error }, 'AI dashboard horoscope fallback');
     res.json({ success: true, data: { snapshot, horoscope, cosmicEnergy, transitAlerts } });
   }

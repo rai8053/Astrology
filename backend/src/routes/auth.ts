@@ -192,7 +192,7 @@ authRouter.post('/register', authLimiter, validate(registerSchema), asyncHandler
           doshaDominance: rd.dosha,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn({ error }, 'Failed to create astrology profile on registration');
     }
   }

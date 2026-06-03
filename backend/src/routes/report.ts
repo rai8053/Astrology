@@ -31,7 +31,7 @@ reportRouter.post('/generate-pdf', async (req, res) => {
     });
     res.send(pdfBuffer);
     console.log('[PDF] Response sent successfully');
-  } catch (err) {
+  } catch (err: unknown) {
     const elapsed = Date.now() - startTime;
     const errorMessage = err instanceof Error ? err.message : String(err);
     const errorStack = err instanceof Error ? err.stack : '';

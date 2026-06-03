@@ -34,13 +34,13 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
       res.status(400).json({ success: false, error: 'Invalid JSON in request body', code: 'INVALID_JSON' });
       return;
     }
-  } catch (logErr) {
+  } catch (logErr: unknown) {
     console.error('[ErrorHandler] Error classification failed:', logErr);
   }
 
   try {
     res.status(500).json({ success: false, error: message, code: 'INTERNAL_ERROR' });
-  } catch (jsonErr) {
+  } catch (jsonErr: unknown) {
     console.error('[ErrorHandler] Failed to send JSON response:', jsonErr);
     try {
       res.status(500).end();
