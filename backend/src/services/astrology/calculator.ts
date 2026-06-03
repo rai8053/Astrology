@@ -39,6 +39,13 @@ export function calculateBirthDetails(dateStr: string, timeStr: string) {
     ascendant: eph.ascendant,
     moonNakshatraLord: eph.moonNakshatraLord,
     lagnaLord: eph.lagnaLord,
+    sun: eph.sun,
+    moon: eph.moon,
+    mercury: eph.mercury,
+    venus: eph.venus,
+    mars: eph.mars,
+    jupiter: eph.jupiter,
+    saturn: eph.saturn,
   };
 }
 

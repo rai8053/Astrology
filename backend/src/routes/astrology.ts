@@ -152,12 +152,24 @@ function buildTransitTimeline(rashiKey: string, nakshatra: string): TransitEvent
 }
 
 function buildFallbackProfile(name: string, birthDate: string, birthTime: string, birthPlace: string): VedicProfile {
-  const { rashiIndex, rashiKey, nakshatraIndex, nakshatraName, lagnaKey } = calculateBirthDetails(birthDate, birthTime);
+  const { rashiIndex, rashiKey, nakshatraIndex, nakshatraName, lagnaKey, ascendant, sun, moon, mercury, venus, mars, jupiter, saturn } = calculateBirthDetails(birthDate, birthTime);
   const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
   const ld = RASHI_DATA[lagnaKey] || RASHI_DATA.Mesh;
   const ni = getNakshatraInfo(nakshatraName);
   const element = rd.element;
   const rashiLord = rd.lord;
+  const sunKey = RASHI_KEYS[sun.signIndex];
+  const mercKey = RASHI_KEYS[mercury.signIndex];
+  const venKey = RASHI_KEYS[venus.signIndex];
+  const marsKey = RASHI_KEYS[mars.signIndex];
+  const jupKey = RASHI_KEYS[jupiter.signIndex];
+  const satKey = RASHI_KEYS[saturn.signIndex];
+  const sunLd = RASHI_DATA[sunKey]?.lord || 'Sun';
+  const mercLd = RASHI_DATA[mercKey]?.lord || 'Mercury';
+  const venLd = RASHI_DATA[venKey]?.lord || 'Venus';
+  const marsLd = RASHI_DATA[marsKey]?.lord || 'Mars';
+  const jupLd = RASHI_DATA[jupKey]?.lord || 'Jupiter';
+  const satLd = RASHI_DATA[satKey]?.lord || 'Saturn';
   return {
     name, birthDate, birthTime, birthPlace,
     rashi: `${rashiKey} (${rd.translation})`,
@@ -185,14 +197,14 @@ function buildFallbackProfile(name: string, birthDate: string, birthTime: string
     luckyColor: element === 'Fire' ? 'Crimson Red / Gold' : element === 'Water' ? 'Royal Blue / Sea Green' : element === 'Air' ? 'Emerald Green / Silver' : 'Saffron / Earthy Yellow',
     gemstone: element === 'Fire' ? 'Ruby (Manik)' : element === 'Water' ? 'Pearl (Moti)' : element === 'Air' ? 'Emerald (Panna)' : 'Yellow Sapphire (Pukhraj)',
     planetaryPlacements: [
-      { planet: 'Lagna (Ascendant)', sign: lagnaKey, house: 1, description: `${ld.translation} rising — shapes your outward personality and life approach with ${ld.element.toLowerCase()} energy.` },
-      { planet: 'Moon (Chandra)', sign: rashiKey, house: 10, description: `Moon in ${rashiKey} governs emotions, intuition, and your inner world. Ruled by ${rashiLord}.` },
-      { planet: 'Sun (Surya)', sign: RASHI_KEYS[(rashiIndex + 4) % 12], house: 2, description: 'Represents your core identity, vitality, and life purpose in the house of values and family.' },
-      { planet: 'Mercury (Budha)', sign: RASHI_KEYS[(rashiIndex + 2) % 12], house: 3, description: 'Governs communication, intellect, and analytical abilities in the house of courage.' },
-      { planet: 'Venus (Shukra)', sign: RASHI_KEYS[(rashiIndex + 7) % 12], house: 5, description: 'Blesses creativity, romance, and artistic expression in the house of intelligence.' },
-      { planet: 'Jupiter (Guru)', sign: RASHI_KEYS[(rashiIndex + 11) % 12], house: 9, description: 'Expands wisdom, fortune, and spiritual growth in the house of higher knowledge.' },
-      { planet: 'Saturn (Shani)', sign: RASHI_KEYS[(rashiIndex + 6) % 12], house: 4, description: 'Brings discipline, life lessons, and karmic responsibility in the house of home.' },
-      { planet: 'Mars (Mangal)', sign: RASHI_KEYS[(rashiIndex + 9) % 12], house: 6, description: 'Drives ambition, energy, and assertiveness in the house of service and overcoming obstacles.' },
+      { planet: 'Lagna (Ascendant)', sign: lagnaKey, house: 1, description: `${ld.translation} rising at ${ascendant.degrees}°${ascendant.minutes}' — shapes your outward personality and life approach with ${ld.element.toLowerCase()} energy.` },
+      { planet: 'Moon (Chandra)', sign: rashiKey, house: moon.house, description: `Moon in ${rashiKey} at ${moon.degrees}°${moon.minutes}' in house ${moon.house} — governs emotions, intuition, and your inner world. Ruled by ${rashiLord}.` },
+      { planet: 'Sun (Surya)', sign: sunKey, house: sun.house, description: `Sun in ${sunKey} at ${sun.degrees}°${sun.minutes}' in house ${sun.house} — represents your core identity, vitality, and life purpose. Ruled by ${sunLd}.` },
+      { planet: 'Mercury (Budha)', sign: mercKey, house: mercury.house, description: `Mercury in ${mercKey} at ${mercury.degrees}°${mercury.minutes}' in house ${mercury.house} — governs communication, intellect, and analytical abilities. Ruled by ${mercLd}.` },
+      { planet: 'Venus (Shukra)', sign: venKey, house: venus.house, description: `Venus in ${venKey} at ${venus.degrees}°${venus.minutes}' in house ${venus.house} — blesses creativity, romance, and artistic expression. Ruled by ${venLd}.` },
+      { planet: 'Jupiter (Guru)', sign: jupKey, house: jupiter.house, description: `Jupiter in ${jupKey} at ${jupiter.degrees}°${jupiter.minutes}' in house ${jupiter.house} — expands wisdom, fortune, and spiritual growth. Ruled by ${jupLd}.` },
+      { planet: 'Saturn (Shani)', sign: satKey, house: saturn.house, description: `Saturn in ${satKey} at ${saturn.degrees}°${saturn.minutes}' in house ${saturn.house} — brings discipline, life lessons, and karmic responsibility. Ruled by ${satLd}.` },
+      { planet: 'Mars (Mangal)', sign: marsKey, house: mars.house, description: `Mars in ${marsKey} at ${mars.degrees}°${mars.minutes}' in house ${mars.house} — drives ambition, energy, and assertiveness. Ruled by ${marsLd}.` },
     ],
     insights: buildInsights(rashiKey, element, nakshatraName, NAKSHATRA_LORDS[nakshatraIndex % 9]),
     remedies: buildRemedies(element, rashiLord, rashiKey),
