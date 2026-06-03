@@ -175,7 +175,7 @@ function buildFallbackProfile(name: string, birthDate: string, birthTime: string
   const satLd = RASHI_DATA[satKey]?.lord || 'Saturn';
   const rahuLd = RASHI_DATA[rahuKey]?.lord || 'Rahu';
   const ketuLd = RASHI_DATA[ketuKey]?.lord || 'Ketu';
-  const sns = (p: { navamsaSignName: string }) => RASHI_KEYS[p.navamsaSignIndex] || 'Unknown';
+  const sns = (p: { navamsaSignIndex: number }) => RASHI_KEYS[p.navamsaSignIndex] || 'Unknown';
   function calcNavamsaHouse(ascNav: number, planetNav: number): number {
     const diff = (planetNav - ascNav + 12) % 12;
     return diff + 1;
