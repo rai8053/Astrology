@@ -853,7 +853,8 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
   try {
     const prompt = `Write a personalized Vedic horoscope for someone with Moon in ${rashiKey} (${rd.translation}), Nakshatra ${nakshatraName}, ${rd.element} element, ruled by ${rd.lord}. Period: ${dateLabel}. Return flat JSON with fields: prediction (2-3 sentence personalized reading for ${dateLabel}), love (0-100), career (0-100), health (0-100), finance (0-100), luckyNumber (1-9), luckyColor, dailyAdvice. Do NOT change the rashi or nakshatra.`;
     const aiResult = await generateStructuredJSON<PersonalDashboardData['horoscope']>(prompt, 'You are a Vedic astrologer. Return flat JSON only. No nesting, no markdown.');
-    const mergedHoroscope = { ...horoscope, ...aiResult, moonRashi: rashiKey };
+    const cleanResult = Object.fromEntries(Object.entries(aiResult ?? {}).filter(([, v]) => v != null));
+    const mergedHoroscope = { ...horoscope, ...cleanResult, moonRashi: rashiKey };
     res.json({ success: true, data: { snapshot, horoscope: mergedHoroscope, cosmicEnergy, transitAlerts, planets, dasha: dashaInfo, tithi: details.tithi, yoga: details.yoga } });
   } catch (error: unknown) {
     logger.warn({ error }, 'AI dashboard horoscope fallback');

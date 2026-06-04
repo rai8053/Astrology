@@ -32,10 +32,11 @@ function getGreeting() {
   return { key: 'Good Evening' as const, icon: Moon };
 }
 
-function ScoreRing({ value, label, color }: { value: number; label: string; color: string }) {
+function ScoreRing({ value, label, color }: { value: number | null | undefined; label: string; color: string }) {
+  const safeVal = typeof value === 'number' && !isNaN(value) ? value : 0;
   const r = 28;
   const circ = 2 * Math.PI * r;
-  const offset = circ - (value / 100) * circ;
+  const offset = circ - (safeVal / 100) * circ;
   return (
     <div className="flex flex-col items-center gap-1">
       <svg width="64" height="64" viewBox="0 0 64 64" className="transform -rotate-90">
@@ -44,7 +45,7 @@ function ScoreRing({ value, label, color }: { value: number; label: string; colo
           strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
           className={color} style={{ transition: 'stroke-dashoffset 1s ease' }} />
       </svg>
-      <span className="text-lg font-bold font-sans text-text-primary dark:text-dark-text-primary -mt-10">{value}</span>
+      <span className="text-lg font-bold font-sans text-text-primary dark:text-dark-text-primary -mt-10">{value != null ? safeVal : '—'}</span>
       <span className="text-[9px] font-sans uppercase tracking-wider text-text-secondary dark:text-dark-text-secondary">{label}</span>
     </div>
   );
@@ -169,7 +170,7 @@ export function DashboardHome() {
             {greeting.key}, <span className="accent-gradient">{displayName.split(' ')[0] || 'Seeker'}</span>
           </h1>
           <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-0.5 flex items-center gap-2 flex-wrap">
-            <span>{snapshot.moonRashi} &middot; {snapshot.nakshatra}</span>
+            <span>{snapshot.moonRashi || '—'} &middot; {snapshot.nakshatra || '—'}</span>
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
               <>
                 <span className="w-1 h-1 rounded-full bg-accent/40" />
@@ -184,9 +185,9 @@ export function DashboardHome() {
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={User} title="Your Astrology Profile" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <ProfileCard label="Moon Sign (Rashi)" value={snapshot.moonRashi} icon={Moon} color="text-blue-400" />
-          <ProfileCard label="Birth Star (Nakshatra)" value={`${snapshot.nakshatra} — ${snapshot.nakshatraLord}`} icon={Star} color="text-purple-400" />
-          <ProfileCard label="Ascendant (Lagna)" value={snapshot.ascendant} icon={Sun} color="text-amber-400" />
+          <ProfileCard label="Moon Sign (Rashi)" value={snapshot.moonRashi || '—'} icon={Moon} color="text-blue-400" />
+          <ProfileCard label="Birth Star (Nakshatra)" value={snapshot.nakshatra && snapshot.nakshatraLord ? `${snapshot.nakshatra} — ${snapshot.nakshatraLord}` : '—'} icon={Star} color="text-purple-400" />
+          <ProfileCard label="Ascendant (Lagna)" value={snapshot.ascendant || '—'} icon={Sun} color="text-amber-400" />
           <ProfileCard label="Lunar Day (Tithi)" value={tithi ? `${tithi.name} (${tithi.paksha})` : '—'} icon={Moon} color="text-sky-400" />
         </div>
       </motion.div>
@@ -206,7 +207,7 @@ export function DashboardHome() {
               <ScoreRing value={horoscope.finance} label="Wealth" color="text-amber-400" />
             </div>
             <div className="mt-3 pt-3 border-t border-white/5">
-              <p className="text-xs text-text-secondary dark:text-dark-text-secondary italic">"{horoscope.dailyAdvice}"</p>
+              <p className="text-xs text-text-secondary dark:text-dark-text-secondary italic">"{horoscope.dailyAdvice || 'Stay mindful of the cosmic energies today.'}"</p>
             </div>
           </PremiumCard>
         </div>
@@ -217,16 +218,16 @@ export function DashboardHome() {
               cosmicEnergy.level === 'Excellent' ? 'text-emerald-400' :
               cosmicEnergy.level === 'High' ? 'text-blue-400' :
               cosmicEnergy.level === 'Moderate' ? 'text-amber-400' : 'text-red-400'
-            }`}>{cosmicEnergy.score}</div>
-            <div className="text-xs uppercase tracking-wider font-semibold text-text-secondary dark:text-dark-text-secondary mb-2">{cosmicEnergy.level}</div>
+            }`}>{cosmicEnergy.score ?? '—'}</div>
+            <div className="text-xs uppercase tracking-wider font-semibold text-text-secondary dark:text-dark-text-secondary mb-2">{cosmicEnergy.level || '—'}</div>
             <div className="w-full bg-white/5 rounded-full h-1.5 mb-2">
               <div className={`h-1.5 rounded-full transition-all duration-1000 ${
-                cosmicEnergy.level === 'Excellent' ? 'bg-emerald-400 w-11/12' :
-                cosmicEnergy.level === 'High' ? 'bg-blue-400 w-3/4' :
-                cosmicEnergy.level === 'Moderate' ? 'bg-amber-400 w-1/2' : 'bg-red-400 w-1/4'
+                (cosmicEnergy.level || '') === 'Excellent' ? 'bg-emerald-400 w-11/12' :
+                (cosmicEnergy.level || '') === 'High' ? 'bg-blue-400 w-3/4' :
+                (cosmicEnergy.level || '') === 'Moderate' ? 'bg-amber-400 w-1/2' : 'bg-red-400 w-1/4'
               }`} />
             </div>
-            <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">{cosmicEnergy.description}</p>
+            <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">{cosmicEnergy.description || '—'}</p>
           </PremiumCard>
         </div>
       </motion.div>
@@ -240,20 +241,20 @@ export function DashboardHome() {
               <motion.div key={p.name} variants={itemAnim}>
                 <PremiumCard glass>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold font-sans text-text-primary">{p.name}</span>
+                    <span className="text-xs font-semibold font-sans text-text-primary">{p.name || '—'}</span>
                     <span className={`text-[10px] font-mono font-bold ${
-                      ['Mars','Sun'].some(s => p.name.includes(s)) ? 'text-red-400' :
-                      ['Venus'].some(s => p.name.includes(s)) ? 'text-pink-400' :
-                      ['Jupiter'].some(s => p.name.includes(s)) ? 'text-amber-400' :
-                      ['Saturn'].some(s => p.name.includes(s)) ? 'text-indigo-400' :
-                      ['Moon'].some(s => p.name.includes(s)) ? 'text-blue-400' :
-                      ['Mercury'].some(s => p.name.includes(s)) ? 'text-emerald-400' : 'text-text-secondary dark:text-dark-text-secondary'
-                    }`}>{p.sign}</span>
+                      ['Mars','Sun'].some(s => p.name?.includes(s)) ? 'text-red-400' :
+                      ['Venus'].some(s => p.name?.includes(s)) ? 'text-pink-400' :
+                      ['Jupiter'].some(s => p.name?.includes(s)) ? 'text-amber-400' :
+                      ['Saturn'].some(s => p.name?.includes(s)) ? 'text-indigo-400' :
+                      ['Moon'].some(s => p.name?.includes(s)) ? 'text-blue-400' :
+                      ['Mercury'].some(s => p.name?.includes(s)) ? 'text-emerald-400' : 'text-text-secondary dark:text-dark-text-secondary'
+                    }`}>{p.sign || '—'}</span>
                   </div>
                   <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
-                    {p.signFull.split('(')[1]?.replace(')','') || p.signFull}
-                    &nbsp;&middot;&nbsp;House {p.house}
-                    &nbsp;&middot;&nbsp;{p.degrees}°{p.minutes}'
+                    {p.signFull?.split('(')[1]?.replace(')','') || p.signFull || '—'}
+                    &nbsp;&middot;&nbsp;House {p.house ?? '—'}
+                    &nbsp;&middot;&nbsp;{p.degrees ?? '—'}°{p.minutes ?? '—'}'
                   </p>
                 </PremiumCard>
               </motion.div>
@@ -274,9 +275,9 @@ export function DashboardHome() {
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">Mahadasha</p>
-                  <p className="text-base font-bold font-sans text-text-primary">{dasha.mahadasha}</p>
+                  <p className="text-base font-bold font-sans text-text-primary">{dasha.mahadasha || '—'}</p>
                   <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
-                    {new Date(dasha.mahadashaStart).toLocaleDateString()} — {new Date(dasha.mahadashaEnd).toLocaleDateString()}
+                    {dasha.mahadashaStart ? new Date(dasha.mahadashaStart).toLocaleDateString() : '—'} — {dasha.mahadashaEnd ? new Date(dasha.mahadashaEnd).toLocaleDateString() : '—'}
                   </p>
                 </div>
               </div>
@@ -288,9 +289,9 @@ export function DashboardHome() {
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">Antardasha</p>
-                  <p className="text-base font-bold font-sans text-text-primary">{dasha.antardasha}</p>
+                  <p className="text-base font-bold font-sans text-text-primary">{dasha.antardasha || '—'}</p>
                   <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
-                    {new Date(dasha.antardashaStart).toLocaleDateString()} — {new Date(dasha.antardashaEnd).toLocaleDateString()}
+                    {dasha.antardashaStart ? new Date(dasha.antardashaStart).toLocaleDateString() : '—'} — {dasha.antardashaEnd ? new Date(dasha.antardashaEnd).toLocaleDateString() : '—'}
                   </p>
                 </div>
               </div>
@@ -303,10 +304,10 @@ export function DashboardHome() {
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={Gem} title="Cosmic Insights" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <InsightCard icon={Hash} label="Lucky Number" value={`${horoscope.luckyNumber}`} color="text-amber-400" />
-          <InsightCard icon={Palette} label="Lucky Color" value={horoscope.luckyColor} color="text-pink-400" />
-          <InsightCard icon={Globe} label="Element" value={snapshot.element} color="text-blue-400" />
-          <InsightCard icon={Heart} label="Dosha" value={snapshot.doshaDominance} color="text-emerald-400" />
+          <InsightCard icon={Hash} label="Lucky Number" value={horoscope.luckyNumber != null ? `${horoscope.luckyNumber}` : '—'} color="text-amber-400" />
+          <InsightCard icon={Palette} label="Lucky Color" value={horoscope.luckyColor || '—'} color="text-pink-400" />
+          <InsightCard icon={Globe} label="Element" value={snapshot.element || '—'} color="text-blue-400" />
+          <InsightCard icon={Heart} label="Dosha" value={snapshot.doshaDominance || '—'} color="text-emerald-400" />
         </div>
       </motion.div>
 
