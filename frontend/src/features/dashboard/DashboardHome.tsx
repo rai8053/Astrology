@@ -45,7 +45,7 @@ function ScoreRing({ value, label, color }: { value: number; label: string; colo
           className={color} style={{ transition: 'stroke-dashoffset 1s ease' }} />
       </svg>
       <span className="text-lg font-bold font-sans text-text-primary dark:text-dark-text-primary -mt-10">{value}</span>
-      <span className="text-[9px] font-sans uppercase tracking-wider text-text-secondary">{label}</span>
+      <span className="text-[9px] font-sans uppercase tracking-wider text-text-secondary dark:text-dark-text-secondary">{label}</span>
     </div>
   );
 }
@@ -108,7 +108,7 @@ export function DashboardHome() {
             <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">
               {greeting.key}, <span className="accent-gradient">{displayName.split(' ')[0] || 'Seeker'}</span>
             </h1>
-            <p className="text-text-secondary mt-1">Welcome to your cosmic dashboard</p>
+            <p className="text-text-secondary dark:text-dark-text-secondary mt-1">Welcome to your cosmic dashboard</p>
           </div>
         </div>
         <PremiumCard glass className="text-center py-12">
@@ -116,7 +116,7 @@ export function DashboardHome() {
             <Star className="w-8 h-8 text-accent" />
           </div>
           <h2 className="text-xl font-sans font-bold mb-2">Set Up Your Birth Chart</h2>
-          <p className="text-text-secondary max-w-md mx-auto mb-6 text-sm">
+          <p className="text-text-secondary dark:text-dark-text-secondary max-w-md mx-auto mb-6 text-sm">
             Enter your birth details to unlock personalized horoscopes, planetary positions,
             Dasha periods, and cosmic insights tailored to your unique chart.
           </p>
@@ -168,7 +168,7 @@ export function DashboardHome() {
           <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">
             {greeting.key}, <span className="accent-gradient">{displayName.split(' ')[0] || 'Seeker'}</span>
           </h1>
-          <p className="text-xs text-text-secondary mt-0.5 flex items-center gap-2 flex-wrap">
+          <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-0.5 flex items-center gap-2 flex-wrap">
             <span>{snapshot.moonRashi} &middot; {snapshot.nakshatra}</span>
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
               <>
@@ -206,7 +206,7 @@ export function DashboardHome() {
               <ScoreRing value={horoscope.finance} label="Wealth" color="text-amber-400" />
             </div>
             <div className="mt-3 pt-3 border-t border-white/5">
-              <p className="text-xs text-text-secondary italic">"{horoscope.dailyAdvice}"</p>
+              <p className="text-xs text-text-secondary dark:text-dark-text-secondary italic">"{horoscope.dailyAdvice}"</p>
             </div>
           </PremiumCard>
         </div>
@@ -218,7 +218,7 @@ export function DashboardHome() {
               cosmicEnergy.level === 'High' ? 'text-blue-400' :
               cosmicEnergy.level === 'Moderate' ? 'text-amber-400' : 'text-red-400'
             }`}>{cosmicEnergy.score}</div>
-            <div className="text-xs uppercase tracking-wider font-semibold text-text-secondary mb-2">{cosmicEnergy.level}</div>
+            <div className="text-xs uppercase tracking-wider font-semibold text-text-secondary dark:text-dark-text-secondary mb-2">{cosmicEnergy.level}</div>
             <div className="w-full bg-white/5 rounded-full h-1.5 mb-2">
               <div className={`h-1.5 rounded-full transition-all duration-1000 ${
                 cosmicEnergy.level === 'Excellent' ? 'bg-emerald-400 w-11/12' :
@@ -226,7 +226,7 @@ export function DashboardHome() {
                 cosmicEnergy.level === 'Moderate' ? 'bg-amber-400 w-1/2' : 'bg-red-400 w-1/4'
               }`} />
             </div>
-            <p className="text-[10px] text-text-secondary">{cosmicEnergy.description}</p>
+            <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">{cosmicEnergy.description}</p>
           </PremiumCard>
         </div>
       </motion.div>
@@ -247,10 +247,10 @@ export function DashboardHome() {
                       ['Jupiter'].some(s => p.name.includes(s)) ? 'text-amber-400' :
                       ['Saturn'].some(s => p.name.includes(s)) ? 'text-indigo-400' :
                       ['Moon'].some(s => p.name.includes(s)) ? 'text-blue-400' :
-                      ['Mercury'].some(s => p.name.includes(s)) ? 'text-emerald-400' : 'text-text-secondary'
+                      ['Mercury'].some(s => p.name.includes(s)) ? 'text-emerald-400' : 'text-text-secondary dark:text-dark-text-secondary'
                     }`}>{p.sign}</span>
                   </div>
-                  <p className="text-[10px] text-text-secondary">
+                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
                     {p.signFull.split('(')[1]?.replace(')','') || p.signFull}
                     &nbsp;&middot;&nbsp;House {p.house}
                     &nbsp;&middot;&nbsp;{p.degrees}°{p.minutes}'
@@ -273,9 +273,9 @@ export function DashboardHome() {
                   <Shield className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-text-secondary">Mahadasha</p>
+                  <p className="text-[10px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">Mahadasha</p>
                   <p className="text-base font-bold font-sans text-text-primary">{dasha.mahadasha}</p>
-                  <p className="text-[10px] text-text-secondary">
+                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
                     {new Date(dasha.mahadashaStart).toLocaleDateString()} — {new Date(dasha.mahadashaEnd).toLocaleDateString()}
                   </p>
                 </div>
@@ -287,9 +287,9 @@ export function DashboardHome() {
                   <Clock className="w-5 h-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-text-secondary">Antardasha</p>
+                  <p className="text-[10px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">Antardasha</p>
                   <p className="text-base font-bold font-sans text-text-primary">{dasha.antardasha}</p>
-                  <p className="text-[10px] text-text-secondary">
+                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
                     {new Date(dasha.antardashaStart).toLocaleDateString()} — {new Date(dasha.antardashaEnd).toLocaleDateString()}
                   </p>
                 </div>
@@ -335,7 +335,7 @@ export function DashboardHome() {
                 </div>
               ) : reports.length === 0 ? (
                 <div className="text-center py-4">
-                  <p className="text-xs text-text-secondary">No reports yet. Generate your first birth chart!</p>
+                  <p className="text-xs text-text-secondary dark:text-dark-text-secondary">No reports yet. Generate your first birth chart!</p>
                   <Link to="/dashboard/kundli">
                     <PremiumButton size="sm" className="mt-3" icon={<Star className="w-3 h-3" />}>
                       Create Birth Chart
@@ -352,10 +352,10 @@ export function DashboardHome() {
                         </div>
                         <div>
                           <p className="text-xs font-medium font-sans capitalize text-text-primary">{r.type.replace(/_/g, ' ')}</p>
-                          <p className="text-[9px] text-text-secondary">{new Date(r.createdAt).toLocaleDateString()}</p>
+                          <p className="text-[9px] text-text-secondary dark:text-dark-text-secondary">{new Date(r.createdAt).toLocaleDateString()}</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-3 h-3 text-text-tertiary" />
+                      <ChevronRight className="w-3 h-3 text-text-tertiary dark:text-dark-text-tertiary" />
                     </div>
                   ))}
                 </div>
@@ -369,14 +369,14 @@ export function DashboardHome() {
             <SectionHeader icon={Flame} title="Streak" />
             <PremiumCard glass className="text-center">
               <div className="text-5xl font-bold font-sans text-accent mb-1">{streak.currentStreak}</div>
-              <p className="text-xs text-text-secondary mb-2">
+              <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-2">
                 {streak.currentStreak === 0 ? 'Start your cosmic journey today' :
                   `${streak.currentStreak} day${streak.currentStreak > 1 ? 's' : ''} of connection`}
               </p>
               <div className="w-full bg-white/5 rounded-full h-1">
                 <div className="h-1 rounded-full bg-accent transition-all duration-500" style={{ width: `${Math.min(100, (streak.currentStreak / 30) * 100)}%` }} />
               </div>
-              <p className="text-[9px] text-text-tertiary mt-1.5">Best: {streak.longestStreak} days</p>
+              <p className="text-[9px] text-text-tertiary dark:text-dark-text-tertiary mt-1.5">Best: {streak.longestStreak} days</p>
             </PremiumCard>
           </motion.div>
         </div>
@@ -394,7 +394,7 @@ export function DashboardHome() {
                 </motion.div>
                 <div>
                   <h3 className="font-sans text-base font-semibold text-accent">Unlock Premium Insights</h3>
-                  <p className="text-xs text-text-secondary">Get unlimited AI consultations, detailed Dasha analysis, and advanced chart comparisons.</p>
+                  <p className="text-xs text-text-secondary dark:text-dark-text-secondary">Get unlimited AI consultations, detailed Dasha analysis, and advanced chart comparisons.</p>
                 </div>
               </div>
               <Link to="/pricing">
@@ -428,7 +428,7 @@ function ProfileCard({ label, value, icon: Icon, color }: { label: string; value
             <Icon className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[9px] uppercase tracking-widest text-text-secondary">{label}</p>
+            <p className="text-[9px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{label}</p>
             <p className="text-xs font-semibold font-sans text-text-primary truncate">{value}</p>
           </div>
         </div>
@@ -446,7 +446,7 @@ function InsightCard({ icon: Icon, label, value, color }: { icon: any; label: st
             <Icon className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[9px] uppercase tracking-widest text-text-secondary">{label}</p>
+            <p className="text-[9px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{label}</p>
             <p className="text-sm font-bold font-sans text-text-primary">{value}</p>
           </div>
         </div>
@@ -466,7 +466,7 @@ function ActionCard({ to, icon: Icon, label, desc, color }: { to: string; icon: 
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold font-sans group-hover:text-accent transition-colors text-text-primary">{label}</p>
-              <p className="text-[10px] text-text-secondary">{desc}</p>
+              <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">{desc}</p>
             </div>
           </div>
         </PremiumCard>
@@ -481,6 +481,6 @@ function FileIcon({ type }: { type: string }) {
     case 'daily_horoscope': return <Sun className="w-3 h-3 text-amber-400" />;
     case 'compatibility': return <Heart className="w-3 h-3 text-pink-400" />;
     case 'moon_phase': return <Moon className="w-3 h-3 text-blue-400" />;
-    default: return <Sparkles className="w-3 h-3 text-text-secondary" />;
+    default: return <Sparkles className="w-3 h-3 text-text-secondary dark:text-dark-text-secondary" />;
   }
 }

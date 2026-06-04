@@ -47,7 +47,7 @@ export function HoroscopeSection({
             className={`flex-1 py-2 text-xs font-sans font-bold uppercase tracking-wider rounded-md transition-all duration-200 ${
               period === t.key
                 ? 'bg-gold/10 text-gold shadow-sm'
-                : 'text-ink/40 dark:text-parchment/40 hover:text-ink/70 dark:hover:text-parchment/70'
+                : 'text-text-tertiary dark:text-dark-text-tertiary hover:text-text-secondary dark:hover:text-dark-text-secondary'
             }`}
           >
             {t.label}
@@ -73,7 +73,7 @@ export function HoroscopeSection({
           transition={{ duration: 0.35 }}
           className="space-y-5"
         >
-          <p className="text-sm leading-relaxed text-ink/70 dark:text-parchment/70">{data.prediction}</p>
+          <p className="text-sm leading-relaxed text-text-primary dark:text-dark-text-primary">{data.prediction}</p>
 
           <div className="grid grid-cols-2 gap-3">
             {scoreConfig.map((s) => {
@@ -84,7 +84,7 @@ export function HoroscopeSection({
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5">
                       <Icon className={`w-3.5 h-3.5 ${s.color}`} />
-                      <span className="text-[11px] font-sans font-semibold text-ink/50 dark:text-parchment/50">{s.label}</span>
+                      <span className="text-[11px] font-sans font-semibold text-text-secondary dark:text-dark-text-secondary">{s.label}</span>
                     </div>
                     <span className={`text-sm font-bold font-sans ${s.color}`}>{val}%</span>
                   </div>
@@ -105,21 +105,21 @@ export function HoroscopeSection({
             <div className="flex items-center gap-2 p-3 rounded-lg bg-ink/[0.02] dark:bg-white/[0.02]">
               <Hash className="w-4 h-4 text-gold/60" />
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyNumber')}</p>
+                <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-text-tertiary dark:text-dark-text-tertiary">{t('dashboard.luckyNumber')}</p>
                 <p className="text-sm font-bold font-sans">{data.luckyNumber}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-lg bg-ink/[0.02] dark:bg-white/[0.02]">
               <Palette className="w-4 h-4 text-gold/60" />
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.luckyColor')}</p>
+                <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-text-tertiary dark:text-dark-text-tertiary">{t('dashboard.luckyColor')}</p>
                 <p className="text-sm font-bold font-sans">{data.luckyColor}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 rounded-lg bg-ink/[0.02] dark:bg-white/[0.02]">
               <Lightbulb className="w-4 h-4 text-gold/60" />
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{t('dashboard.dailyAdvice')}</p>
+                <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-text-tertiary dark:text-dark-text-tertiary">{t('dashboard.dailyAdvice')}</p>
                 <p className="text-xs font-medium leading-snug">{data.dailyAdvice}</p>
               </div>
             </div>

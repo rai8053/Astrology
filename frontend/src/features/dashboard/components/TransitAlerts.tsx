@@ -53,9 +53,9 @@ export function TransitAlertsCard({ data, isLoading }: { data?: TransitAlert[] |
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold">{alert.event}</p>
-                  <span className="text-[10px] font-sans font-bold text-ink/40 dark:text-parchment/40 whitespace-nowrap">{alert.date}</span>
+                  <span className="text-[10px] font-sans font-bold text-text-tertiary dark:text-dark-text-tertiary whitespace-nowrap">{alert.date}</span>
                 </div>
-                <p className="text-xs text-ink/60 dark:text-parchment/60 mt-0.5 leading-snug">{alert.description}</p>
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-0.5 leading-snug">{alert.description}</p>
               </div>
             </motion.div>
           );

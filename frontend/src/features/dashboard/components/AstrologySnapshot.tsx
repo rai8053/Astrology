@@ -46,7 +46,7 @@ export function AstrologySnapshotCard({ data, isLoading }: { data?: SnapshotData
                 <Icon className={`w-4 h-4 ${f.color}`} />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-ink/40 dark:text-parchment/40">{f.label}</p>
+                <p className="text-[10px] uppercase tracking-wider font-sans font-bold text-text-tertiary dark:text-dark-text-tertiary">{f.label}</p>
                 <p className="text-sm font-semibold truncate">{String(data[f.key])}</p>
               </div>
             </motion.div>
