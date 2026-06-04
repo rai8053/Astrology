@@ -10,17 +10,10 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumButton } from '@/components/PremiumButton';
-<<<<<<< HEAD
-import { AnimatedCounter } from '@/components/AnimatedCounter';
-=======
 import { useAuthStore } from '@/lib/store';
->>>>>>> e8d695456690735d8c4aa7414f4af0a5ea950586
 import { useT } from '@/lib/i18n/useT';
 import { usePersonalDashboard } from './components/usePersonalDashboard';
 import { useStreak } from '@/lib/useStreak';
-<<<<<<< HEAD
-import { HoroscopeSection } from './components/HoroscopeSection';
-=======
 import type { PersonalDashboardData } from '@shared/types/api';
 
 const stagger = {
@@ -31,7 +24,6 @@ const itemAnim = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
->>>>>>> e8d695456690735d8c4aa7414f4af0a5ea950586
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -81,12 +73,7 @@ function DashboardSkeleton() {
 export function DashboardHome() {
   const { t } = useT();
   const greeting = getGreeting();
-<<<<<<< HEAD
-  const { data: dashData, isLoading: dashLoading, error: dashError, period, changePeriod } = usePersonalDashboard();
-  const [showMoreActions, setShowMoreActions] = useState(false);
-=======
   const { data: dash, isLoading: dashLoading, error: dashError } = usePersonalDashboard();
->>>>>>> e8d695456690735d8c4aa7414f4af0a5ea950586
   const streak = useStreak();
 
   const { data: sub } = useQuery({
@@ -103,8 +90,6 @@ export function DashboardHome() {
     retry: 1,
   });
 
-  const displayName = user?.name?.trim() || localStorage.getItem('googleName') || '';
-  const hasBirthDetails = !dashError || !dashError.includes('birth details');
   const reports = reportsData?.data || [];
   const d = dash;
 
@@ -119,7 +104,7 @@ export function DashboardHome() {
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">
-              {greeting.key}, <span className="accent-gradient">{displayName.split(' ')[0] || 'Seeker'}</span>
+              {greeting.key}
             </h1>
             <p className="text-text-secondary dark:text-dark-text-secondary mt-1">Welcome to your cosmic dashboard</p>
           </div>
@@ -149,7 +134,7 @@ export function DashboardHome() {
             <greeting.icon className="w-6 h-6 text-accent" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-sans font-bold">{greeting.key}, {displayName.split(' ')[0] || 'Seeker'}</h1>
+            <h1 className="text-3xl md:text-4xl font-sans font-bold">{greeting.key}</h1>
           </div>
         </div>
         <PremiumCard glass className="!border-red-500/30">
@@ -177,19 +162,12 @@ export function DashboardHome() {
         >
           <greeting.icon className="w-6 h-6 text-accent" />
         </motion.div>
-<<<<<<< HEAD
-        <div>
-          <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">{t(greeting.key)}</h1>
-          <p className="text-text-secondary mt-1 flex items-center gap-2">
-            <span>{t('dashboard.subtitle')}</span>
-=======
         <div className="min-w-0">
           <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">
-            {greeting.key}, <span className="accent-gradient">{displayName.split(' ')[0] || 'Seeker'}</span>
+            {greeting.key}
           </h1>
           <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-0.5 flex items-center gap-2 flex-wrap">
             <span>{snapshot.moonRashi || '—'} &middot; {snapshot.nakshatra || '—'}</span>
->>>>>>> e8d695456690735d8c4aa7414f4af0a5ea950586
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
               <>
                 <span className="w-1 h-1 rounded-full bg-accent/40" />
@@ -330,10 +308,6 @@ export function DashboardHome() {
         </div>
       </motion.div>
 
-<<<<<<< HEAD
-      <HoroscopeSection data={dashData?.horoscope ?? null} isLoading={dashLoading} period={period} onPeriodChange={changePeriod} />
-
-=======
       {/* Section 6: Quick Actions */}
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={Zap} title="Quick Actions" />
@@ -407,7 +381,6 @@ export function DashboardHome() {
       </div>
 
       {/* Upgrade prompt */}
->>>>>>> e8d695456690735d8c4aa7414f4af0a5ea950586
       {sub?.data?.plan === 'FREE' && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <PremiumCard glow glass className="!border-accent/20 relative overflow-hidden">
