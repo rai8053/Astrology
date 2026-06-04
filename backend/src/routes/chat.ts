@@ -6,6 +6,8 @@ import { asyncHandler } from '../lib/asyncHandler.js';
 import { generateAIResponse, streamAIResponse } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../lib/logger.js';
+import { calculateBirthDetails } from '../services/astrology/calculator.js';
+import { RASHI_DATA, RASHI_KEYS } from '../services/astrology/constants.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -35,32 +37,92 @@ async function checkDailyLimit(userId: string): Promise<{ allowed: boolean; used
 }
 
 async function buildPersonalizedPrompt(userId: string): Promise<string> {
-  const [user, profile] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { name: true, birthDate: true, birthTime: true, birthPlace: true },
-    }),
-    prisma.astrologyProfile.findUnique({ where: { userId } }),
-  ]);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, birthDate: true, birthTime: true, birthPlace: true },
+  });
+
+  if (!user?.birthDate || !user?.birthTime) return '';
 
   const parts: string[] = [];
-  if (user?.name) parts.push(`User's Name: ${user.name}`);
-  if (user?.birthDate) parts.push(`Date of Birth: ${user.birthDate}`);
-  if (user?.birthTime) parts.push(`Time of Birth: ${user.birthTime}`);
-  if (user?.birthPlace) parts.push(`Place of Birth: ${user.birthPlace}`);
+  if (user.name) parts.push(`Name: ${user.name}`);
+  parts.push(`Date of Birth: ${user.birthDate}`);
+  parts.push(`Time of Birth: ${user.birthTime}`);
+  if (user.birthPlace) parts.push(`Place of Birth: ${user.birthPlace}`);
 
-  if (profile) {
-    if (profile.rashi) parts.push(`Moon Sign (Rashi): ${profile.rashi}`);
-    if (profile.lagna) parts.push(`Ascendant (Lagna): ${profile.lagna}`);
-    if (profile.nakshatra) parts.push(`Birth Star (Nakshatra): ${profile.nakshatra}`);
-    if (profile.nakshatraLord) parts.push(`Nakshatra Lord: ${profile.nakshatraLord}`);
-    if (profile.rashiLord) parts.push(`Rashi Lord: ${profile.rashiLord}`);
-    if (profile.element) parts.push(`Element: ${profile.element}`);
-    if (profile.doshaDominance) parts.push(`Dosha Dominance: ${profile.doshaDominance}`);
+  // Calculate full birth chart on the fly
+  const details = calculateBirthDetails(user.birthDate, user.birthTime);
+  const rd = RASHI_DATA[details.rashiKey] || RASHI_DATA.Mesh;
+  const ld = RASHI_DATA[details.lagnaKey] || RASHI_DATA.Mesh;
+
+  parts.push('');
+  parts.push('--- HOUSES & PLANETARY POSITIONS ---');
+  parts.push(`Ascendant (Lagna): ${details.lagnaKey} (${ld.translation}) at ${details.ascendant.degrees}°${details.ascendant.minutes}' — House 1`);
+  const planets = [
+    { name: 'Sun (Surya)', pos: details.sun },
+    { name: 'Moon (Chandra)', pos: details.moon },
+    { name: 'Mercury (Budha)', pos: details.mercury },
+    { name: 'Venus (Shukra)', pos: details.venus },
+    { name: 'Mars (Mangal)', pos: details.mars },
+    { name: 'Jupiter (Guru)', pos: details.jupiter },
+    { name: 'Saturn (Shani)', pos: details.saturn },
+    { name: 'Rahu (North Node)', pos: details.rahu },
+    { name: 'Ketu (South Node)', pos: details.ketu },
+  ];
+  for (const p of planets) {
+    const signKey = RASHI_KEYS[p.pos.signIndex];
+    const signLord = (RASHI_DATA[signKey]?.lord || 'Unknown').split('/')[0].trim();
+    parts.push(`${p.name}: ${p.pos.signName} at ${p.pos.degrees}°${p.pos.minutes}' — House ${p.pos.house}, ruled by ${signLord}`);
   }
 
-  if (parts.length === 0) return '';
-  return `USER'S ASTROLOGICAL DATA (use this to personalize your response):\n${parts.join('\n')}`;
+  parts.push('');
+  parts.push('--- CHART SUMMARY ---');
+  parts.push(`Moon Sign (Rashi): ${details.rashiKey} (${rd.translation})`);
+  parts.push(`Ascendant (Lagna): ${details.lagnaKey} (${ld.translation})`);
+  parts.push(`Birth Star (Nakshatra): ${details.nakshatraName}, ruled by ${details.moonNakshatraLord}`);
+  parts.push(`Rashi Lord: ${rd.lord}`);
+  parts.push(`Element: ${rd.element}`);
+  parts.push(`Dosha Dominance: ${rd.dosha}`);
+
+  parts.push('');
+  parts.push('--- 7TH HOUSE (MARRIAGE) ---');
+  // 7th house = (Ascendant sign index + 6) % 12
+  const seventhHouseSignIdx = (details.lagnaIndex + 6) % 12;
+  const seventhHouseKey = RASHI_KEYS[seventhHouseSignIdx];
+  const seventhLord = RASHI_DATA[seventhHouseKey]?.lord?.split('/')[0].trim() || 'Unknown';
+  // Find planets in 7th house
+  const planetsIn7th = planets.filter(p => p.pos.house === 7).map(p => p.name.split('(')[0].trim());
+  // Find 7th lord position
+  const lordPlanet = planets.find(p => p.name.includes(seventhLord));
+  parts.push(`7th House Sign: ${seventhHouseKey} (${RASHI_DATA[seventhHouseKey]?.translation || ''})`);
+  parts.push(`7th Lord: ${seventhLord}`);
+  if (lordPlanet) parts.push(`7th Lord placed in: ${lordPlanet.pos.signName}, House ${lordPlanet.pos.house}`);
+  if (planetsIn7th.length > 0) parts.push(`Planets in 7th House: ${planetsIn7th.join(', ')}`);
+  else parts.push('No planets in 7th House');
+
+  // Venus position for marriage analysis
+  const venusLord = RASHI_DATA[RASHI_KEYS[details.venus.signIndex]]?.lord?.split('/')[0].trim() || 'Unknown';
+  parts.push(`Venus (karaka of marriage) in: ${details.venus.signName}, House ${details.venus.house}, ruled by ${venusLord}`);
+
+  parts.push('');
+  parts.push('--- VIMSHOTTARI DASHAS (timing periods) ---');
+  if (details.dashas && details.dashas.length > 0) {
+    for (const d of details.dashas.slice(0, 5)) {
+      parts.push(`${d.planet}: ${d.startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} — ${d.endDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} (${d.years} years)`);
+    }
+    if (details.currentDasha) {
+      parts.push(`CURRENT PERIOD: ${details.currentDasha.dasha.planet} Mahadasha`);
+      parts.push(`CURRENT SUB-PERIOD: ${details.currentDasha.antardasha.planet} Antardasha (${details.currentDasha.antardasha.startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} — ${details.currentDasha.antardasha.endDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })})`);
+    }
+  }
+
+  parts.push('');
+  parts.push('--- TITHI / YOGA / KARANA ---');
+  parts.push(`Tithi (Lunar Day): ${details.tithi.name} (${details.tithi.paksha})`);
+  parts.push(`Yoga: ${details.yoga.name}`);
+  parts.push(`Karana: ${details.karana.name}`);
+
+  return `USER'S COMPLETE VEDIC BIRTH CHART (use this data to personalize every response — all positions are sidereal Vedic):\n${parts.join('\n')}`;
 }
 
 function buildSystemInstruction(birthData: string, language?: string): string {
