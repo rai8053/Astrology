@@ -95,6 +95,8 @@ export function SettingsPage() {
     queryFn: () => api.get<Subscription>('/api/payments/subscription'),
   });
 
+  const hasBirthData = !!(profileData?.data?.birthDate && profileData?.data?.birthTime && profileData?.data?.birthPlace);
+
   const languageMutation = useMutation({
     mutationFn: (lang: Language) => api.patch('/api/user/profile', { language: lang }),
   });
@@ -269,11 +271,32 @@ export function SettingsPage() {
             <div className="space-y-4">
               <Input label={t('settings.nameLabel')} value={name} onChange={(e) => { setName(e.target.value); nameTouched.current = true; }} placeholder={t('settings.namePlaceholder')} />
               <Input label={t('auth.email')} value={email} onChange={(e) => { setEmail(e.target.value); emailTouched.current = true; }} placeholder={t('auth.emailPlaceholder')} />
-              <Input label={t('onboarding.dob')} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
-              <div className="grid grid-cols-2 gap-4">
-                <Input label={t('onboarding.birthTime')} type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
-                <BirthPlaceInput label={t('onboarding.birthPlace')} value={birthPlace} onChange={(v) => setBirthPlace(v)} placeholder={t('settings.placeExample')} state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
-              </div>
+              {hasBirthData ? (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.dob')}</label>
+                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{birthDate || '—'}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthTime')}</label>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{birthTime || '—'}</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthPlace')}</label>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{birthPlace || '—'}</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Input label={t('onboarding.dob')} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input label={t('onboarding.birthTime')} type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
+                    <BirthPlaceInput label={t('onboarding.birthPlace')} value={birthPlace} onChange={(v) => setBirthPlace(v)} placeholder={t('settings.placeExample')} state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
+                  </div>
+                </>
+              )}
               <PremiumButton
                 onClick={handleSave}
                 disabled={btn.disabled}

@@ -7,12 +7,12 @@ import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumButton } from '@/components/PremiumButton';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
-import { useAuthStore } from '@/lib/store';
 import { useT } from '@/lib/i18n/useT';
 import { staggerContainer, staggerItem } from '@/lib/animations';
 import { StatsSkeleton } from '@/components/Skeleton';
 import { usePersonalDashboard } from './components/usePersonalDashboard';
 import { useStreak } from '@/lib/useStreak';
+import { HoroscopeSection } from './components/HoroscopeSection';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -23,9 +23,8 @@ function getGreeting() {
 
 export function DashboardHome() {
   const { t } = useT();
-  const { user } = useAuthStore();
   const greeting = getGreeting();
-  const { error: dashError } = usePersonalDashboard();
+  const { data: dashData, isLoading: dashLoading, error: dashError, period, changePeriod } = usePersonalDashboard();
   const [showMoreActions, setShowMoreActions] = useState(false);
   const streak = useStreak();
 
@@ -62,7 +61,7 @@ export function DashboardHome() {
           <greeting.icon className="w-6 h-6 text-accent" />
         </motion.div>
         <div>
-          <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">{t(greeting.key)}, <span className="accent-gradient">{user?.name?.split(' ')[0] || localStorage.getItem('googleName')?.split(' ')[0] || t('common.seekerFallback')}</span></h1>
+          <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">{t(greeting.key)}</h1>
           <p className="text-text-secondary mt-1 flex items-center gap-2">
             <span>{t('dashboard.subtitle')}</span>
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
@@ -217,6 +216,8 @@ export function DashboardHome() {
           </div>
         </PremiumCard>
       </motion.div>
+
+      <HoroscopeSection data={dashData?.horoscope ?? null} isLoading={dashLoading} period={period} onPeriodChange={changePeriod} />
 
       {sub?.data?.plan === 'FREE' && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
