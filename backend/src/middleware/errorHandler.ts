@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../lib/errors.js';
@@ -39,6 +40,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   }
 
   try {
+    Sentry.captureException(err, { extra: { method: req.method, url: req.originalUrl } });
     res.status(500).json({ success: false, error: message, code: 'INTERNAL_ERROR' });
   } catch (jsonErr: unknown) {
     console.error('[ErrorHandler] Failed to send JSON response:', jsonErr);

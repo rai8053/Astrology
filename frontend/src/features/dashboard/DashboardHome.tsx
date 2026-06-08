@@ -58,7 +58,7 @@ function ScoreRing({ value, label, color }: { value: number | null | undefined; 
           className={color} style={{ transition: 'stroke-dashoffset 1s ease' }} />
       </svg>
       <span className="text-lg font-bold font-sans text-text-primary dark:text-dark-text-primary -mt-10">{value != null ? safeVal : '—'}</span>
-      <span className="text-[9px] font-sans uppercase tracking-wider text-text-secondary dark:text-dark-text-secondary">{label}</span>
+      <span className="text-[11px] font-sans uppercase tracking-wider text-text-secondary dark:text-dark-text-secondary">{label}</span>
     </div>
   );
 }
@@ -402,7 +402,7 @@ export function DashboardHome() {
                         </div>
                         <div>
                           <p className="text-xs font-medium font-sans capitalize text-text-primary">{r.type.replace(/_/g, ' ')}</p>
-                          <p className="text-[9px] text-text-secondary dark:text-dark-text-secondary">{safeFormatDate(r.createdAt)}</p>
+                          <p className="text-[11px] text-text-secondary dark:text-dark-text-secondary">{safeFormatDate(r.createdAt)}</p>
                         </div>
                       </div>
                       <ChevronRight className="w-3 h-3 text-text-tertiary dark:text-dark-text-tertiary" />
@@ -426,7 +426,7 @@ export function DashboardHome() {
               <div className="w-full bg-white/5 rounded-full h-1">
                 <div className="h-1 rounded-full bg-accent transition-all duration-500" style={{ width: `${Math.min(100, (streak.currentStreak / 30) * 100)}%` }} />
               </div>
-              <p className="text-[9px] text-text-tertiary dark:text-dark-text-tertiary mt-1.5">Best: {streak.longestStreak} days</p>
+              <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary mt-1.5">Best: {streak.longestStreak} days</p>
             </PremiumCard>
           </motion.div>
         </div>
@@ -478,7 +478,7 @@ function ProfileCard({ label, value, icon: Icon, color }: { label: string; value
             <Icon className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[9px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{label}</p>
+            <p className="text-[11px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{label}</p>
             <p className="text-xs font-semibold font-sans text-text-primary truncate">{value}</p>
           </div>
         </div>
@@ -496,7 +496,7 @@ function InsightCard({ icon: Icon, label, value, color }: { icon: any; label: st
             <Icon className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[9px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{label}</p>
+            <p className="text-[11px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{label}</p>
             <p className="text-sm font-bold font-sans text-text-primary">{value}</p>
           </div>
         </div>

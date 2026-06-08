@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
 import { brand } from '@/config/brand';
+import posthog from 'posthog-js';
 import { easeOut } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
@@ -44,21 +45,21 @@ const pageVariants = {
 
 const pageTitles: Record<string, string> = {
   '/': 'Home',
-  '/pricing': 'Pricing',
+  '/pricing': 'Pricing Plans',
   '/login': 'Sign In',
   '/register': 'Create Account',
-  '/about': 'About',
-  '/contact': 'Contact',
-  '/faq': 'FAQ',
+  '/about': 'About Us',
+  '/contact': 'Contact Us',
+  '/faq': 'Frequently Asked Questions',
   '/privacy': 'Privacy Policy',
   '/terms': 'Terms of Service',
   '/refund': 'Refund Policy',
-  '/dashboard': 'Dashboard',
-  '/dashboard/horoscope': 'Horoscope',
-  '/dashboard/kundli': 'Kundli',
-  '/dashboard/compatibility': 'Compatibility',
-  '/dashboard/moon': 'Moon Phases',
-  '/dashboard/chat': 'AI Astrologer',
+  '/dashboard': 'Your Dashboard',
+  '/dashboard/horoscope': 'Daily Horoscope',
+  '/dashboard/kundli': 'Kundli / Birth Chart',
+  '/dashboard/compatibility': 'Compatibility Check',
+  '/dashboard/moon': 'Moon Phase Tracker',
+  '/dashboard/chat': 'AI Astrologer Chat',
   '/dashboard/settings': 'Settings',
   '/admin': 'Admin',
   '/admin/users': 'Users',
@@ -133,6 +134,12 @@ export default function App() {
     window.addEventListener('session-expired', handler);
     return () => window.removeEventListener('session-expired', handler);
   }, [logout]);
+
+  useEffect(() => {
+    if (import.meta.env.VITE_POSTHOG_KEY && typeof posthog.capture === 'function') {
+      posthog.capture('$pageview');
+    }
+  }, [location]);
 
   const [googleClientId, setGoogleClientId] = useState('');
 

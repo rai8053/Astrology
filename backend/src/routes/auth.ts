@@ -11,6 +11,7 @@ import { authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
 import { AppError, ValidationError, UnauthorizedError, ConflictError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
+import { sendWelcomeEmail } from '../lib/email.js';
 
 export const authRouter = Router();
 
@@ -196,6 +197,8 @@ authRouter.post('/register', authLimiter, validate(registerSchema), asyncHandler
       logger.warn({ error }, 'Failed to create astrology profile on registration');
     }
   }
+
+  sendWelcomeEmail(email, name).catch((e) => logger.warn({ err: e }, 'Welcome email failed'));
 
   await prisma.subscription.create({
     data: {

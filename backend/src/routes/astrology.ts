@@ -9,6 +9,7 @@ import { calculateBirthDetails, getMoonPhase } from '../services/astrology/calcu
 import { generateStructuredJSON } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../lib/logger.js';
+import { cacheGet, cacheSet } from '../lib/cache.js';
 import type { VedicProfile, DailyHoroscope, CompatibilityResult, MoonPhaseInfo, AstroInsight, Remedy, TransitEvent, PersonalDashboardData } from '@shared/types/api.js';
 
 export const astrologyRouter = Router();
@@ -455,6 +456,13 @@ const horoscopeSchema = z.object({ rashi: z.string().min(1).max(50) });
 
 astrologyRouter.post('/daily-horoscope', optionalAuth, validate(horoscopeSchema), asyncHandler(async (req, res) => {
   const { rashi } = req.body as z.infer<typeof horoscopeSchema>;
+  const today = new Date().toISOString().split('T')[0];
+  const cacheKey = `horoscope:${rashi}:${today}`;
+  const cached = await cacheGet<DailyHoroscope>(cacheKey);
+  if (cached) {
+    res.json({ success: true, data: cached });
+    return;
+  }
   const rd = RASHI_DATA[rashi] || RASHI_DATA.Mesh;
   const fallback: DailyHoroscope = {
     rashi, englishName: rd.translation,
@@ -479,6 +487,7 @@ astrologyRouter.post('/daily-horoscope', optionalAuth, validate(horoscopeSchema)
         data: { userId: req.user.userId, type: 'daily_horoscope', input: { rashi }, result: JSON.parse(JSON.stringify(merged)) },
       }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save daily_horoscope report'); });
     }
+    cacheSet(cacheKey, merged, 21600).catch(() => {});
     res.json({ success: true, data: merged });
   } catch (error: unknown) {
     logger.warn({ error }, 'AI horoscope fallback');
@@ -638,6 +647,13 @@ const NAKSHATRA_NAMES = [
 
 astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchema), asyncHandler(async (req, res) => {
   const { partnerA, partnerB } = req.body as z.infer<typeof compatibilitySchema>;
+  const compatKey = `compat:${partnerA.name}|${partnerA.birthDate}|${partnerA.birthTime}|${partnerA.birthPlace}|${partnerB.name}|${partnerB.birthDate}|${partnerB.birthTime}|${partnerB.birthPlace}`;
+  const compatHash = crypto.createHash('md5').update(compatKey).digest('hex');
+  const cached = await cacheGet<CompatibilityResult>(compatHash);
+  if (cached) {
+    res.json({ success: true, data: cached });
+    return;
+  }
   const detA = calculateBirthDetails(partnerA.birthDate, partnerA.birthTime);
   const detB = calculateBirthDetails(partnerB.birthDate, partnerB.birthTime);
   const { rashiKey: rashiA, nakshatraName: nakshatraA, nakshatraIndex: nakIdxA } = detA;
@@ -673,6 +689,7 @@ astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchem
         data: { userId: req.user.userId, type: 'compatibility', input: { partnerA, partnerB }, result: JSON.parse(JSON.stringify(merged)) },
       }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save compatibility report'); });
     }
+    cacheSet(compatHash, merged, 86400).catch(() => {});
     res.json({ success: true, data: merged });
   } catch (error: unknown) {
     logger.warn({ error }, 'AI compatibility fallback');
@@ -685,6 +702,12 @@ const moonPhaseSchema = z.object({ date: z.string().optional() });
 astrologyRouter.post('/moon-phase', optionalAuth, validate(moonPhaseSchema), asyncHandler(async (req, res) => {
   const { date } = req.body as z.infer<typeof moonPhaseSchema>;
   const targetDate = date ? new Date(date) : new Date();
+  const cacheKey = `moon:${targetDate.toISOString().split('T')[0]}`;
+  const cached = await cacheGet<MoonPhaseInfo>(cacheKey);
+  if (cached) {
+    res.json({ success: true, data: cached });
+    return;
+  }
   const moon = getMoonPhase(targetDate);
   const root = moon.tithiName.split(' ')[0];
   const significance = TITHI_SIGNIFICANCE[root] || TITHI_SIGNIFICANCE[moon.tithiName] || 'An auspicious day for meditation and spiritual hygiene.';
@@ -712,6 +735,7 @@ astrologyRouter.post('/moon-phase', optionalAuth, validate(moonPhaseSchema), asy
         data: { userId: req.user.userId, type: 'moon_phase', input: { date }, result: JSON.parse(JSON.stringify(merged)) },
       }).catch((e: unknown) => { logger.error({ err: e }, 'Failed to save moon_phase report'); });
     }
+    cacheSet(cacheKey, merged, 3600).catch(() => {});
     res.json({ success: true, data: merged });
   } catch (error: unknown) {
     logger.warn({ error }, 'AI moon phase fallback');

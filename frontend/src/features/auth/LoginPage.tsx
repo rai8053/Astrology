@@ -1,8 +1,11 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, AlertCircle } from 'lucide-react';
+import { Sparkles, ArrowRight, AlertCircle, Lock, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GoogleLogin } from '@react-oauth/google';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
@@ -10,44 +13,44 @@ import { useAuthStore } from '@/lib/store';
 import { useT } from '@/lib/i18n/useT';
 import { fetchGoogleClientId } from '@/lib/google';
 import toast from 'react-hot-toast';
+import { SEO } from '@/components/SEO';
+
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+type LoginForm = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [googleClientId, setGoogleClientId] = useState('');
   const { login, loginWithGoogle, isAuthenticated } = useAuthStore();
   const { t } = useT();
   const navigate = useNavigate();
+  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+  });
 
   useEffect(() => { fetchGoogleClientId().then(setGoogleClientId); }, []);
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  const onSubmit = async (data: LoginForm) => {
     try {
-      await login(email, password);
+      await login(data.email, data.password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err?.message || t('auth.loginFailed'));
-    } finally { setLoading(false); }
+      setError('root', { message: err?.message || t('auth.loginFailed') });
+      toast.error(err?.message || t('auth.loginFailed'));
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg-primary dark:bg-dark-bg-primary p-4 relative overflow-hidden">
+      <SEO title="Sign In" description={t('auth.signInSubtitle')} />
       <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]" style={{
         backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(212,175,55,0.5) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(212,175,55,0.3) 0%, transparent 40%)',
       }} />
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-md relative z-10"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="w-full max-w-md relative z-10">
         <Link to="/" className="flex items-center gap-2 justify-center mb-8">
           <Sparkles className="w-6 h-6 text-accent" />
           <span className="font-sans text-2xl font-semibold bg-gradient-to-r from-accent to-amber-400 bg-clip-text text-transparent">Soma & Surya</span>
@@ -55,15 +58,21 @@ export function LoginPage() {
         <PremiumCard glass>
           <h1 className="font-sans text-3xl font-bold tracking-tight mb-1">{t('auth.welcomeBack')}</h1>
           <p className="text-sm text-text-secondary mb-7">{t('auth.signInSubtitle')}</p>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+            {errors.root && (
               <p className="text-xs text-red-500 flex items-center gap-1.5 bg-red-500/10 p-3 rounded-lg">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {error}
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {errors.root.message}
               </p>
             )}
-            <Input id="email" label={t('auth.email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={t('auth.emailPlaceholder')} />
-            <Input id="password" label={t('auth.password')} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
-            <PremiumButton type="submit" loading={loading} icon={<ArrowRight className="w-4 h-4" />} className="w-full">
+            <div>
+              <Input id="email" label={t('auth.email')} type="email" {...register('email')} required placeholder={t('auth.emailPlaceholder')} icon={<Mail className="w-4 h-4" />} />
+              {errors.email && <p className="text-[10px] text-red-400 mt-1">{errors.email.message}</p>}
+            </div>
+            <div>
+              <Input id="password" label={t('auth.password')} type="password" {...register('password')} required placeholder="••••••••" icon={<Lock className="w-4 h-4" />} />
+              {errors.password && <p className="text-[10px] text-red-400 mt-1">{errors.password.message}</p>}
+            </div>
+            <PremiumButton type="submit" loading={isSubmitting} icon={<ArrowRight className="w-4 h-4" />} className="w-full">
               {t('auth.signIn')}
             </PremiumButton>
           </form>
@@ -83,13 +92,11 @@ export function LoginPage() {
                     try {
                       await loginWithGoogle(credentialResponse.credential);
                       navigate('/dashboard');
-                    } catch { /* handled by API client */ }
+                    } catch { toast.error(t('auth.googleSignInFailed')); }
                   }
                 }}
                 onError={() => toast.error(t('auth.googleSignInFailed'))}
-                size="large"
-                shape="pill"
-                text="signin_with"
+                size="large" shape="pill" text="signin_with"
               />
             ) : (
               <p className="text-xs text-text-tertiary">{t('auth.googleUnavailable')}</p>
