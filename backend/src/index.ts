@@ -35,6 +35,8 @@ const rawPort = parseInt(process.env.PORT || '4000', 10);
 const PORT = isNaN(rawPort) || rawPort < 1 ? 4000 : rawPort;
 
 const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim());
+const isDev = process.env.NODE_ENV === 'development';
+const corsOrigin = isDev ? true : corsOrigins;
 
 app.use(helmet({
   strictTransportSecurity: { maxAge: 31536000, includeSubDomains: true, preload: true },
@@ -46,7 +48,7 @@ app.use(helmet({
       styleSrc: ["'self'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'blob:'],
-      connectSrc: ["'self'", ...corsOrigins],
+      connectSrc: isDev ? ["'self'", '*'] : ["'self'", ...corsOrigins],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
     },
@@ -55,7 +57,7 @@ app.use(helmet({
 app.use(compression());
 app.use(cookieParser());
 app.use(cors({
-  origin: corsOrigins,
+  origin: corsOrigin,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

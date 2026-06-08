@@ -9,8 +9,6 @@ import { logger } from '../lib/logger.js';
 import { calculateBirthDetails } from '../services/astrology/calculator.js';
 import { RASHI_DATA, RASHI_KEYS } from '../services/astrology/constants.js';
 
-const isDev = process.env.NODE_ENV !== 'production';
-
 export const chatRouter = Router();
 
 const chatSchema = z.object({
@@ -233,10 +231,8 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
     logger.error({ errMsg, errStack, sessionId: session.id, isCreditError }, 'Chat AI failed');
 
     const userMessage = isCreditError
-      ? 'The astrology AI is temporarily unavailable. Please try again shortly.'
-      : isDev
-        ? `[DEV ERROR] ${errMsg}`
-        : 'The cosmic energies are shifting. Please try again in a moment.';
+      ? 'Astrology AI unavailable (credits exhausted — add credits or switch OpenRouter models)'
+      : `Chat error: ${errMsg}`;
 
     await prisma.chatSession.update({
       where: { id: session.id },
@@ -319,8 +315,15 @@ chatRouter.post('/stream', authenticate, validate(chatSchema), asyncHandler(asyn
     res.end();
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    logger.error({ errMsg, sessionId: session.id }, 'Chat stream failed');
-    res.write(`data: ${JSON.stringify({ error: true, text: fullText || 'The cosmic energies are shifting. Please try again in a moment.' })}\n\n`);
+    const errStack = error instanceof Error ? error.stack : '';
+    const isCreditError = errMsg.toLowerCase().includes('credit') || errMsg.includes('402') || errMsg.toLowerCase().includes('payment') || errMsg.toLowerCase().includes('insufficient_quota');
+    logger.error({ errMsg, errStack, sessionId: session.id, isCreditError }, 'Chat stream failed');
+
+    const userMessage = isCreditError
+      ? 'Astrology AI unavailable (credits exhausted — add credits or switch OpenRouter models)'
+      : `Chat error: ${errMsg}`;
+
+    res.write(`data: ${JSON.stringify({ error: true, text: userMessage })}\n\n`);
     res.end();
   }
 }));

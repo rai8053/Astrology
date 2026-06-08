@@ -122,6 +122,7 @@ export interface AstrologySnapshot {
   nakshatra: string;
   nakshatraLord: string;
   rashiLord: string;
+  lagnaLord: string;
   element: string;
   doshaDominance: string;
 }
@@ -135,6 +136,10 @@ export interface PersonalHoroscope {
   finance: number;
   luckyNumber: number;
   luckyColor: string;
+  luckyDirection: string;
+  luckyDay: string;
+  favorableActivity: string;
+  avoidToday: string;
   dailyAdvice: string;
 }
 
@@ -158,6 +163,7 @@ export interface DashboardPlanet {
   degrees: number;
   minutes: number;
   house: number;
+  interpretation: string;
 }
 
 export interface DashboardDasha {
@@ -167,6 +173,8 @@ export interface DashboardDasha {
   antardasha: string;
   antardashaStart: string;
   antardashaEnd: string;
+  meaning?: string;
+  remainingDuration?: string;
 }
 
 export interface PersonalDashboardData {
@@ -178,6 +186,7 @@ export interface PersonalDashboardData {
   dasha?: DashboardDasha | null;
   tithi?: { index: number; name: string; paksha: string };
   yoga?: { index: number; name: string };
+  moonPhase?: { phaseName: string; illumination: number; age: number };
 }
 
 export interface MoonPhaseInfo {

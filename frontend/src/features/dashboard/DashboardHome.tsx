@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import {
   Moon, Sun, Heart, MessageCircle, ArrowRight, Sparkles, Star, Zap,
   Flame, Clock, User, Shield, Crown, CalendarDays,
-  Gem, Palette, Hash, Globe, ChevronRight, AlertCircle, Orbit
+  Gem, Palette, Hash, Globe, ChevronRight, AlertCircle, Orbit, Compass,
+  Layers, Sunrise, ArrowUp, ArrowDown, Wind
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
@@ -30,6 +31,17 @@ function getGreeting() {
   if (h < 12) return { key: 'Good Morning' as const, icon: Sun };
   if (h < 17) return { key: 'Good Afternoon' as const, icon: Sun };
   return { key: 'Good Evening' as const, icon: Moon };
+}
+
+function safeFormatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString();
+  } catch {
+    return '—';
+  }
 }
 
 function ScoreRing({ value, label, color }: { value: number | null | undefined; label: string; color: string }) {
@@ -72,6 +84,7 @@ function DashboardSkeleton() {
 
 export function DashboardHome() {
   const { t } = useT();
+  const { user } = useAuthStore();
   const greeting = getGreeting();
   const { data: dash, isLoading: dashLoading, error: dashError } = usePersonalDashboard();
   const streak = useStreak();
@@ -90,6 +103,8 @@ export function DashboardHome() {
     retry: 1,
   });
 
+  const displayName = user?.name?.trim() || localStorage.getItem('googleName') || '';
+  const hasBirthDetails = !dashError || !dashError.toLowerCase().includes('birth details');
   const reports = reportsData?.data || [];
   const d = dash;
 
@@ -149,7 +164,7 @@ export function DashboardHome() {
 
   if (!d) return <DashboardSkeleton />;
 
-  const { snapshot, horoscope, cosmicEnergy, planets, dasha, tithi } = d;
+  const { snapshot, horoscope, cosmicEnergy, planets, dasha, tithi, yoga, transitAlerts, moonPhase } = d;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
@@ -181,11 +196,14 @@ export function DashboardHome() {
       {/* Section 1: Astrology Profile */}
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={User} title="Your Astrology Profile" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5">
           <ProfileCard label="Moon Sign (Rashi)" value={snapshot.moonRashi || '—'} icon={Moon} color="text-blue-400" />
-          <ProfileCard label="Birth Star (Nakshatra)" value={snapshot.nakshatra && snapshot.nakshatraLord ? `${snapshot.nakshatra} — ${snapshot.nakshatraLord}` : '—'} icon={Star} color="text-purple-400" />
-          <ProfileCard label="Ascendant (Lagna)" value={snapshot.ascendant || '—'} icon={Sun} color="text-amber-400" />
-          <ProfileCard label="Lunar Day (Tithi)" value={tithi ? `${tithi.name} (${tithi.paksha})` : '—'} icon={Moon} color="text-sky-400" />
+          <ProfileCard label="Birth Star" value={snapshot.nakshatra && snapshot.nakshatraLord ? `${snapshot.nakshatra} — ${snapshot.nakshatraLord}` : '—'} icon={Star} color="text-purple-400" />
+          <ProfileCard label="Ascendant" value={snapshot.ascendant || '—'} icon={Sun} color="text-amber-400" />
+          <ProfileCard label="Lagna Lord" value={snapshot.lagnaLord || '—'} icon={Shield} color="text-rose-400" />
+          <ProfileCard label="Lunar Day (Tithi)" value={tithi?.name ? `${tithi.name} (${tithi.paksha || '—'})` : '—'} icon={CalendarDays} color="text-sky-400" />
+          <ProfileCard label="Yoga" value={yoga?.name || '—'} icon={Compass} color="text-cyan-400" />
+          <ProfileCard label="Moon Phase" value={moonPhase ? `${moonPhase.phaseName} ${moonPhase.illumination}%` : '—'} icon={Layers} color="text-indigo-400" />
         </div>
       </motion.div>
 
@@ -233,8 +251,8 @@ export function DashboardHome() {
       {planets && planets.length > 0 && (
         <motion.div variants={stagger} initial="initial" animate="animate">
           <SectionHeader icon={Orbit} title="Planetary Positions" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
-            {planets.slice(0, 7).map((p, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            {planets.slice(0, 9).map((p, i) => (
               <motion.div key={p.name} variants={itemAnim}>
                 <PremiumCard glass>
                   <div className="flex items-center justify-between mb-1">
@@ -245,13 +263,16 @@ export function DashboardHome() {
                       ['Jupiter'].some(s => p.name?.includes(s)) ? 'text-amber-400' :
                       ['Saturn'].some(s => p.name?.includes(s)) ? 'text-indigo-400' :
                       ['Moon'].some(s => p.name?.includes(s)) ? 'text-blue-400' :
-                      ['Mercury'].some(s => p.name?.includes(s)) ? 'text-emerald-400' : 'text-text-secondary dark:text-dark-text-secondary'
+                      ['Mercury'].some(s => p.name?.includes(s)) ? 'text-emerald-400' : 'text-text-secondary'
                     }`}>{p.sign || '—'}</span>
                   </div>
                   <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
                     {p.signFull?.split('(')[1]?.replace(')','') || p.signFull || '—'}
                     &nbsp;&middot;&nbsp;House {p.house ?? '—'}
                     &nbsp;&middot;&nbsp;{p.degrees ?? '—'}°{p.minutes ?? '—'}'
+                  </p>
+                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary mt-1.5 italic leading-tight border-t border-white/5 pt-1.5">
+                    {p.interpretation || '—'}
                   </p>
                 </PremiumCard>
               </motion.div>
@@ -260,7 +281,28 @@ export function DashboardHome() {
         </motion.div>
       )}
 
-      {/* Section 4: Current Dasha */}
+      {/* Section 4: Transit Alerts */}
+      {transitAlerts && transitAlerts.length > 0 && (
+        <motion.div variants={stagger} initial="initial" animate="animate">
+          <SectionHeader icon={CalendarDays} title="Upcoming Transits" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {transitAlerts.slice(0, 4).map((alert, i) => (
+              <motion.div key={i} variants={itemAnim}>
+                <PremiumCard glass>
+                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary font-mono">{safeFormatDate(alert.date)}</p>
+                  <p className={`text-xs font-semibold font-sans mt-0.5 ${
+                    alert.impact === 'positive' ? 'text-emerald-400' :
+                    alert.impact === 'challenging' ? 'text-red-400' : 'text-amber-400'
+                  }`}>{alert.event || '—'}</p>
+                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary mt-0.5 line-clamp-2">{alert.description || '—'}</p>
+                </PremiumCard>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Section 5: Current Dasha */}
       {dasha && (
         <motion.div variants={stagger} initial="initial" animate="animate">
           <SectionHeader icon={CalendarDays} title="Current Dasha Period" />
@@ -274,10 +316,16 @@ export function DashboardHome() {
                   <p className="text-[10px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">Mahadasha</p>
                   <p className="text-base font-bold font-sans text-text-primary">{dasha.mahadasha || '—'}</p>
                   <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
-                    {dasha.mahadashaStart ? new Date(dasha.mahadashaStart).toLocaleDateString() : '—'} — {dasha.mahadashaEnd ? new Date(dasha.mahadashaEnd).toLocaleDateString() : '—'}
+                    {safeFormatDate(dasha.mahadashaStart)} — {safeFormatDate(dasha.mahadashaEnd)}
+                    {dasha.remainingDuration ? <span className="ml-1">({dasha.remainingDuration} remaining)</span> : ''}
                   </p>
                 </div>
               </div>
+              {dasha.meaning && (
+                <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary mt-2 pt-2 border-t border-white/5 italic">
+                  {dasha.meaning}
+                </p>
+              )}
             </PremiumCard>
             <PremiumCard glass>
               <div className="flex items-center gap-3">
@@ -288,7 +336,7 @@ export function DashboardHome() {
                   <p className="text-[10px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">Antardasha</p>
                   <p className="text-base font-bold font-sans text-text-primary">{dasha.antardasha || '—'}</p>
                   <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
-                    {dasha.antardashaStart ? new Date(dasha.antardashaStart).toLocaleDateString() : '—'} — {dasha.antardashaEnd ? new Date(dasha.antardashaEnd).toLocaleDateString() : '—'}
+                    {safeFormatDate(dasha.antardashaStart)} — {safeFormatDate(dasha.antardashaEnd)}
                   </p>
                 </div>
               </div>
@@ -297,14 +345,18 @@ export function DashboardHome() {
         </motion.div>
       )}
 
-      {/* Section 5: Cosmic Insights */}
+      {/* Section 6: Cosmic Insights */}
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={Gem} title="Cosmic Insights" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <InsightCard icon={Hash} label="Lucky Number" value={horoscope.luckyNumber != null ? `${horoscope.luckyNumber}` : '—'} color="text-amber-400" />
           <InsightCard icon={Palette} label="Lucky Color" value={horoscope.luckyColor || '—'} color="text-pink-400" />
-          <InsightCard icon={Globe} label="Element" value={snapshot.element || '—'} color="text-blue-400" />
-          <InsightCard icon={Heart} label="Dosha" value={snapshot.doshaDominance || '—'} color="text-emerald-400" />
+          <InsightCard icon={Compass} label="Lucky Direction" value={horoscope.luckyDirection || '—'} color="text-blue-400" />
+          <InsightCard icon={CalendarDays} label="Lucky Day" value={horoscope.luckyDay || '—'} color="text-purple-400" />
+          <InsightCard icon={Wind} label="Element" value={snapshot.element || '—'} color="text-emerald-400" />
+          <InsightCard icon={Heart} label="Dosha" value={snapshot.doshaDominance || '—'} color="text-red-400" />
+          <InsightCard icon={Sunrise} label="Favorable Activity" value={horoscope.favorableActivity || '—'} color="text-yellow-400" />
+          <InsightCard icon={ArrowDown} label="Avoid Today" value={horoscope.avoidToday || '—'} color="text-orange-400" />
         </div>
       </motion.div>
 
@@ -350,7 +402,7 @@ export function DashboardHome() {
                         </div>
                         <div>
                           <p className="text-xs font-medium font-sans capitalize text-text-primary">{r.type.replace(/_/g, ' ')}</p>
-                          <p className="text-[9px] text-text-secondary dark:text-dark-text-secondary">{new Date(r.createdAt).toLocaleDateString()}</p>
+                          <p className="text-[9px] text-text-secondary dark:text-dark-text-secondary">{safeFormatDate(r.createdAt)}</p>
                         </div>
                       </div>
                       <ChevronRight className="w-3 h-3 text-text-tertiary dark:text-dark-text-tertiary" />

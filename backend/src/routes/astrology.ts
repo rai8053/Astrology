@@ -734,8 +734,18 @@ function buildHoroscope(rashiKey: string, element: string, seed: number): Person
   const health = buildDailyScore(seed + 3);
   const finance = buildDailyScore(seed + 4);
   const luckyNum = Math.floor(seededRandom(seed + 5) * 8) + 1;
-  const colors: Record<string, string> = { Fire: 'Crimson Red / Gold', Earth: 'Forest Green / Saffron', Air: 'Sky Blue / Silver' };
-  const luckyColor = colors[element] || 'Royal Blue / White';
+  const elementData: Record<string, { color: string; direction: string; day: string; activity: string; avoid: string }> = {
+    Fire: { color: 'Crimson Red / Gold', direction: 'South', day: 'Tuesday', activity: 'Creative projects, leading teams, physical exercise', avoid: 'Rash decisions, overexertion, ignoring advice' },
+    Earth: { color: 'Forest Green / Saffron', direction: 'North', day: 'Friday', activity: 'Financial planning, gardening, building routines', avoid: 'Stubbornness, procrastination, overworking' },
+    Air: { color: 'Sky Blue / Silver', direction: 'East', day: 'Wednesday', activity: 'Networking, writing, intellectual discussions', avoid: 'Overthinking, gossip, scattered focus' },
+    Water: { color: 'Royal Blue / White', direction: 'West', day: 'Monday', activity: 'Journaling, meditation, creative expression', avoid: 'Emotional overwhelm, isolation, avoiding feelings' },
+  };
+  const ef = elementData[element] || elementData.Fire;
+  const luckyColor = ef.color;
+  const luckyDirection = ef.direction;
+  const luckyDay = ef.day;
+  const favorableActivity = ef.activity;
+  const avoidToday = ef.avoid;
   const perTemplates: Record<string, string[]> = {
     Fire: ['Your fiery energy is at its peak today. Channel this powerful force into creative projects and leadership opportunities. The cosmos supports bold moves and courageous decisions.', 'Mars infuses your spirit with dynamism and drive. Take the lead in group activities and don\'t shy from challenges — your natural authority shines today.', 'A surge of creative fire propels you forward. Express yourself boldly in all endeavors — the universe rewards those who dare to shine brightly.'],
     Earth: ['Grounded and steady, today favors practical achievements and long-term planning. Your patience is your superpower — use it to build something lasting.', 'Saturn\'s disciplined energy supports methodical progress. Focus on foundation work and financial planning. Slow and steady wins today\'s race.', 'Your earthy stability creates a safe harbor for others. Nurture your resources and relationships with the same care you give to your ambitions.'],
@@ -750,7 +760,7 @@ function buildHoroscope(rashiKey: string, element: string, seed: number): Person
     Water: ['Set a gentle boundary.', 'Journal your feelings before bed.', 'Trust your first impression today.'],
   };
   const dailyAdvice = (adviceTemplates[element] || adviceTemplates.Fire)[Math.floor(seededRandom(seed + 7) * 3)];
-  return { moonRashi: rashiKey, prediction, love, career, health, finance, luckyNumber: luckyNum, luckyColor, dailyAdvice };
+  return { moonRashi: rashiKey, prediction, love, career, health, finance, luckyNumber: luckyNum, luckyColor, luckyDirection, luckyDay, favorableActivity, avoidToday, dailyAdvice };
 }
 
 function buildCosmicEnergy(element: string, seed: number): PersonalDashboardData['cosmicEnergy'] {
@@ -787,6 +797,33 @@ function buildTransitAlerts(rashiKey: string, seed: number): PersonalDashboardDa
   ];
 }
 
+function formatDurationMs(ms: number): string {
+  if (ms < 0) return 'Ending soon';
+  const days = Math.floor(ms / (24 * 60 * 60 * 1000));
+  const years = Math.floor(days / 365);
+  const remainingDays = days % 365;
+  const months = Math.floor(remainingDays / 30);
+  if (years > 0) return `${years} year${years > 1 ? 's' : ''} ${months > 0 ? `${months} month${months > 1 ? 's' : ''}` : ''}`;
+  if (months > 0) return `${months} month${months > 1 ? 's' : ''} ${remainingDays % 30 > 0 ? `${remainingDays % 30} day${remainingDays % 30 > 1 ? 's' : ''}` : ''}`;
+  return `${days} day${days !== 1 ? 's' : ''}`;
+}
+
+function getDashboardMoonPhase(tithiIndex: number, tithiName: string, paksha: string): { phaseName: string; illumination: number; age: number } {
+  const age = Math.round(tithiIndex * 0.965 * 10) / 10;
+  const illumination = Math.round(50 * (1 - Math.cos(2 * Math.PI * (tithiIndex / 30))));
+  const phaseValue = tithiIndex / 30;
+  let phaseName: string;
+  if (phaseValue < 0.03 || phaseValue > 0.97) phaseName = 'New Moon (Amavasya)';
+  else if (phaseValue < 0.22) phaseName = 'Waxing Crescent';
+  else if (phaseValue < 0.28) phaseName = 'First Quarter';
+  else if (phaseValue < 0.47) phaseName = 'Waxing Gibbous';
+  else if (phaseValue < 0.53) phaseName = 'Full Moon (Purnima)';
+  else if (phaseValue < 0.72) phaseName = 'Waning Gibbous';
+  else if (phaseValue < 0.78) phaseName = 'Third Quarter';
+  else phaseName = 'Waning Crescent';
+  return { phaseName, illumination, age };
+}
+
 const dashboardPeriodSchema = z.object({
   period: z.enum(['today', 'tomorrow', 'week', 'month']).optional().default('today'),
 });
@@ -817,7 +854,8 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
   const baseSeed = daySeed + rashiIndex * 1000;
   const snapshot: PersonalDashboardData['snapshot'] = {
     ascendant: `${lagnaKey} (${ld.translation})`, moonRashi: `${rashiKey} (${rd.translation})`, nakshatra: nakshatraName,
-    nakshatraLord: NAKSHATRA_LORDS[nakshatraIndex % 9], rashiLord: rd.lord, element: rd.element, doshaDominance: rd.dosha,
+    nakshatraLord: NAKSHATRA_LORDS[nakshatraIndex % 9], rashiLord: rd.lord, lagnaLord: details.lagnaLord || ld.lord,
+    element: rd.element, doshaDominance: rd.dosha,
   };
 
   // Planet positions for dashboard
@@ -832,12 +870,38 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
     { name: 'Rahu', pos: details.rahu },
     { name: 'Ketu', pos: details.ketu },
   ];
-  const planets = planetList.map(p => ({
-    name: p.name, sign: RASHI_KEYS[p.pos.signIndex], signFull: p.pos.signName,
-    degrees: p.pos.degrees, minutes: p.pos.minutes, house: p.pos.house,
-  }));
+  const PLANET_INTERPRETATIONS: Record<string, string[]> = {
+    'Sun (Surya)': ['Brings confidence and leadership to this area.', 'Illuminates your path forward.', 'Energizes your self-expression.', 'Strengthens your willpower and authority.'],
+    'Moon (Chandra)': ['Heightens emotional intelligence and intuition.', 'Nurtures your inner world.', 'Amplifies receptivity and empathy.', 'Deepens your connection to your feelings.'],
+    'Mercury (Budha)': ['Sharpens intellect and communication skills.', 'Supports analytical thinking.', 'Enhances learning and adaptability.', 'Blesses your speech and writing.'],
+    'Venus (Shukra)': ['Awakens love, beauty, and creative expression.', 'Attracts harmony and pleasure.', 'Deepens your appreciation for art.', 'Blesses relationships and finances.'],
+    'Mars (Mangal)': ['Ignites courage, ambition, and dynamic energy.', 'Drives you toward your goals.', 'Fuels passion and determination.', 'Strengthens your competitive spirit.'],
+    'Jupiter (Guru)': ['Expands wisdom, luck, and spiritual growth.', 'Opens doors to new opportunities.', 'Blesses higher learning.', 'Brings prosperity and optimism.'],
+    'Saturn (Shani)': ['Teaches discipline, patience, and karmic lessons.', 'Builds long-term structure.', 'Tests your resilience.', 'Rewards consistent effort.'],
+    'Rahu': ['Amplifies ambition and worldly desires.', 'Creates sudden transformations.', 'Pushes you beyond comfort zones.', 'Reveals hidden talents.'],
+    'Ketu': ['Deepens spiritual awareness.', 'Releases karmic attachments.', 'Brings detachment and clarity.', 'Opens intuitive channels.'],
+  };
+  const planets = planetList.map(p => {
+    const interps = PLANET_INTERPRETATIONS[p.name] || ['Influences your chart from this position.'];
+    return {
+      name: p.name, sign: RASHI_KEYS[p.pos.signIndex], signFull: p.pos.signName,
+      degrees: p.pos.degrees, minutes: p.pos.minutes, house: p.pos.house,
+      interpretation: interps[p.pos.house ? Math.min(p.pos.house - 1, interps.length - 1) : 0],
+    };
+  });
 
   // Dasha info
+  const DASHA_MEANINGS: Record<string, string> = {
+    'Ketu': 'A period of spiritual evolution, detachment, and karmic clearing. Focus on inner growth.',
+    'Venus/Shukra': 'A time of love, luxury, creativity, and relationship building. Enjoy life\'s pleasures.',
+    'Sun/Surya': 'A period of leadership, confidence, and personal authority. Step into the spotlight.',
+    'Moon/Chandra': 'An emotional, nurturing phase. Home, family, and intuition take center stage.',
+    'Mars/Mangal': 'A dynamic, action-oriented period. Courage, ambition, and drive are amplified.',
+    'Rahu': 'A transformative, ambition-fueled phase. Unexpected changes and material growth.',
+    'Jupiter/Guru': 'A blessed period of expansion, wisdom, good fortune, and spiritual growth.',
+    'Saturn/Shani': 'A karmic period of discipline, hard work, and lasting achievement. Patience is key.',
+    'Mercury/Budha': 'An intellectual, communicative phase. Learning, writing, and networking flourish.',
+  };
   const dashaInfo = details.currentDasha ? {
     mahadasha: details.currentDasha.dasha.planet,
     mahadashaStart: details.currentDasha.dasha.startDate.toISOString(),
@@ -845,6 +909,8 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
     antardasha: details.currentDasha.antardasha.planet,
     antardashaStart: details.currentDasha.antardasha.startDate.toISOString(),
     antardashaEnd: details.currentDasha.antardasha.endDate.toISOString(),
+    meaning: DASHA_MEANINGS[details.currentDasha.dasha.planet] || 'A significant karmic period in your life journey.',
+    remainingDuration: formatDurationMs(details.currentDasha.dasha.endDate.getTime() - Date.now()),
   } : null;
 
   const horoscope = buildHoroscope(rashiKey, rd.element, baseSeed);
@@ -852,12 +918,14 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
   const transitAlerts = buildTransitAlerts(rashiKey, baseSeed + 200);
   try {
     const prompt = `Write a personalized Vedic horoscope for someone with Moon in ${rashiKey} (${rd.translation}), Nakshatra ${nakshatraName}, ${rd.element} element, ruled by ${rd.lord}. Period: ${dateLabel}. Return flat JSON with fields: prediction (2-3 sentence personalized reading for ${dateLabel}), love (0-100), career (0-100), health (0-100), finance (0-100), luckyNumber (1-9), luckyColor, dailyAdvice. Do NOT change the rashi or nakshatra.`;
-    const aiResult = await generateStructuredJSON<PersonalDashboardData['horoscope']>(prompt, 'You are a Vedic astrologer. Return flat JSON only. No nesting, no markdown.');
+    const aiResult = await generateStructuredJSON<PersonalDashboardData['horoscope']>(prompt, 'You are a Vedic astrologer. Return flat JSON only. No nesting, no markdown.', 3000);
     const cleanResult = Object.fromEntries(Object.entries(aiResult ?? {}).filter(([, v]) => v != null));
     const mergedHoroscope = { ...horoscope, ...cleanResult, moonRashi: rashiKey };
-    res.json({ success: true, data: { snapshot, horoscope: mergedHoroscope, cosmicEnergy, transitAlerts, planets, dasha: dashaInfo, tithi: details.tithi, yoga: details.yoga } });
+    const moonPhase = getDashboardMoonPhase(details.tithi.index, details.tithi.name, details.tithi.paksha);
+    res.json({ success: true, data: { snapshot, horoscope: mergedHoroscope, cosmicEnergy, transitAlerts, planets, dasha: dashaInfo, tithi: details.tithi, yoga: details.yoga, moonPhase } });
   } catch (error: unknown) {
     logger.warn({ error }, 'AI dashboard horoscope fallback');
-    res.json({ success: true, data: { snapshot, horoscope, cosmicEnergy, transitAlerts, planets, dasha: dashaInfo, tithi: details.tithi, yoga: details.yoga } });
+    const moonPhase = getDashboardMoonPhase(details.tithi.index, details.tithi.name, details.tithi.paksha);
+    res.json({ success: true, data: { snapshot, horoscope, cosmicEnergy, transitAlerts, planets, dasha: dashaInfo, tithi: details.tithi, yoga: details.yoga, moonPhase } });
   }
 }));

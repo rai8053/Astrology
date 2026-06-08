@@ -16,23 +16,47 @@ interface ProviderClient {
   }): Promise<{ text: string; model: string; usage?: AIUsage }>;
 }
 
+const MAX_FREE_MODELS = 10;
+
 const DEFAULT_FALLBACK_MODELS = [
-  'deepseek/deepseek-chat-v3-0324',
+  'deepseek/deepseek-chat',
   'qwen/qwen3-235b-a22b',
-  'anthropic/claude-sonnet-4',
+  'anthropic/claude-sonnet-4-20250514',
 ];
 
 const FREE_MODELS = [
-  'google/gemini-2.0-flash-exp:free',
-  'mistralai/mistral-7b-instruct:free',
+  'qwen/qwen3-coder:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'google/gemma-4-31b-it:free',
+  'openai/gpt-oss-120b:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
+  'openai/gpt-oss-20b:free',
+  'z-ai/glm-4.5-air:free',
+  'nvidia/nemotron-3-nano-30b-a3b:free',
+  'qwen/qwen3-next-80b-a3b-instruct:free',
+  'nvidia/nemotron-nano-9b-v2:free',
   'meta-llama/llama-3.2-3b-instruct:free',
+  'google/gemma-4-26b-a4b-it:free',
+  'moonshotai/kimi-k2.6:free',
+  'nousresearch/hermes-3-llama-3.1-405b:free',
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  'nvidia/nemotron-nano-12b-v2-vl:free',
+  'poolside/laguna-xs.2:free',
+  'poolside/laguna-m.1:free',
+  'google/gemini-2.0-flash-exp:free',
+  'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
+  'minimax/minimax-m2.5:free',
+  'liquid/lfm-2.5-1.2b-thinking:free',
+  'liquid/lfm-2.5-1.2b-instruct:free',
+  'mistralai/mistral-7b-instruct:free',
   'microsoft/phi-3-mini-4k-instruct:free',
+  'openrouter/free',
 ];
 
 function calculateMaxTokens(contentLength: number): number {
-  const base = 256;
+  const base = 128;
   const perChar = Math.ceil(contentLength / 3);
-  return Math.min(800, base + perChar);
+  return Math.min(512, base + perChar);
 }
 
 class OpenRouterService implements ProviderClient {
@@ -55,7 +79,7 @@ class OpenRouterService implements ProviderClient {
     this.fallbackModels = envFallback
       ? envFallback.split(',').map(s => s.trim()).filter(Boolean)
       : DEFAULT_FALLBACK_MODELS;
-    this.maxRetries = Math.max(1, parseInt(process.env.OPENROUTER_MAX_RETRIES || '3', 10));
+    this.maxRetries = Math.max(1, parseInt(process.env.OPENROUTER_MAX_RETRIES || '1', 10));
     logger.info({
       preferredModel: this.preferredModel,
       fallbackModels: this.fallbackModels,
@@ -77,42 +101,47 @@ class OpenRouterService implements ProviderClient {
     const maxTokens = params.config?.max_tokens
       ? (params.config.max_tokens as number)
       : calculateMaxTokens(params.contents.length);
+    const perModelTimeout = (params.config?.requestTimeout as number) || 25000;
     let lastError: Error | null = null;
     let hadCreditError = false;
 
-    logger.info({ modelsToTry, hasSystemInstruction: !!systemInstruction, contentLength: params.contents.length, maxTokens }, 'generateContent starting');
+    logger.info({ modelsToTry, hasSystemInstruction: !!systemInstruction, contentLength: params.contents.length, maxTokens, perModelTimeout }, 'generateContent starting');
+
+    const callWithTimeout = async (model: string): Promise<{ text: string; model: string; usage?: AIUsage }> => {
+      const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
+      if (systemInstruction) {
+        messages.push({ role: 'system', content: systemInstruction });
+      }
+      messages.push({ role: 'user', content: params.contents });
+      const result = await Promise.race([
+        this.client.chat.completions.create(
+          { model, messages, temperature: 0.7, max_tokens: maxTokens },
+          { signal: params.signal, timeout: perModelTimeout },
+        ),
+        new Promise<never>((_, reject) => {
+          const timer = setTimeout(() => reject(new Error(`Model "${model}" timed out after ${perModelTimeout}ms`)), perModelTimeout);
+          if (params.signal) {
+            params.signal.addEventListener('abort', () => { clearTimeout(timer); reject(new Error('Request aborted')); }, { once: true });
+          }
+        }),
+      ]);
+      const text = result.choices[0]?.message?.content || '';
+      const usage = result.usage
+        ? { promptTokens: result.usage.prompt_tokens, completionTokens: result.usage.completion_tokens, totalTokens: result.usage.total_tokens }
+        : undefined;
+      logger.info({ model, provider: 'openrouter', usage }, 'OpenRouter AI response');
+      return { text, model, usage };
+    }
 
     for (const model of modelsToTry) {
+      if (hadCreditError && !model.includes(':free')) continue;
+      if (params.signal?.aborted) {
+        lastError = new Error('Request aborted');
+        break;
+      }
       for (let attempt = 0; attempt < this.maxRetries; attempt++) {
         try {
-          const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
-          if (systemInstruction) {
-            messages.push({ role: 'system', content: systemInstruction });
-          }
-          messages.push({ role: 'user', content: params.contents });
-
-          const response = await this.client.chat.completions.create(
-            {
-              model,
-              messages,
-              temperature: 0.7,
-              max_tokens: maxTokens,
-            },
-            { signal: params.signal, timeout: 30000 },
-          );
-
-          const text = response.choices[0]?.message?.content || '';
-          const usage = response.usage
-            ? {
-                promptTokens: response.usage.prompt_tokens,
-                completionTokens: response.usage.completion_tokens,
-                totalTokens: response.usage.total_tokens,
-              }
-            : undefined;
-
-          logger.info({ model, provider: 'openrouter', usage }, 'OpenRouter AI response');
-
-          return { text, model, usage };
+          return await callWithTimeout(model);
         } catch (error: unknown) {
           lastError = error as Error;
           const errMsg = error instanceof Error ? error.message : String(error);
@@ -125,6 +154,7 @@ class OpenRouterService implements ProviderClient {
             hadCreditError = true;
             break;
           }
+          if (params.signal?.aborted) break;
           if (attempt < this.maxRetries - 1) {
             await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
           }
@@ -147,35 +177,89 @@ class OpenRouterService implements ProviderClient {
     systemInstruction?: string;
     signal?: AbortSignal;
   }): AsyncIterable<string> {
-    const model = params.model || this.preferredModel;
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
-    if (params.systemInstruction) {
-      messages.push({ role: 'system', content: params.systemInstruction });
-    }
-    messages.push({ role: 'user', content: params.contents });
-
+    const modelsToTry = this.buildModelList(params.model, 5);
+    const systemInstruction = params.systemInstruction;
     const maxTokens = calculateMaxTokens(params.contents.length);
-    logger.info({ model, contentLength: params.contents.length, maxTokens }, 'streamContent starting');
+    let lastError: Error | null = null;
+    let hadCreditError = false;
 
-    const stream = await this.client.chat.completions.create(
-      { model, messages, stream: true, temperature: 0.7, max_tokens: maxTokens },
-      { signal: params.signal, timeout: 60000 },
-    );
+    logger.info({
+      modelsToTry,
+      contentLength: params.contents.length,
+      maxTokens,
+      systemInstructionLength: systemInstruction?.length,
+    }, 'streamContent starting');
 
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      if (content) yield content;
+    for (const model of modelsToTry) {
+      if (hadCreditError && !model.includes(':free')) continue;
+      if (params.signal?.aborted) {
+        lastError = new Error('Request aborted');
+        break;
+      }
+      try {
+        const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
+        if (systemInstruction) {
+          messages.push({ role: 'system', content: systemInstruction });
+        }
+        messages.push({ role: 'user', content: params.contents });
+
+        logger.info({ model }, 'streamContent attempting model');
+        const stream = await this.client.chat.completions.create(
+          { model, messages, stream: true, temperature: 0.7, max_tokens: maxTokens },
+          { signal: params.signal, timeout: 10000 },
+        );
+
+        for await (const chunk of stream) {
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) yield content;
+        }
+        logger.info({ model }, 'streamContent succeeded');
+        return;
+      } catch (error: unknown) {
+        lastError = error as Error;
+        const errMsg = error instanceof Error ? error.message : String(error);
+        const errStack = error instanceof Error ? error.stack : '';
+        const status = (error as any)?.status;
+        const errCode = (error as any)?.code;
+        const errType = (error as any)?.type;
+        logger.warn({
+          errMsg,
+          errStack,
+          status,
+          code: errCode,
+          type: errType,
+          model,
+        }, `streamContent model "${model}" failed, trying next`);
+
+        if (status === 402) {
+          hadCreditError = true;
+        }
+      }
     }
+
+    const lastErrMsg = lastError instanceof Error ? lastError.message : String(lastError);
+    const lastErrStack = lastError instanceof Error ? lastError.stack : '';
+    logger.error({ modelsTried: modelsToTry, lastErrMsg, lastErrStack, hadCreditError }, 'All streamContent models exhausted');
+    if (hadCreditError) {
+      throw new Error('The AI service has run out of credits. Please add credits to your OpenRouter account or try again later.');
+    }
+    throw lastError || new Error('All streaming models exhausted');
   }
 
-  private buildModelList(override?: string): string[] {
+  private buildModelList(override?: string, maxFree?: number): string[] {
     if (override) return [override];
     const models = [this.preferredModel];
     for (const m of this.fallbackModels) {
       if (m !== this.preferredModel && !models.includes(m)) models.push(m);
     }
+    const freeLimit = maxFree ?? MAX_FREE_MODELS;
+    let freeAdded = 0;
     for (const m of FREE_MODELS) {
-      if (!models.includes(m)) models.push(m);
+      if (!models.includes(m)) {
+        models.push(m);
+        freeAdded++;
+        if (freeAdded >= freeLimit) break;
+      }
     }
     return models;
   }
@@ -233,11 +317,11 @@ function extractJSON(text: string): string {
   return text.trim();
 }
 
-export async function generateStructuredJSON<T>(prompt: string, systemInstruction: string): Promise<T> {
+export async function generateStructuredJSON<T>(prompt: string, systemInstruction: string, timeoutMs = 30000): Promise<T> {
   const provider = resolveProvider();
-  const config: Record<string, unknown> = { systemInstruction };
+  const config: Record<string, unknown> = { systemInstruction, requestTimeout: timeoutMs };
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
     const extracted = extractJSON(response.text || '{}');

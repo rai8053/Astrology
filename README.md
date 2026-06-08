@@ -96,7 +96,7 @@ cd backend && npm run dev
 cd frontend && npm run dev
 ```
 
-Open **http://localhost:5173** — login with `admin@somasurya.com` / `admin123`.
+Open **http://localhost:5173** and register a new account, or login with `admin@somasurya.com` / `admin123` (admin account, seeded by `prisma db seed`).
 
 ---
 
@@ -247,6 +247,8 @@ GET /api/health                         → { status: "ok", database: "healthy",
 ```
 POST /api/auth/register                 { name, email, password }
 POST /api/auth/login                    { email, password }
+POST /api/auth/google                   { credential }      ← Google credential JWT
+GET  /api/auth/google/client-id                              ← Public Google Client ID
 POST /api/auth/refresh                  ← Cookie: refreshToken
 POST /api/auth/logout
 GET  /api/auth/me                       ← Bearer token
@@ -254,6 +256,7 @@ GET  /api/auth/me                       ← Bearer token
 
 ### Astrology
 ```
+GET  /api/astrology/personal-dashboard  ?period=today|tomorrow|week|month  ← Bearer token
 POST /api/astrology/vedic-profile       { name, birthDate, birthTime, birthPlace }
 POST /api/astrology/daily-horoscope     { rashi }
 POST /api/astrology/compatibility       { partnerA, partnerB }
@@ -265,6 +268,13 @@ POST /api/astrology/moon-phase          { date }
 POST /api/chat                          { message, sessionId? } ← Bearer token
 GET  /api/chat/sessions                 ← Bearer token
 GET  /api/chat/sessions/:id             ← Bearer token
+```
+
+### User
+```
+GET  /api/user/profile                  ← Bearer token
+PUT  /api/user/profile                  { name?, birthDate?, birthTime?, birthPlace? } ← Bearer token
+GET  /api/user/reports                  ← Bearer token
 ```
 
 ### Payments
@@ -282,7 +292,7 @@ GET  /api/admin/analytics               ← Bearer token
 GET  /api/admin/usage                   ← Bearer token
 ```
 
-All responses follow `{ success: boolean, data?: T, error?: { code, message } }`.
+All responses follow `{ success: boolean, data?: T, error?: string, code?: string }`.
 
 ---
 
@@ -324,6 +334,22 @@ This starts 5 containers:
 - **OpenRouter API key** — set `OPENROUTER_API_KEY` in `.env` (get one at [openrouter.ai](https://openrouter.ai))
 - **Strong JWT secrets** — `openssl rand -base64 64`
 - **Change default passwords** — seed creates `admin@somasurya.com / admin123`
+
+### Testing with Cloudflare Tunnel
+
+```bash
+# Start backend
+cd backend && npm run dev
+
+# Start frontend
+cd frontend && npm run dev
+
+# Start tunnel (separate terminal)
+cloudflared tunnel --url http://localhost:5173
+
+# Add the tunnel URL (e.g., https://abc.trycloudflare.com) to:
+# Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client IDs → Authorized JavaScript origins
+```
 
 ---
 
@@ -375,6 +401,8 @@ Use Stripe test mode. Once you set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRE
 | `Port already in use` | Backend: change `PORT` in `.env`. Frontend: change in `vite.config.ts`. |
 | `CORS error` | Ensure `CORS_ORIGINS` includes your frontend URL (default: `http://localhost:5173`). |
 | `Build fails` | Run `npx prisma generate` in `backend/` first. |
+| `Blocked request. This host is not allowed` | Cloudflare Tunnel URL is not in Vite's allowed hosts. Ensure `vite.config.ts` has `allowedHosts: true` and restart Vite. |
+| `Google Login is temporarily unavailable` | Backend not running, tunnel not forwarding, or `GOOGLE_CLIENT_ID` missing in `backend/.env`. Check browser Network tab for the `/api/auth/google/client-id` request. |
 | Theme not switching | Clear `localStorage` theme key and reload. Check `prefers-color-scheme` in dev tools. |
 
 ---
@@ -383,7 +411,8 @@ Use Stripe test mode. Once you set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRE
 
 - **Sentry and PostHog** env vars exist but the SDKs are not yet wired. They're placeholder-ready for when you add monitoring.
 - **Redis** is deployed but not yet used for API caching — currently only for dependency health checks.
-- **Google/GitHub OAuth** schema placeholders exist but social login endpoints are not implemented.
+- **Google OAuth** — fully implemented. Login/Register pages show Google Sign-In button. Backend verifies via google-auth-library. Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `backend/.env` and the site's URL added to [Google Cloud Console](https://console.cloud.google.com/apis/credentials) authorized JavaScript origins.
+- **GitHub OAuth** — schema placeholders exist but not implemented.
 - The frontend build uses manual chunking (`vendor`, `ui`) for optimal caching.
 
 ---
