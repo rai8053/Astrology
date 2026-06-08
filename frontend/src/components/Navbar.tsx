@@ -110,11 +110,11 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10">
-              <Sparkles className="w-4 h-4 text-accent" />
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+              <Sparkles className="w-4 h-4 text-primary" />
             </div>
-            <span className="font-sans text-base font-semibold tracking-tight">
-              Soma<span className="text-text-tertiary dark:text-dark-text-tertiary font-normal">&</span>Surya
+            <span className="text-base font-semibold tracking-tight text-foreground">
+              Soma<span className="font-normal text-muted-foreground">&</span>Surya
             </span>
           </Link>
 
@@ -123,10 +123,10 @@ export function Navbar() {
               <a
                 key={l.href}
                 href={l.href}
-                className="relative px-3 py-2 text-sm text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
+                className="relative px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 {l.label}
-                <span className="absolute bottom-0 left-3 right-3 h-[1.5px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                <span className="absolute bottom-0 left-3 right-3 h-[1.5px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
               </a>
             ))}
 
@@ -134,7 +134,7 @@ export function Navbar() {
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary transition-colors"
+                className="p-2 rounded-lg hover:bg-primary/5 text-muted-foreground transition-colors"
                 aria-label={t('nav.themeAria')}
               >
                 {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -147,14 +147,14 @@ export function Navbar() {
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-accent/5 transition-colors"
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-primary/5 transition-colors"
                     aria-label={displayName || t('nav.userMenu')}
                   >
-                    <div className="w-7 h-7 rounded-md bg-accent/10 flex items-center justify-center text-[11px] font-semibold text-accent">
+                    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center text-[11px] font-semibold text-primary">
                       {initials}
                     </div>
                     <motion.div animate={{ rotate: userMenuOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                      <ChevronDown className="w-3 h-3 text-text-tertiary dark:text-dark-text-tertiary" />
+                      <ChevronDown className="w-3 h-3 text-muted-foreground" />
                     </motion.div>
                   </motion.button>
                   <AnimatePresence>
@@ -166,9 +166,9 @@ export function Navbar() {
                         transition={{ duration: 0.15 }}
                         className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden"
                       >
-                        <div className="px-4 py-3 border-b border-border-primary dark:border-dark-border-primary">
-                          <p className="text-sm font-medium truncate">{displayName}</p>
-                          <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary truncate">{user?.email}</p>
+                        <div className="px-4 py-3 border-b border-border">
+                          <p className="text-sm font-medium truncate text-foreground">{displayName}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
                         </div>
                         <div className="p-1.5">
                           {[
@@ -180,26 +180,26 @@ export function Navbar() {
                               key={item.to}
                               to={item.to}
                               onClick={() => setUserMenuOpen(false)}
-                              className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
+                              className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-colors"
                             >
                               <item.icon className="w-3.5 h-3.5" />
                               {item.label}
                             </Link>
                           ))}
                           {isAdmin && (
-            <>
-                            <div className="my-1 border-t border-border-primary dark:border-dark-border-primary" />
-                            <Link
-                              to="/admin"
-                              onClick={() => setUserMenuOpen(false)}
-                              className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
-                            >
-                              <Shield className="w-3.5 h-3.5" />
-                              {t('nav.adminPanel')}
-                            </Link>
-                          </>
+                            <>
+                              <div className="my-1 border-t border-border" />
+                              <Link
+                                to="/admin"
+                                onClick={() => setUserMenuOpen(false)}
+                                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                <Shield className="w-3.5 h-3.5" />
+                                {t('nav.adminPanel')}
+                              </Link>
+                            </>
                           )}
-                          <div className="my-1 border-t border-border-primary dark:border-dark-border-primary" />
+                          <div className="my-1 border-t border-border" />
                           <button
                             onClick={() => { setUserMenuOpen(false); logout(); }}
                             className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
@@ -223,7 +223,7 @@ export function Navbar() {
 
           <motion.button
             whileTap={{ scale: 0.9 }}
-            className="md:hidden p-2 -mr-2"
+            className="md:hidden p-2 -mr-2 text-muted-foreground"
             onClick={() => setOpen(!open)}
             aria-label={t('nav.menu')}
           >
@@ -239,17 +239,17 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border-primary dark:border-dark-border-primary bg-bg-primary dark:bg-dark-bg-primary overflow-hidden"
+            className="md:hidden border-t border-border bg-background overflow-hidden"
           >
             <div className="px-5 py-5 space-y-3">
               {isAuthenticated && (
-                <div className="flex items-center gap-3 px-1 pb-3 border-b border-border-primary dark:border-dark-border-primary">
-                  <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center text-xs font-semibold text-accent">
+                <div className="flex items-center gap-3 px-1 pb-3 border-b border-border">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                     {initials}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{displayName}</p>
-                    <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">{user?.email}</p>
+                    <p className="text-sm font-medium text-foreground">{displayName}</p>
+                    <p className="text-[11px] text-muted-foreground">{user?.email}</p>
                   </div>
                 </div>
               )}
@@ -258,7 +258,7 @@ export function Navbar() {
                   key={l.href}
                   href={l.href}
                   onClick={() => setOpen(false)}
-                  className="block text-sm py-2 px-3 rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary transition-colors"
+                  className="block text-sm py-2 px-3 rounded-lg hover:bg-primary/5 text-muted-foreground transition-colors"
                 >
                   {l.label}
                 </a>
@@ -266,7 +266,7 @@ export function Navbar() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-                className="flex items-center gap-3 w-full text-sm py-2 px-3 rounded-lg hover:bg-accent/5 text-text-secondary dark:text-dark-text-secondary transition-colors"
+                className="flex items-center gap-3 w-full text-sm py-2 px-3 rounded-lg hover:bg-primary/5 text-muted-foreground transition-colors"
               >
                 {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 {resolved === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}

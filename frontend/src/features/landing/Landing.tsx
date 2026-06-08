@@ -57,7 +57,7 @@ function SectionHeading({ children, className = '' }: { children: React.ReactNod
 
 function SectionSubtitle({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-4 text-base sm:text-lg text-text-secondary dark:text-dark-text-secondary max-w-xl mx-auto text-balance">
+    <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto text-balance">
       {children}
     </p>
   );
@@ -134,22 +134,22 @@ function DashboardPreview() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="relative rounded-2xl card-border overflow-hidden bg-bg-primary dark:bg-dark-bg-secondary shadow-xl shadow-black/5 dark:shadow-black/20"
+        className="relative rounded-2xl card-border overflow-hidden bg-background dark:bg-muted shadow-xl shadow-black/5 dark:shadow-black/20"
       >
-        <div className="flex items-center gap-1.5 px-5 py-3 border-b border-border-primary dark:border-dark-border-primary bg-bg-secondary dark:bg-dark-bg-tertiary/50">
+        <div className="flex items-center gap-1.5 px-5 py-3 border-b border-border bg-muted dark:bg-dark-bg-tertiary/50">
           <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
           <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
           <div className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
-          <span className="ml-3 text-[11px] text-text-tertiary dark:text-dark-text-tertiary font-mono">{t('landing.dashboard')}</span>
+          <span className="ml-3 text-[11px] text-muted-foreground font-mono">{t('landing.dashboard')}</span>
         </div>
         <div className="p-5 sm:p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wider font-medium">{t('landing.goodMorning')}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{t('landing.goodMorning')}</p>
               <p className="text-lg font-semibold tracking-tight mt-0.5">{t('landing.welcomeBack')}</p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-[11px] font-medium">{t('billing.free')}</div>
+              <div className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-[11px] font-medium">{t('billing.free')}</div>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3 mb-6">
@@ -164,9 +164,9 @@ function DashboardPreview() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 + i * 0.08 }}
-                className="rounded-xl card-border bg-bg-primary dark:bg-dark-bg-secondary p-4"
+                className="rounded-xl card-border bg-background dark:bg-muted p-4"
               >
-                <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wider">{stat.label}</p>
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
                 <p className="text-2xl font-bold tracking-tight mt-1">{stat.value}</p>
               </motion.div>
             ))}
@@ -179,10 +179,10 @@ function DashboardPreview() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.5 + i * 0.06 }}
-                className="rounded-xl card-border bg-bg-primary dark:bg-dark-bg-secondary p-4 hover:border-accent/20 transition-colors cursor-default"
+                className="rounded-xl card-border bg-background dark:bg-muted p-4 hover:border-primary/20 transition-colors cursor-default"
               >
                 <p className="text-[13px] font-medium">{item}</p>
-                <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary mt-0.5">{t('landing.startFree')}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{t('landing.startFree')}</p>
               </motion.div>
             ))}
           </div>
@@ -201,13 +201,13 @@ export function Landing() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* ===== HERO ===== */}
       <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.02] to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent" />
           <div className="absolute inset-0" style={{
             backgroundImage: `
               radial-gradient(circle at 20% 40%, rgba(212,175,55,0.06) 0%, transparent 50%),
@@ -238,7 +238,7 @@ export function Landing() {
               <span className="accent-gradient inline-block mt-2">{t('landing.heroTitle2')}</span>
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-text-secondary dark:text-dark-text-secondary max-w-2xl mx-auto mb-10 text-balance leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 text-balance leading-relaxed">
               {t('landing.heroDesc')}
             </p>
 
@@ -269,7 +269,7 @@ export function Landing() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 0.6 }}
-              className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-text-tertiary dark:text-dark-text-tertiary"
+              className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground"
             >
               <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> {t('landing.trustEncrypted')}</span>
               <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> {t('landing.trustRealtime')}</span>
@@ -283,7 +283,7 @@ export function Landing() {
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
         >
-          <ChevronDown className="w-4 h-4 text-text-tertiary dark:text-dark-text-tertiary" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
         </motion.div>
       </section>
 
@@ -292,10 +292,10 @@ export function Landing() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="py-8 border-b border-border-primary dark:border-dark-border-primary bg-bg-secondary/50 dark:bg-dark-bg-secondary/30"
+        className="py-8 border-b border-border bg-muted/50 dark:bg-muted/30"
       >
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[11px] text-text-tertiary dark:text-dark-text-tertiary">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> {t('landing.trustEncrypted')}</span>
             <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> {t('landing.trustRealtime')}</span>
             <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {t('landing.trustUsers')}</span>
@@ -307,7 +307,7 @@ export function Landing() {
       </motion.section>
 
       {/* ===== METRICS ===== */}
-      <section className="py-20 border-y border-border-primary dark:border-dark-border-primary">
+      <section className="py-20 border-y border-border">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
@@ -324,10 +324,10 @@ export function Landing() {
                 transition={{ delay: i * 0.1, duration: 0.5 }}
                 className="text-center"
               >
-                <div className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-text-primary dark:text-dark-text-primary">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
                   <AnimatedCounter to={stat.value} suffix={stat.suffix} duration={2} delay={i * 0.2} />
                 </div>
-                <p className="mt-1.5 text-xs sm:text-sm text-text-tertiary dark:text-dark-text-tertiary font-medium tracking-wide">
+                <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground font-medium tracking-wide">
                   {stat.label}
                 </p>
               </motion.div>
@@ -352,13 +352,13 @@ export function Landing() {
               <motion.div
                 key={i}
                 variants={staggerItem}
-                className="card-border card-hover rounded-xl p-6 bg-bg-primary dark:bg-dark-bg-secondary"
+                className="card-border card-hover rounded-xl p-6 bg-background dark:bg-muted"
               >
-                <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
-                  <f.icon className="w-4.5 h-4.5 text-accent" />
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                  <f.icon className="w-4.5 h-4.5 text-primary" />
                 </div>
                 <h3 className="text-base font-semibold tracking-tight mb-2">{t(f.titleKey as TranslationKey)}</h3>
-                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">{t(f.descKey as TranslationKey)}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{t(f.descKey as TranslationKey)}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -366,7 +366,7 @@ export function Landing() {
       </section>
 
       {/* ===== TRUST & SECURITY ===== */}
-      <section className="section-padding bg-bg-primary dark:bg-dark-bg-primary">
+      <section className="section-padding bg-background">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-14">
             <SectionTag>{t('landing.security')}</SectionTag>
@@ -380,12 +380,12 @@ export function Landing() {
               { icon: Zap, titleKey: 'landing.securityAutoCleanup' as const, descKey: 'landing.securityAutoCleanupDesc' as const },
               { icon: Globe, titleKey: 'landing.securityGdpr' as const, descKey: 'landing.securityGdprDesc' as const },
             ].map((item, i) => (
-              <motion.div key={i} variants={staggerItem} className="card-border rounded-xl p-5 bg-bg-primary dark:bg-dark-bg-secondary text-center">
-                <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <item.icon className="w-5 h-5 text-accent" />
+              <motion.div key={i} variants={staggerItem} className="card-border rounded-xl p-5 bg-background dark:bg-muted text-center">
+                <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <item.icon className="w-5 h-5 text-primary" />
                 </div>
                 <h3 className="text-sm font-semibold mb-1">{t(item.titleKey)}</h3>
-                <p className="text-xs text-text-secondary dark:text-dark-text-secondary leading-relaxed">{t(item.descKey)}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t(item.descKey)}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -393,7 +393,7 @@ export function Landing() {
       </section>
 
       {/* ===== PRODUCT SHOWCASE ===== */}
-      <section className="section-padding bg-bg-secondary dark:bg-dark-bg-secondary/50 border-y border-border-primary dark:border-dark-border-primary">
+      <section className="section-padding bg-muted dark:bg-muted/50 border-y border-border">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-16">
             <SectionTag>{t('landing.dashboard')}</SectionTag>
@@ -423,19 +423,19 @@ export function Landing() {
               <motion.div
                 key={i}
                 variants={staggerItem}
-                className="card-border rounded-xl p-6 bg-bg-primary dark:bg-dark-bg-secondary"
+                className="card-border rounded-xl p-6 bg-background dark:bg-muted"
               >
-                <Quote className="w-5 h-5 text-accent/40 mb-3" />
-                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed mb-5">
+                <Quote className="w-5 h-5 text-primary/40 mb-3" />
+                <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                   &ldquo;{t(item.textKey)}&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-semibold text-accent">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                     {item.initials}
                   </div>
                   <div>
                     <p className="text-sm font-medium leading-tight">{t(item.nameKey)}</p>
-                    <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">{t(item.roleKey)}</p>
+                    <p className="text-[11px] text-muted-foreground">{t(item.roleKey)}</p>
                   </div>
                 </div>
               </motion.div>
@@ -448,10 +448,10 @@ export function Landing() {
       <PricingSection />
 
       {/* ===== PRESS MENTIONS ===== */}
-      <section className="section-padding bg-bg-primary dark:bg-dark-bg-primary">
+      <section className="section-padding bg-background">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 text-center">
           <motion.div {...fadeUp}>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-text-tertiary dark:text-dark-text-tertiary font-bold mb-8">{t('landing.pressAsFeatured')}</p>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-bold mb-8">{t('landing.pressAsFeatured')}</p>
             <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
               {['Astrology Today', 'Vedic Wisdom', 'TechCrunch', 'Product Hunt', 'Spiritual AI'].map((name, i) => (
                 <motion.div
@@ -460,7 +460,7 @@ export function Landing() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.08 }}
-                  className="text-base sm:text-lg font-bold tracking-tight text-text-tertiary/40 dark:text-dark-text-tertiary/40 hover:text-text-tertiary/60 dark:hover:text-dark-text-tertiary/60 transition-colors cursor-default"
+                  className="text-base sm:text-lg font-bold tracking-tight text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors cursor-default"
                 >
                   {name}
                 </motion.div>
@@ -471,7 +471,7 @@ export function Landing() {
       </section>
 
       {/* ===== FAQ ===== */}
-      <section id="faq" className="section-padding bg-bg-secondary dark:bg-dark-bg-secondary/50 border-y border-border-primary dark:border-dark-border-primary">
+      <section id="faq" className="section-padding bg-muted dark:bg-muted/50 border-y border-border">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div {...fadeUp} className="text-center mb-16">
             <SectionTag>{t('landing.faq')}</SectionTag>
@@ -481,7 +481,7 @@ export function Landing() {
             </SectionSubtitle>
           </motion.div>
 
-          <div className="divide-y divide-border-primary dark:divide-dark-border-primary">
+          <div className="divide-y divide-border">
             {faqs.map((item, i) => (
               <FaqItem key={i} question={t(item.qKey)} answer={t(item.aKey)} index={i} />
             ))}
@@ -495,7 +495,7 @@ export function Landing() {
           <motion.div {...fadeUp}>
             <SectionTag>{t('landing.startFree')}</SectionTag>
             <SectionHeading className="mb-4">{t('landing.ctaTitle')}</SectionHeading>
-            <p className="text-base sm:text-lg text-text-secondary dark:text-dark-text-secondary mb-8 max-w-md mx-auto text-balance">
+            <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-md mx-auto text-balance">
               {t('landing.ctaDesc')}
             </p>
             {isAuthenticated ? (
@@ -519,9 +519,9 @@ export function Landing() {
       <section id="testimonials" className="py-24 relative" {...fadeUp}>
         <div className="max-w-6xl mx-auto px-5">
           <div className="text-center mb-14">
-            <span className="text-accent text-[11px] font-bold uppercase tracking-[0.2em]">{t('landing.testimonials')}</span>
+            <span className="text-primary text-[11px] font-bold uppercase tracking-[0.2em]">{t('landing.testimonials')}</span>
             <h2 className="font-sans text-3xl md:text-4xl font-bold mt-3 mb-4">{t('landing.testimonials2Title')}</h2>
-            <p className="text-text-secondary dark:text-dark-text-secondary text-sm max-w-xl mx-auto">{t('landing.testimonials2Desc')}</p>
+            <p className="text-muted-foreground text-sm max-w-xl mx-auto">{t('landing.testimonials2Desc')}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6" {...stagger}>
             {[
@@ -532,14 +532,14 @@ export function Landing() {
               { nameKey: 'landing.testimonial8Name' as TranslationKey, roleKey: 'landing.testimonial8Role' as TranslationKey, locationKey: 'landing.testimonial8Location' as TranslationKey, textKey: 'landing.testimonial8Text' as TranslationKey, rating: 5 },
               { nameKey: 'landing.testimonial9Name' as TranslationKey, roleKey: 'landing.testimonial9Role' as TranslationKey, locationKey: 'landing.testimonial9Location' as TranslationKey, textKey: 'landing.testimonial9Text' as TranslationKey, rating: 5 },
             ].map((item, i) => (
-              <motion.div key={i} variants={staggerItem} className="p-6 rounded-2xl border border-border-primary dark:border-dark-border-primary bg-bg-primary dark:bg-dark-bg-primary">
+              <motion.div key={i} variants={staggerItem} className="p-6 rounded-2xl border border-border bg-background">
                 <div className="flex gap-1 mb-3">
-                  {[...Array(item.rating)].map((_, j) => (<Star key={j} className="w-3.5 h-3.5 fill-accent text-accent" />))}
+                  {[...Array(item.rating)].map((_, j) => (<Star key={j} className="w-3.5 h-3.5 fill-primary text-primary" />))}
                 </div>
-                <p className="text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed mb-4">"{t(item.textKey)}"</p>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">"{t(item.textKey)}"</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-semibold text-accent">{t(item.nameKey).split(' ').map((n: string) => n[0]).join('')}</div>
-                  <div><p className="text-sm font-medium">{t(item.nameKey)}</p><p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">{t(item.roleKey)} · {t(item.locationKey)}</p></div>
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">{t(item.nameKey).split(' ').map((n: string) => n[0]).join('')}</div>
+                  <div><p className="text-sm font-medium">{t(item.nameKey)}</p><p className="text-[11px] text-muted-foreground">{t(item.roleKey)} · {t(item.locationKey)}</p></div>
                 </div>
               </motion.div>
             ))}
@@ -568,7 +568,7 @@ function FaqItem({ question, answer, index }: { question: string; answer: string
       >
         <span className="text-sm sm:text-base font-medium pr-4">{question}</span>
         <ChevronDown
-          className={`w-4 h-4 shrink-0 text-text-tertiary dark:text-dark-text-tertiary transition-transform duration-300 ${
+          className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-300 ${
             open ? 'rotate-180' : ''
           }`}
         />
@@ -582,7 +582,7 @@ function FaqItem({ question, answer, index }: { question: string; answer: string
         transition={{ duration: 0.3, ease: easeOut }}
         className="overflow-hidden"
       >
-        <p className="pb-5 text-sm text-text-secondary dark:text-dark-text-secondary leading-relaxed">
+        <p className="pb-5 text-sm text-muted-foreground leading-relaxed">
           {answer}
         </p>
       </motion.div>
@@ -659,7 +659,7 @@ function PricingSection() {
         <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
           <motion.span
             animate={{ color: yearly ? 'var(--tw-text-tertiary)' : 'var(--tw-text-primary)' }}
-            className="text-sm text-text-primary dark:text-dark-text-primary font-medium"
+            className="text-sm text-foreground font-medium"
           >
             {t('pricing.monthly')}
           </motion.span>
@@ -670,12 +670,12 @@ function PricingSection() {
             <motion.div
               animate={{ x: yearly ? 24 : 2 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="absolute top-1 w-4 h-4 rounded-full bg-accent shadow-sm"
+              className="absolute top-1 w-4 h-4 rounded-full bg-primary shadow-sm"
             />
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-text-primary dark:text-dark-text-primary font-medium">{t('pricing.yearly')}</span>
-            <span className="px-2 py-0.5 text-[10px] font-medium bg-accent/10 text-accent border border-accent/20 rounded-full">
+            <span className="text-sm text-foreground font-medium">{t('pricing.yearly')}</span>
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-primary/10 text-primary border border-primary/20 rounded-full">
               {t('pricing.savePercent')}
             </span>
           </div>
@@ -685,11 +685,11 @@ function PricingSection() {
           <div className="relative">
             <button
               onClick={() => setShowCountryPicker(!showCountryPicker)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border-primary dark:border-dark-border-primary hover:border-accent/30 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border hover:border-primary/30 transition-colors"
             >
               <Globe className="w-3.5 h-3.5" />
               <span>{localConfig.flag} {currencyInfo.code}</span>
-              <span className="text-text-tertiary">{currencyInfo.symbol}</span>
+              <span className="text-muted-foreground">{currencyInfo.symbol}</span>
             </button>
             <AnimatePresence>
               {showCountryPicker && (
@@ -698,19 +698,19 @@ function PricingSection() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-56 max-h-72 overflow-y-auto card-border rounded-xl premium-shadow z-50 bg-bg-primary dark:bg-dark-bg-primary"
+                  className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-56 max-h-72 overflow-y-auto card-border rounded-xl premium-shadow z-50 bg-background"
                 >
                   {Object.entries(REGIONAL_PRICING).map(([code, cfg]) => (
                     <button
                       key={code}
                       onClick={() => handleCountryChange(code)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-accent/5 ${
-                        code === effectiveCountry ? 'bg-accent/10 text-accent font-medium' : 'text-text-secondary'
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-primary/5 ${
+                        code === effectiveCountry ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground'
                       }`}
                     >
                       <span className="text-base">{cfg.flag}</span>
                       <span className="flex-1 text-left">{cfg.currency.code}</span>
-                      <span className="text-xs text-text-tertiary">{cfg.currency.symbol}</span>
+                      <span className="text-xs text-muted-foreground">{cfg.currency.symbol}</span>
                     </button>
                   ))}
                 </motion.div>
@@ -720,10 +720,10 @@ function PricingSection() {
         </div>
 
         <div className="flex items-center justify-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-accent/5 border border-accent/10 text-accent">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-primary/5 border border-primary/10 text-primary">
             <span>{localConfig.flag}</span>
             <span className="font-medium">{getCountryName(effectiveCountry)}</span>
-            <span className="w-1 h-1 rounded-full bg-accent/30" />
+            <span className="w-1 h-1 rounded-full bg-primary/30" />
             <span>Prices in {currencyInfo.code} ({currencyInfo.symbol})</span>
           </div>
         </div>
@@ -742,22 +742,22 @@ function PricingSection() {
                 whileHover={{ y: -4 }}
                 className={`relative rounded-xl p-6 flex flex-col transition-all duration-300 ${
                   plan.highlighted
-                    ? 'card-border bg-accent/5 dark:bg-dark-accent-subtle border-accent/30 dark:border-dark-accent/30 shadow-sm'
-                    : 'card-border bg-bg-primary dark:bg-dark-bg-secondary'
+                    ? 'card-border bg-primary/5 dark:bg-primary/10 border-primary/30 dark:border-primary/30 shadow-sm'
+                    : 'card-border bg-background dark:bg-muted'
                 }`}
               >
                 {plan.highlighted && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-accent text-white text-[10px] font-medium rounded-full whitespace-nowrap shadow-sm"
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-white text-[10px] font-medium rounded-full whitespace-nowrap shadow-sm"
                   >
                     {t('pricing.mostPopular')}
                   </motion.span>
                 )}
 
                 <h3 className="text-lg font-semibold tracking-tight mb-1">{t('billing.' + plan.name.toLowerCase() as TranslationKey)}</h3>
-                <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary mb-5 min-h-[2rem]">{plan.desc || t('pricing.planDescription')}</p>
+                <p className="text-xs text-muted-foreground mb-5 min-h-[2rem]">{plan.desc || t('pricing.planDescription')}</p>
 
                 <div className="mb-5">
                   <AnimatePresence mode="wait">
@@ -773,7 +773,7 @@ function PricingSection() {
                         {monthlyPrice === 0 ? t('billing.free') : formatPrice(displayPrice, plan.currency, currencyInfo.locale)}
                       </span>
                       {monthlyPrice > 0 && (
-                        <span className="text-xs text-text-tertiary dark:text-dark-text-tertiary ml-1">
+                        <span className="text-xs text-muted-foreground ml-1">
                           /{yearly ? t('pricing.perYear') : t('pricing.perMonth')}
                         </span>
                       )}
@@ -784,8 +784,8 @@ function PricingSection() {
                 <ul className="flex-1 space-y-2.5 mb-6">
                   {(plan.features || []).map((f: string, j: number) => (
                     <li key={j} className="flex items-start gap-2 text-xs sm:text-sm">
-                      <Check className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
-                      <span className="text-text-secondary dark:text-dark-text-secondary">{f}</span>
+                      <Check className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                      <span className="text-muted-foreground">{f}</span>
                     </li>
                   ))}
                 </ul>

@@ -5,7 +5,7 @@ import {
   Moon, Sun, Heart, MessageCircle, ArrowRight, Sparkles, Star, Zap,
   Flame, Clock, User, Shield, Crown, CalendarDays,
   Gem, Palette, Hash, Globe, ChevronRight, AlertCircle, Orbit, Compass,
-  Layers, Sunrise, ArrowUp, ArrowDown, Wind
+  Layers, Sunrise, ArrowUp, ArrowDown, Wind,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
@@ -15,6 +15,10 @@ import { useAuthStore } from '@/lib/store';
 import { useT } from '@/lib/i18n/useT';
 import { usePersonalDashboard } from './components/usePersonalDashboard';
 import { useStreak } from '@/lib/useStreak';
+import { StatCard } from '@/components/astrology/StatCard';
+import { ScoreRing } from '@/components/astrology/ScoreRing';
+import { PlanetCard } from '@/components/astrology/PlanetCard';
+import { HoroscopeCard } from '@/components/astrology/HoroscopeCard';
 import type { PersonalDashboardData } from '@shared/types/api';
 
 const stagger = {
@@ -44,35 +48,16 @@ function safeFormatDate(dateStr: string | null | undefined): string {
   }
 }
 
-function ScoreRing({ value, label, color }: { value: number | null | undefined; label: string; color: string }) {
-  const safeVal = typeof value === 'number' && !isNaN(value) ? value : 0;
-  const r = 28;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (safeVal / 100) * circ;
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <svg width="64" height="64" viewBox="0 0 64 64" className="transform -rotate-90">
-        <circle cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeWidth="4" className="text-white/5" />
-        <circle cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeWidth="4"
-          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-          className={color} style={{ transition: 'stroke-dashoffset 1s ease' }} />
-      </svg>
-      <span className="text-lg font-bold font-sans text-text-primary dark:text-dark-text-primary -mt-10">{value != null ? safeVal : '—'}</span>
-      <span className="text-[11px] font-sans uppercase tracking-wider text-text-secondary dark:text-dark-text-secondary">{label}</span>
-    </div>
-  );
-}
-
 function Shimmer({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-white/5 ${className}`} />;
+  return <div className={`animate-pulse rounded-lg bg-muted ${className}`} />;
 }
 
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
       <Shimmer className="h-10 w-64" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[1,2,3,4].map(i => <Shimmer key={i} className="h-28" />)}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[1, 2, 3, 4].map((i) => <Shimmer key={i} className="h-28" />)}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Shimmer className="h-64" />
@@ -80,6 +65,65 @@ function DashboardSkeleton() {
       </div>
     </div>
   );
+}
+
+function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-2.5">
+      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10">
+        <Icon className="h-3 w-3 text-primary" />
+      </div>
+      <h2 className="text-sm font-semibold tracking-tight text-foreground">{title}</h2>
+    </div>
+  );
+}
+
+function InsightCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: string }) {
+  return (
+    <motion.div variants={itemAnim}>
+      <PremiumCard glass>
+        <div className="flex items-center gap-2.5">
+          <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${color}`}>
+            <Icon className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">{label}</p>
+            <p className="text-sm font-bold text-foreground">{value}</p>
+          </div>
+        </div>
+      </PremiumCard>
+    </motion.div>
+  );
+}
+
+function ActionCard({ to, icon: Icon, label, desc, color }: { to: string; icon: any; label: string; desc: string; color: string }) {
+  return (
+    <motion.div variants={itemAnim}>
+      <Link to={to}>
+        <PremiumCard hover glass className="group">
+          <div className="flex items-center gap-3">
+            <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${color}`}>
+              <Icon className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-foreground transition-colors group-hover:text-primary">{label}</p>
+              <p className="text-[10px] text-muted-foreground">{desc}</p>
+            </div>
+          </div>
+        </PremiumCard>
+      </Link>
+    </motion.div>
+  );
+}
+
+function FileIcon({ type }: { type: string }) {
+  switch (type) {
+    case 'vedic_profile': return <Star className="h-3 w-3 text-primary" />;
+    case 'daily_horoscope': return <Sun className="h-3 w-3 text-amber-400" />;
+    case 'compatibility': return <Heart className="h-3 w-3 text-pink-400" />;
+    case 'moon_phase': return <Moon className="h-3 w-3 text-blue-400" />;
+    default: return <Sparkles className="h-3 w-3 text-muted-foreground" />;
+  }
 }
 
 export function DashboardHome() {
@@ -114,27 +158,25 @@ export function DashboardHome() {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center">
-            <greeting.icon className="w-6 h-6 text-accent" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+            <greeting.icon className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">
-              {greeting.key}
-            </h1>
-            <p className="text-text-secondary dark:text-dark-text-secondary mt-1">Welcome to your cosmic dashboard</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{greeting.key}</h1>
+            <p className="mt-1 text-muted-foreground">Welcome to your cosmic dashboard</p>
           </div>
         </div>
         <PremiumCard glass className="text-center py-12">
-          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
-            <Star className="w-8 h-8 text-accent" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <Star className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-xl font-sans font-bold mb-2">Set Up Your Birth Chart</h2>
-          <p className="text-text-secondary dark:text-dark-text-secondary max-w-md mx-auto mb-6 text-sm">
+          <h2 className="mb-2 text-xl font-bold">Set Up Your Birth Chart</h2>
+          <p className="mx-auto mb-6 max-w-md text-sm text-muted-foreground">
             Enter your birth details to unlock personalized horoscopes, planetary positions,
             Dasha periods, and cosmic insights tailored to your unique chart.
           </p>
           <Link to="/dashboard/settings">
-            <PremiumButton icon={<User className="w-4 h-4" />}>Add Birth Details</PremiumButton>
+            <PremiumButton icon={<User className="h-4 w-4" />}>Add Birth Details</PremiumButton>
           </Link>
         </PremiumCard>
       </motion.div>
@@ -145,16 +187,16 @@ export function DashboardHome() {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center">
-            <greeting.icon className="w-6 h-6 text-accent" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+            <greeting.icon className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-sans font-bold">{greeting.key}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">{greeting.key}</h1>
           </div>
         </div>
         <PremiumCard glass className="!border-red-500/30">
           <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+            <AlertCircle className="h-5 w-5 shrink-0 text-red-400" />
             <p className="text-sm text-red-400">{dashError}</p>
           </div>
         </PremiumCard>
@@ -173,20 +215,18 @@ export function DashboardHome() {
         <motion.div
           animate={{ rotate: [0, 5, 0, -5, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10"
         >
-          <greeting.icon className="w-6 h-6 text-accent" />
+          <greeting.icon className="h-6 w-6 text-primary" />
         </motion.div>
         <div className="min-w-0">
-          <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-text-primary dark:text-dark-text-primary">
-            {greeting.key}
-          </h1>
-          <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-0.5 flex items-center gap-2 flex-wrap">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{greeting.key}</h1>
+          <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span>{snapshot.moonRashi || '—'} &middot; {snapshot.nakshatra || '—'}</span>
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
               <>
-                <span className="w-1 h-1 rounded-full bg-accent/40" />
-                <span className="text-accent text-[10px] font-semibold uppercase tracking-wider">{sub.data.plan}</span>
+                <span className="h-1 w-1 rounded-full bg-primary/40" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{sub.data.plan}</span>
               </>
             )}
           </p>
@@ -196,14 +236,26 @@ export function DashboardHome() {
       {/* Section 1: Astrology Profile */}
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={User} title="Your Astrology Profile" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5">
-          <ProfileCard label="Moon Sign (Rashi)" value={snapshot.moonRashi || '—'} icon={Moon} color="text-blue-400" />
-          <ProfileCard label="Birth Star" value={snapshot.nakshatra && snapshot.nakshatraLord ? `${snapshot.nakshatra} — ${snapshot.nakshatraLord}` : '—'} icon={Star} color="text-purple-400" />
-          <ProfileCard label="Ascendant" value={snapshot.ascendant || '—'} icon={Sun} color="text-amber-400" />
-          <ProfileCard label="Lagna Lord" value={snapshot.lagnaLord || '—'} icon={Shield} color="text-rose-400" />
-          <ProfileCard label="Lunar Day (Tithi)" value={tithi?.name ? `${tithi.name} (${tithi.paksha || '—'})` : '—'} icon={CalendarDays} color="text-sky-400" />
-          <ProfileCard label="Yoga" value={yoga?.name || '—'} icon={Compass} color="text-cyan-400" />
-          <ProfileCard label="Moon Phase" value={moonPhase ? `${moonPhase.phaseName} ${moonPhase.illumination}%` : '—'} icon={Layers} color="text-indigo-400" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          <StatCard icon={<Moon className="h-4 w-4 text-blue-400" />} label="Moon Sign (Rashi)" value={snapshot.moonRashi || '—'} />
+          <StatCard
+            icon={<Star className="h-4 w-4 text-purple-400" />}
+            label="Birth Star"
+            value={snapshot.nakshatra && snapshot.nakshatraLord ? `${snapshot.nakshatra} — ${snapshot.nakshatraLord}` : '—'}
+          />
+          <StatCard icon={<Sun className="h-4 w-4 text-amber-400" />} label="Ascendant" value={snapshot.ascendant || '—'} />
+          <StatCard icon={<Shield className="h-4 w-4 text-rose-400" />} label="Lagna Lord" value={snapshot.lagnaLord || '—'} />
+          <StatCard
+            icon={<CalendarDays className="h-4 w-4 text-sky-400" />}
+            label="Lunar Day (Tithi)"
+            value={tithi?.name ? `${tithi.name} (${tithi.paksha || '—'})` : '—'}
+          />
+          <StatCard icon={<Compass className="h-4 w-4 text-cyan-400" />} label="Yoga" value={yoga?.name || '—'} />
+          <StatCard
+            icon={<Layers className="h-4 w-4 text-indigo-400" />}
+            label="Moon Phase"
+            value={moonPhase ? `${moonPhase.phaseName} ${moonPhase.illumination}%` : '—'}
+          />
         </div>
       </motion.div>
 
@@ -211,38 +263,32 @@ export function DashboardHome() {
       <motion.div variants={stagger} initial="initial" animate="animate" className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <SectionHeader icon={Sparkles} title="Today's Horoscope" />
-          <PremiumCard glass>
-            <p className="text-sm text-text-primary dark:text-dark-text-primary leading-relaxed mb-4">
-              {horoscope.prediction || 'The stars are aligning in your favor today.'}
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              <ScoreRing value={horoscope.love} label="Love" color="text-pink-400" />
-              <ScoreRing value={horoscope.career} label="Career" color="text-blue-400" />
-              <ScoreRing value={horoscope.health} label="Health" color="text-emerald-400" />
-              <ScoreRing value={horoscope.finance} label="Wealth" color="text-amber-400" />
-            </div>
-            <div className="mt-3 pt-3 border-t border-white/5">
-              <p className="text-xs text-text-secondary dark:text-dark-text-secondary italic">"{horoscope.dailyAdvice || 'Stay mindful of the cosmic energies today.'}"</p>
-            </div>
-          </PremiumCard>
+          <HoroscopeCard
+            prediction={horoscope.prediction}
+            dailyAdvice={horoscope.dailyAdvice}
+            love={horoscope.love}
+            career={horoscope.career}
+            health={horoscope.health}
+            finance={horoscope.finance}
+          />
         </div>
         <div>
           <SectionHeader icon={Zap} title="Cosmic Energy" />
-          <PremiumCard glass className="text-center h-full flex flex-col items-center justify-center">
-            <div className={`text-5xl font-bold font-sans mb-1 ${
+          <PremiumCard glass className="flex h-full flex-col items-center justify-center text-center">
+            <div className={`mb-1 text-5xl font-bold ${
               cosmicEnergy.level === 'Excellent' ? 'text-emerald-400' :
               cosmicEnergy.level === 'High' ? 'text-blue-400' :
               cosmicEnergy.level === 'Moderate' ? 'text-amber-400' : 'text-red-400'
             }`}>{cosmicEnergy.score ?? '—'}</div>
-            <div className="text-xs uppercase tracking-wider font-semibold text-text-secondary dark:text-dark-text-secondary mb-2">{cosmicEnergy.level || '—'}</div>
-            <div className="w-full bg-white/5 rounded-full h-1.5 mb-2">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{cosmicEnergy.level || '—'}</div>
+            <div className="mb-2 h-1.5 w-full rounded-full bg-muted">
               <div className={`h-1.5 rounded-full transition-all duration-1000 ${
-                (cosmicEnergy.level || '') === 'Excellent' ? 'bg-emerald-400 w-11/12' :
-                (cosmicEnergy.level || '') === 'High' ? 'bg-blue-400 w-3/4' :
-                (cosmicEnergy.level || '') === 'Moderate' ? 'bg-amber-400 w-1/2' : 'bg-red-400 w-1/4'
+                cosmicEnergy.level === 'Excellent' ? 'w-11/12 bg-emerald-400' :
+                cosmicEnergy.level === 'High' ? 'w-3/4 bg-blue-400' :
+                cosmicEnergy.level === 'Moderate' ? 'w-1/2 bg-amber-400' : 'w-1/4 bg-red-400'
               }`} />
             </div>
-            <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">{cosmicEnergy.description || '—'}</p>
+            <p className="text-[10px] text-muted-foreground">{cosmicEnergy.description || '—'}</p>
           </PremiumCard>
         </div>
       </motion.div>
@@ -251,30 +297,18 @@ export function DashboardHome() {
       {planets && planets.length > 0 && (
         <motion.div variants={stagger} initial="initial" animate="animate">
           <SectionHeader icon={Orbit} title="Planetary Positions" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {planets.slice(0, 9).map((p, i) => (
               <motion.div key={p.name} variants={itemAnim}>
-                <PremiumCard glass>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold font-sans text-text-primary">{p.name || '—'}</span>
-                    <span className={`text-[10px] font-mono font-bold ${
-                      ['Mars','Sun'].some(s => p.name?.includes(s)) ? 'text-red-400' :
-                      ['Venus'].some(s => p.name?.includes(s)) ? 'text-pink-400' :
-                      ['Jupiter'].some(s => p.name?.includes(s)) ? 'text-amber-400' :
-                      ['Saturn'].some(s => p.name?.includes(s)) ? 'text-indigo-400' :
-                      ['Moon'].some(s => p.name?.includes(s)) ? 'text-blue-400' :
-                      ['Mercury'].some(s => p.name?.includes(s)) ? 'text-emerald-400' : 'text-text-secondary'
-                    }`}>{p.sign || '—'}</span>
-                  </div>
-                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
-                    {p.signFull?.split('(')[1]?.replace(')','') || p.signFull || '—'}
-                    &nbsp;&middot;&nbsp;House {p.house ?? '—'}
-                    &nbsp;&middot;&nbsp;{p.degrees ?? '—'}°{p.minutes ?? '—'}'
-                  </p>
-                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary mt-1.5 italic leading-tight border-t border-white/5 pt-1.5">
-                    {p.interpretation || '—'}
-                  </p>
-                </PremiumCard>
+                <PlanetCard
+                  name={p.name || '—'}
+                  sign={p.sign || '—'}
+                  signFull={p.signFull}
+                  house={p.house}
+                  degrees={p.degrees}
+                  minutes={p.minutes}
+                  interpretation={p.interpretation}
+                />
               </motion.div>
             ))}
           </div>
@@ -285,16 +319,16 @@ export function DashboardHome() {
       {transitAlerts && transitAlerts.length > 0 && (
         <motion.div variants={stagger} initial="initial" animate="animate">
           <SectionHeader icon={CalendarDays} title="Upcoming Transits" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {transitAlerts.slice(0, 4).map((alert, i) => (
               <motion.div key={i} variants={itemAnim}>
                 <PremiumCard glass>
-                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary font-mono">{safeFormatDate(alert.date)}</p>
-                  <p className={`text-xs font-semibold font-sans mt-0.5 ${
+                  <p className="text-[10px] font-mono text-muted-foreground">{safeFormatDate(alert.date)}</p>
+                  <p className={`mt-0.5 text-xs font-semibold ${
                     alert.impact === 'positive' ? 'text-emerald-400' :
                     alert.impact === 'challenging' ? 'text-red-400' : 'text-amber-400'
                   }`}>{alert.event || '—'}</p>
-                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary mt-0.5 line-clamp-2">{alert.description || '—'}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">{alert.description || '—'}</p>
                 </PremiumCard>
               </motion.div>
             ))}
@@ -309,33 +343,31 @@ export function DashboardHome() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <PremiumCard glass>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-accent" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <Shield className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">Mahadasha</p>
-                  <p className="text-base font-bold font-sans text-text-primary">{dasha.mahadasha || '—'}</p>
-                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Mahadasha</p>
+                  <p className="text-base font-bold text-foreground">{dasha.mahadasha || '—'}</p>
+                  <p className="text-[10px] text-muted-foreground">
                     {safeFormatDate(dasha.mahadashaStart)} — {safeFormatDate(dasha.mahadashaEnd)}
                     {dasha.remainingDuration ? <span className="ml-1">({dasha.remainingDuration} remaining)</span> : ''}
                   </p>
                 </div>
               </div>
               {dasha.meaning && (
-                <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary mt-2 pt-2 border-t border-white/5 italic">
-                  {dasha.meaning}
-                </p>
+                <p className="mt-2 border-t border-border pt-2 text-[10px] italic text-muted-foreground">{dasha.meaning}</p>
               )}
             </PremiumCard>
             <PremiumCard glass>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-purple-400" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
+                  <Clock className="h-5 w-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">Antardasha</p>
-                  <p className="text-base font-bold font-sans text-text-primary">{dasha.antardasha || '—'}</p>
-                  <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Antardasha</p>
+                  <p className="text-base font-bold text-foreground">{dasha.antardasha || '—'}</p>
+                  <p className="text-[10px] text-muted-foreground">
                     {safeFormatDate(dasha.antardashaStart)} — {safeFormatDate(dasha.antardashaEnd)}
                   </p>
                 </div>
@@ -348,7 +380,7 @@ export function DashboardHome() {
       {/* Section 6: Cosmic Insights */}
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={Gem} title="Cosmic Insights" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <InsightCard icon={Hash} label="Lucky Number" value={horoscope.luckyNumber != null ? `${horoscope.luckyNumber}` : '—'} color="text-amber-400" />
           <InsightCard icon={Palette} label="Lucky Color" value={horoscope.luckyColor || '—'} color="text-pink-400" />
           <InsightCard icon={Compass} label="Lucky Direction" value={horoscope.luckyDirection || '—'} color="text-blue-400" />
@@ -360,20 +392,20 @@ export function DashboardHome() {
         </div>
       </motion.div>
 
-      {/* Section 6: Quick Actions */}
+      {/* Section 7: Quick Actions */}
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={Zap} title="Quick Actions" />
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <ActionCard to="/dashboard/kundli" icon={Star} label="Birth Chart" desc="Full Kundli analysis" color="text-purple-400" />
           <ActionCard to="/dashboard/compatibility" icon={Heart} label="Compatibility" desc="Gun Milan matching" color="text-pink-400" />
           <ActionCard to="/dashboard/chat" icon={MessageCircle} label="AI Astrologer" desc="Ask any question" color="text-amber-400" />
           <ActionCard to="/dashboard/horoscope" icon={Moon} label="Horoscope" desc="Daily predictions" color="text-blue-400" />
           <ActionCard to="/dashboard/moon" icon={Moon} label="Moon Phase" desc="Lunar tracker" color="text-sky-400" />
-          <ActionCard to="/dashboard/settings" icon={User} label="Settings" desc="Update profile" color="text-accent" />
+          <ActionCard to="/dashboard/settings" icon={User} label="Settings" desc="Update profile" color="text-primary" />
         </div>
       </motion.div>
 
-      {/* Section 7: Recent Reports + Streak */}
+      {/* Section 8: Recent Reports + Streak */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <motion.div variants={stagger} initial="initial" animate="animate">
@@ -381,31 +413,29 @@ export function DashboardHome() {
             <PremiumCard glass>
               {reportsLoading ? (
                 <div className="space-y-2">
-                  {[1,2,3].map(i => <Shimmer key={i} className="h-10 w-full" />)}
+                  {[1, 2, 3].map((i) => <Shimmer key={i} className="h-10 w-full" />)}
                 </div>
               ) : reports.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-xs text-text-secondary dark:text-dark-text-secondary">No reports yet. Generate your first birth chart!</p>
+                <div className="py-4 text-center">
+                  <p className="text-xs text-muted-foreground">No reports yet. Generate your first birth chart!</p>
                   <Link to="/dashboard/kundli">
-                    <PremiumButton size="sm" className="mt-3" icon={<Star className="w-3 h-3" />}>
-                      Create Birth Chart
-                    </PremiumButton>
+                    <PremiumButton size="sm" className="mt-3" icon={<Star className="h-3 w-3" />}>Create Birth Chart</PremiumButton>
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-1">
                   {reports.slice(0, 5).map((r) => (
-                    <div key={r.id} className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-white/5 transition-colors">
+                    <div key={r.id} className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-muted">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-md bg-accent/10 flex items-center justify-center">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
                           <FileIcon type={r.type} />
                         </div>
                         <div>
-                          <p className="text-xs font-medium font-sans capitalize text-text-primary">{r.type.replace(/_/g, ' ')}</p>
-                          <p className="text-[11px] text-text-secondary dark:text-dark-text-secondary">{safeFormatDate(r.createdAt)}</p>
+                          <p className="text-xs font-medium capitalize text-foreground">{r.type.replace(/_/g, ' ')}</p>
+                          <p className="text-[11px] text-muted-foreground">{safeFormatDate(r.createdAt)}</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-3 h-3 text-text-tertiary dark:text-dark-text-tertiary" />
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
                     </div>
                   ))}
                 </div>
@@ -418,15 +448,15 @@ export function DashboardHome() {
           <motion.div variants={stagger} initial="initial" animate="animate">
             <SectionHeader icon={Flame} title="Streak" />
             <PremiumCard glass className="text-center">
-              <div className="text-5xl font-bold font-sans text-accent mb-1">{streak.currentStreak}</div>
-              <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-2">
+              <div className="mb-1 text-5xl font-bold text-primary">{streak.currentStreak}</div>
+              <p className="mb-2 text-xs text-muted-foreground">
                 {streak.currentStreak === 0 ? 'Start your cosmic journey today' :
                   `${streak.currentStreak} day${streak.currentStreak > 1 ? 's' : ''} of connection`}
               </p>
-              <div className="w-full bg-white/5 rounded-full h-1">
-                <div className="h-1 rounded-full bg-accent transition-all duration-500" style={{ width: `${Math.min(100, (streak.currentStreak / 30) * 100)}%` }} />
+              <div className="h-1 w-full rounded-full bg-muted">
+                <div className="h-1 rounded-full bg-primary transition-all duration-500" style={{ width: `${Math.min(100, (streak.currentStreak / 30) * 100)}%` }} />
               </div>
-              <p className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary mt-1.5">Best: {streak.longestStreak} days</p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">Best: {streak.longestStreak} days</p>
             </PremiumCard>
           </motion.div>
         </div>
@@ -435,20 +465,24 @@ export function DashboardHome() {
       {/* Upgrade prompt */}
       {sub?.data?.plan === 'FREE' && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <PremiumCard glow glass className="!border-accent/20 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-accent/[0.02] via-transparent to-accent/[0.02]" />
+          <PremiumCard glow glass className="!border-primary/20 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.02] via-transparent to-primary/[0.02]" />
             <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
-                <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2.5, repeat: Infinity }} className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                  <Crown className="w-5 h-5 text-accent" />
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10"
+                >
+                  <Crown className="h-5 w-5 text-primary" />
                 </motion.div>
                 <div>
-                  <h3 className="font-sans text-base font-semibold text-accent">Unlock Premium Insights</h3>
-                  <p className="text-xs text-text-secondary dark:text-dark-text-secondary">Get unlimited AI consultations, detailed Dasha analysis, and advanced chart comparisons.</p>
+                  <h3 className="text-base font-semibold text-primary">Unlock Premium Insights</h3>
+                  <p className="text-xs text-muted-foreground">Get unlimited AI consultations, detailed Dasha analysis, and advanced chart comparisons.</p>
                 </div>
               </div>
               <Link to="/pricing">
-                <PremiumButton icon={<ArrowRight className="w-3 h-3" />}>Upgrade Now</PremiumButton>
+                <PremiumButton icon={<ArrowRight className="h-3 w-3" />}>Upgrade Now</PremiumButton>
               </Link>
             </div>
           </PremiumCard>
@@ -456,81 +490,4 @@ export function DashboardHome() {
       )}
     </motion.div>
   );
-}
-
-function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
-  return (
-    <div className="flex items-center gap-2 mb-2.5">
-      <div className="w-6 h-6 rounded-lg bg-accent/10 flex items-center justify-center">
-        <Icon className="w-3 h-3 text-accent" />
-      </div>
-      <h2 className="text-sm font-sans font-semibold tracking-tight text-text-primary dark:text-dark-text-primary">{title}</h2>
-    </div>
-  );
-}
-
-function ProfileCard({ label, value, icon: Icon, color }: { label: string; value: string; icon: any; color: string }) {
-  return (
-    <motion.div variants={itemAnim}>
-      <PremiumCard glass>
-        <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${color}/10 to-transparent flex items-center justify-center ${color}`}>
-            <Icon className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{label}</p>
-            <p className="text-xs font-semibold font-sans text-text-primary truncate">{value}</p>
-          </div>
-        </div>
-      </PremiumCard>
-    </motion.div>
-  );
-}
-
-function InsightCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: string }) {
-  return (
-    <motion.div variants={itemAnim}>
-      <PremiumCard glass>
-        <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${color}/10 to-transparent flex items-center justify-center ${color}`}>
-            <Icon className="w-4 h-4" />
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{label}</p>
-            <p className="text-sm font-bold font-sans text-text-primary">{value}</p>
-          </div>
-        </div>
-      </PremiumCard>
-    </motion.div>
-  );
-}
-
-function ActionCard({ to, icon: Icon, label, desc, color }: { to: string; icon: any; label: string; desc: string; color: string }) {
-  return (
-    <motion.div variants={itemAnim}>
-      <Link to={to}>
-        <PremiumCard hover glass className="group">
-          <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${color}/10 to-transparent flex items-center justify-center ${color}`}>
-              <Icon className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold font-sans group-hover:text-accent transition-colors text-text-primary">{label}</p>
-              <p className="text-[10px] text-text-secondary dark:text-dark-text-secondary">{desc}</p>
-            </div>
-          </div>
-        </PremiumCard>
-      </Link>
-    </motion.div>
-  );
-}
-
-function FileIcon({ type }: { type: string }) {
-  switch (type) {
-    case 'vedic_profile': return <Star className="w-3 h-3 text-accent" />;
-    case 'daily_horoscope': return <Sun className="w-3 h-3 text-amber-400" />;
-    case 'compatibility': return <Heart className="w-3 h-3 text-pink-400" />;
-    case 'moon_phase': return <Moon className="w-3 h-3 text-blue-400" />;
-    default: return <Sparkles className="w-3 h-3 text-text-secondary dark:text-dark-text-secondary" />;
-  }
 }
