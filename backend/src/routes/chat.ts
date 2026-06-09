@@ -240,7 +240,7 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
     }).catch(() => {});
 
     res.json({
-      success: true,
+      success: false,
       data: { reply: userMessage, sessionId: session.id, dailyUsed: limit.used + 1, dailyLimit: limit.limit },
     });
   }

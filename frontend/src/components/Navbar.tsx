@@ -33,6 +33,7 @@ export function Navbar() {
   const isLanding = location.pathname === '/';
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const isMobile = useMediaQuery('(max-width: 767px)');
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export function Navbar() {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
     };
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setUserMenuOpen(false); setOpen(false); }
+      if (e.key === 'Escape') { setUserMenuOpen(false); setOpen(false); menuTriggerRef.current?.focus(); }
     };
     document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleKey);
@@ -222,6 +223,7 @@ export function Navbar() {
           </div>
 
           <motion.button
+            ref={menuTriggerRef}
             whileTap={{ scale: 0.9 }}
             className="md:hidden p-2 -mr-2 text-muted-foreground"
             onClick={() => setOpen(!open)}

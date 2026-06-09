@@ -28,6 +28,7 @@ const AdminLayout = lazy(() => import('@/features/admin/AdminLayout').then(m => 
 const AdminDashboard = lazy(() => import('@/features/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminUsers = lazy(() => import('@/features/admin/AdminUsers').then(m => ({ default: m.AdminUsers })));
 const AdminAnalytics = lazy(() => import('@/features/admin/AdminAnalytics').then(m => ({ default: m.AdminAnalytics })));
+const AdminReportsPage = lazy(() => import('@/features/admin/AdminReportsPage').then(m => ({ default: m.AdminReportsPage })));
 const PricingPage = lazy(() => import('@/features/landing/PricingPage').then(m => ({ default: m.PricingPage })));
 const AboutPage = lazy(() => import('@/pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const ContactPage = lazy(() => import('@/pages/ContactPage').then(m => ({ default: m.ContactPage })));
@@ -44,26 +45,27 @@ const pageVariants = {
 };
 
 const pageTitles: Record<string, string> = {
-  '/': 'Home',
-  '/pricing': 'Pricing Plans',
-  '/login': 'Sign In',
-  '/register': 'Create Account',
-  '/about': 'About Us',
-  '/contact': 'Contact Us',
-  '/faq': 'Frequently Asked Questions',
-  '/privacy': 'Privacy Policy',
-  '/terms': 'Terms of Service',
-  '/refund': 'Refund Policy',
-  '/dashboard': 'Your Dashboard',
-  '/dashboard/horoscope': 'Daily Horoscope',
-  '/dashboard/kundli': 'Kundli / Birth Chart',
-  '/dashboard/compatibility': 'Compatibility Check',
-  '/dashboard/moon': 'Moon Phase Tracker',
-  '/dashboard/chat': 'AI Astrologer Chat',
-  '/dashboard/settings': 'Settings',
-  '/admin': 'Admin',
-  '/admin/users': 'Users',
-  '/admin/analytics': 'Analytics',
+  '/': 'Soma & Surya — AI-Powered Vedic Astrology',
+  '/pricing': 'Pricing Plans — Soma & Surya',
+  '/login': 'Login — Soma & Surya',
+  '/register': 'Create Account — Soma & Surya',
+  '/about': 'About Us — Soma & Surya',
+  '/contact': 'Contact Us — Soma & Surya',
+  '/faq': 'FAQ — Soma & Surya',
+  '/privacy': 'Privacy Policy — Soma & Surya',
+  '/terms': 'Terms of Service — Soma & Surya',
+  '/refund': 'Refund Policy — Soma & Surya',
+  '/dashboard': 'Dashboard — Soma & Surya',
+  '/dashboard/horoscope': 'Daily Horoscope — Soma & Surya',
+  '/dashboard/kundli': 'Birth Chart — Soma & Surya',
+  '/dashboard/compatibility': 'Compatibility — Soma & Surya',
+  '/dashboard/moon': 'Moon Phase Tracker — Soma & Surya',
+  '/dashboard/chat': 'AI Astrologer Chat — Soma & Surya',
+  '/dashboard/settings': 'Settings — Soma & Surya',
+  '/admin': 'Admin — Soma & Surya',
+  '/admin/users': 'User Management — Soma & Surya',
+  '/admin/analytics': 'Analytics — Soma & Surya',
+  '/admin/reports': 'Reports — Soma & Surya',
 };
 
 const pageDescriptions: Record<string, string> = {
@@ -87,6 +89,7 @@ const pageDescriptions: Record<string, string> = {
   '/admin': 'Soma & Surya admin dashboard — manage users, reports, and platform analytics.',
   '/admin/users': 'Admin user management — view and manage platform users.',
   '/admin/analytics': 'Admin analytics dashboard with platform usage metrics and reports.',
+  '/admin/reports': 'Admin reports — view user-generated astrology reports and platform activity.',
 };
 
 function PageWrap({ children, cosmic = false }: { children: React.ReactNode; cosmic?: boolean }) {
@@ -94,7 +97,7 @@ function PageWrap({ children, cosmic = false }: { children: React.ReactNode; cos
   const pathKey = Object.keys(pageTitles)
     .filter(k => loc.pathname === k || loc.pathname.startsWith(k + '/'))
     .sort((a, b) => b.length - a.length)[0] || '/';
-  const title = pageTitles[pathKey] ? `${pageTitles[pathKey]} — ${brand.name}` : brand.meta.title;
+  const title = pageTitles[pathKey] || brand.meta.title;
   const description = pageDescriptions[pathKey] || brand.meta.description;
   return (
     <motion.div id="main-content" variants={pageVariants} initial="initial" animate="animate" exit="exit">
@@ -169,6 +172,7 @@ export default function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="reports" element={<AdminReportsPage />} />
           </Route>
           <Route path="/about" element={<PageWrap cosmic><AboutPage /></PageWrap>} />
           <Route path="/contact" element={<PageWrap><ContactPage /></PageWrap>} />

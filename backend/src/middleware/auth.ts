@@ -13,8 +13,7 @@ declare global {
 
 const JWT_SECRET = (() => {
   if (!process.env.JWT_SECRET) {
-    if (process.env.NODE_ENV === 'production') throw new Error('JWT_SECRET is required in production');
-    return 'dev-secret-change-in-production';
+    throw new Error('JWT_SECRET is required');
   }
   return process.env.JWT_SECRET;
 })();

@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { BarChart3, Users, ArrowLeft } from 'lucide-react';
+import { BarChart3, Users, FileText, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useT } from '@/lib/i18n/useT';
@@ -8,6 +8,7 @@ const adminLinks = (t: any) => [
   { path: '/admin', icon: BarChart3, label: t('admin.overview') },
   { path: '/admin/users', icon: Users, label: t('admin.users') },
   { path: '/admin/analytics', icon: BarChart3, label: t('admin.analytics') },
+  { path: '/admin/reports', icon: FileText, label: t('admin.reports') },
 ];
 
 export function AdminLayout() {

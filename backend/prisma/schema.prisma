@@ -215,6 +215,18 @@ model AnalyticsEvent {
   @@index([userId])
 }
 
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
 model AuditLog {
   id         String   @id @default(cuid())
   userId     String?

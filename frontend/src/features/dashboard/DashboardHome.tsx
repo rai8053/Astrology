@@ -32,9 +32,9 @@ const itemAnim = {
 
 function getGreeting() {
   const h = new Date().getHours();
-  if (h < 12) return { key: 'Good Morning' as const, icon: Sun };
-  if (h < 17) return { key: 'Good Afternoon' as const, icon: Sun };
-  return { key: 'Good Evening' as const, icon: Moon };
+  if (h < 12) return { key: 'dashboard.greetingMorning' as const, icon: Sun };
+  if (h < 17) return { key: 'dashboard.greetingAfternoon' as const, icon: Sun };
+  return { key: 'dashboard.greetingEvening' as const, icon: Moon };
 }
 
 function safeFormatDate(dateStr: string | null | undefined): string {
@@ -148,13 +148,14 @@ export function DashboardHome() {
   });
 
   const displayName = user?.name?.trim() || localStorage.getItem('googleName') || '';
-  const hasBirthDetails = !dashError || !dashError.toLowerCase().includes('birth details');
+  const dashErrMsg = dashError ? (typeof dashError === 'object' && 'message' in dashError ? (dashError as Error).message : String(dashError)) : '';
+  const hasBirthDetails = !dashError || !dashErrMsg.toLowerCase().includes('birth details');
   const reports = reportsData?.data || [];
   const d = dash;
 
   if (dashLoading) return <DashboardSkeleton />;
 
-  if (dashError && dashError.includes('Birth details')) {
+  if (dashError && dashErrMsg.includes('Birth details')) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
         <div className="flex items-center gap-4">
@@ -162,21 +163,20 @@ export function DashboardHome() {
             <greeting.icon className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{greeting.key}</h1>
-            <p className="mt-1 text-muted-foreground">Welcome to your cosmic dashboard</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{t(greeting.key)}</h1>
+            <p className="mt-1 text-muted-foreground">{t('dashboard.subtitle')}</p>
           </div>
         </div>
         <PremiumCard glass className="text-center py-12">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Star className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="mb-2 text-xl font-bold">Set Up Your Birth Chart</h2>
+          <h2 className="mb-2 text-xl font-bold">{t('dashboard.setupBirthChart')}</h2>
           <p className="mx-auto mb-6 max-w-md text-sm text-muted-foreground">
-            Enter your birth details to unlock personalized horoscopes, planetary positions,
-            Dasha periods, and cosmic insights tailored to your unique chart.
+            {t('dashboard.setupBirthChartDesc')}
           </p>
           <Link to="/dashboard/settings">
-            <PremiumButton icon={<User className="h-4 w-4" />}>Add Birth Details</PremiumButton>
+            <PremiumButton icon={<User className="h-4 w-4" />}>{t('dashboard.addBirthDetails')}</PremiumButton>
           </Link>
         </PremiumCard>
       </motion.div>
@@ -191,7 +191,7 @@ export function DashboardHome() {
             <greeting.icon className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">{greeting.key}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">{t(greeting.key)}</h1>
           </div>
         </div>
         <PremiumCard glass className="!border-red-500/30">
@@ -220,7 +220,7 @@ export function DashboardHome() {
           <greeting.icon className="h-6 w-6 text-primary" />
         </motion.div>
         <div className="min-w-0">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{greeting.key}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t(greeting.key)}</h1>
           <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span>{snapshot.moonRashi || '—'} &middot; {snapshot.nakshatra || '—'}</span>
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
@@ -235,25 +235,25 @@ export function DashboardHome() {
 
       {/* Section 1: Astrology Profile */}
       <motion.div variants={stagger} initial="initial" animate="animate">
-        <SectionHeader icon={User} title="Your Astrology Profile" />
+        <SectionHeader icon={User} title={t('dashboard.astrologyProfile')} />
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          <StatCard icon={<Moon className="h-4 w-4 text-blue-400" />} label="Moon Sign (Rashi)" value={snapshot.moonRashi || '—'} />
+          <StatCard icon={<Moon className="h-4 w-4 text-blue-400" />} label={t('kundli.moonRashi')} value={snapshot.moonRashi || '—'} />
           <StatCard
             icon={<Star className="h-4 w-4 text-purple-400" />}
-            label="Birth Star"
+            label={t('dashboard.birthStar')}
             value={snapshot.nakshatra && snapshot.nakshatraLord ? `${snapshot.nakshatra} — ${snapshot.nakshatraLord}` : '—'}
           />
-          <StatCard icon={<Sun className="h-4 w-4 text-amber-400" />} label="Ascendant" value={snapshot.ascendant || '—'} />
-          <StatCard icon={<Shield className="h-4 w-4 text-rose-400" />} label="Lagna Lord" value={snapshot.lagnaLord || '—'} />
+          <StatCard icon={<Sun className="h-4 w-4 text-amber-400" />} label={t('kundli.ascendantLabel')} value={snapshot.ascendant || '—'} />
+          <StatCard icon={<Shield className="h-4 w-4 text-rose-400" />} label={t('dashboard.lagnaLord')} value={snapshot.lagnaLord || '—'} />
           <StatCard
             icon={<CalendarDays className="h-4 w-4 text-sky-400" />}
-            label="Lunar Day (Tithi)"
+            label={t('dashboard.lunarDay')}
             value={tithi?.name ? `${tithi.name} (${tithi.paksha || '—'})` : '—'}
           />
-          <StatCard icon={<Compass className="h-4 w-4 text-cyan-400" />} label="Yoga" value={yoga?.name || '—'} />
+          <StatCard icon={<Compass className="h-4 w-4 text-cyan-400" />} label={t('dashboard.yoga')} value={yoga?.name || '—'} />
           <StatCard
             icon={<Layers className="h-4 w-4 text-indigo-400" />}
-            label="Moon Phase"
+            label={t('moon.title')}
             value={moonPhase ? `${moonPhase.phaseName} ${moonPhase.illumination}%` : '—'}
           />
         </div>
@@ -262,7 +262,7 @@ export function DashboardHome() {
       {/* Section 2: Today's Horoscope & Cosmic Energy */}
       <motion.div variants={stagger} initial="initial" animate="animate" className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <SectionHeader icon={Sparkles} title="Today's Horoscope" />
+          <SectionHeader icon={Sparkles} title={t('dashboard.todaysHoroscope')} />
           <HoroscopeCard
             prediction={horoscope.prediction}
             dailyAdvice={horoscope.dailyAdvice}
@@ -273,7 +273,7 @@ export function DashboardHome() {
           />
         </div>
         <div>
-          <SectionHeader icon={Zap} title="Cosmic Energy" />
+          <SectionHeader icon={Zap} title={t('dashboard.cosmicEnergy')} />
           <PremiumCard glass className="flex h-full flex-col items-center justify-center text-center">
             <div className={`mb-1 text-5xl font-bold ${
               cosmicEnergy.level === 'Excellent' ? 'text-emerald-400' :
@@ -296,7 +296,7 @@ export function DashboardHome() {
       {/* Section 3: Planetary Snapshot */}
       {planets && planets.length > 0 && (
         <motion.div variants={stagger} initial="initial" animate="animate">
-          <SectionHeader icon={Orbit} title="Planetary Positions" />
+          <SectionHeader icon={Orbit} title={t('dashboard.planetaryPositions')} />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {planets.slice(0, 9).map((p, i) => (
               <motion.div key={p.name} variants={itemAnim}>
@@ -318,7 +318,7 @@ export function DashboardHome() {
       {/* Section 4: Transit Alerts */}
       {transitAlerts && transitAlerts.length > 0 && (
         <motion.div variants={stagger} initial="initial" animate="animate">
-          <SectionHeader icon={CalendarDays} title="Upcoming Transits" />
+          <SectionHeader icon={CalendarDays} title={t('dashboard.transitAlerts')} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {transitAlerts.slice(0, 4).map((alert, i) => (
               <motion.div key={i} variants={itemAnim}>
@@ -339,7 +339,7 @@ export function DashboardHome() {
       {/* Section 5: Current Dasha */}
       {dasha && (
         <motion.div variants={stagger} initial="initial" animate="animate">
-          <SectionHeader icon={CalendarDays} title="Current Dasha Period" />
+          <SectionHeader icon={CalendarDays} title={t('dashboard.currentDashaPeriod')} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <PremiumCard glass>
               <div className="flex items-center gap-3">
@@ -347,11 +347,11 @@ export function DashboardHome() {
                   <Shield className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Mahadasha</p>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('dashboard.mahadasha')}</p>
                   <p className="text-base font-bold text-foreground">{dasha.mahadasha || '—'}</p>
                   <p className="text-[10px] text-muted-foreground">
                     {safeFormatDate(dasha.mahadashaStart)} — {safeFormatDate(dasha.mahadashaEnd)}
-                    {dasha.remainingDuration ? <span className="ml-1">({dasha.remainingDuration} remaining)</span> : ''}
+                    {dasha.remainingDuration ? <span className="ml-1">({dasha.remainingDuration} {t('dashboard.remaining')})</span> : ''}
                   </p>
                 </div>
               </div>
@@ -365,7 +365,7 @@ export function DashboardHome() {
                   <Clock className="h-5 w-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Antardasha</p>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('dashboard.antardasha')}</p>
                   <p className="text-base font-bold text-foreground">{dasha.antardasha || '—'}</p>
                   <p className="text-[10px] text-muted-foreground">
                     {safeFormatDate(dasha.antardashaStart)} — {safeFormatDate(dasha.antardashaEnd)}
@@ -379,29 +379,29 @@ export function DashboardHome() {
 
       {/* Section 6: Cosmic Insights */}
       <motion.div variants={stagger} initial="initial" animate="animate">
-        <SectionHeader icon={Gem} title="Cosmic Insights" />
+        <SectionHeader icon={Gem} title={t('dashboard.cosmicInsights')} />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <InsightCard icon={Hash} label="Lucky Number" value={horoscope.luckyNumber != null ? `${horoscope.luckyNumber}` : '—'} color="text-amber-400" />
-          <InsightCard icon={Palette} label="Lucky Color" value={horoscope.luckyColor || '—'} color="text-pink-400" />
-          <InsightCard icon={Compass} label="Lucky Direction" value={horoscope.luckyDirection || '—'} color="text-blue-400" />
-          <InsightCard icon={CalendarDays} label="Lucky Day" value={horoscope.luckyDay || '—'} color="text-purple-400" />
-          <InsightCard icon={Wind} label="Element" value={snapshot.element || '—'} color="text-emerald-400" />
-          <InsightCard icon={Heart} label="Dosha" value={snapshot.doshaDominance || '—'} color="text-red-400" />
-          <InsightCard icon={Sunrise} label="Favorable Activity" value={horoscope.favorableActivity || '—'} color="text-yellow-400" />
-          <InsightCard icon={ArrowDown} label="Avoid Today" value={horoscope.avoidToday || '—'} color="text-orange-400" />
+          <InsightCard icon={Hash} label={t('dashboard.luckyNumber')} value={horoscope.luckyNumber != null ? `${horoscope.luckyNumber}` : '—'} color="text-amber-400" />
+          <InsightCard icon={Palette} label={t('dashboard.luckyColor')} value={horoscope.luckyColor || '—'} color="text-pink-400" />
+          <InsightCard icon={Compass} label={t('dashboard.luckyDirection')} value={horoscope.luckyDirection || '—'} color="text-blue-400" />
+          <InsightCard icon={CalendarDays} label={t('dashboard.luckyDay')} value={horoscope.luckyDay || '—'} color="text-purple-400" />
+          <InsightCard icon={Wind} label={t('kundli.elementLabel')} value={snapshot.element || '—'} color="text-emerald-400" />
+          <InsightCard icon={Heart} label={t('kundli.dosha')} value={snapshot.doshaDominance || '—'} color="text-red-400" />
+          <InsightCard icon={Sunrise} label={t('dashboard.favorableActivity')} value={horoscope.favorableActivity || '—'} color="text-yellow-400" />
+          <InsightCard icon={ArrowDown} label={t('dashboard.avoidToday')} value={horoscope.avoidToday || '—'} color="text-orange-400" />
         </div>
       </motion.div>
 
       {/* Section 7: Quick Actions */}
       <motion.div variants={stagger} initial="initial" animate="animate">
-        <SectionHeader icon={Zap} title="Quick Actions" />
+        <SectionHeader icon={Zap} title={t('dashboard.quickActions')} />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <ActionCard to="/dashboard/kundli" icon={Star} label="Birth Chart" desc="Full Kundli analysis" color="text-purple-400" />
-          <ActionCard to="/dashboard/compatibility" icon={Heart} label="Compatibility" desc="Gun Milan matching" color="text-pink-400" />
-          <ActionCard to="/dashboard/chat" icon={MessageCircle} label="AI Astrologer" desc="Ask any question" color="text-amber-400" />
-          <ActionCard to="/dashboard/horoscope" icon={Moon} label="Horoscope" desc="Daily predictions" color="text-blue-400" />
-          <ActionCard to="/dashboard/moon" icon={Moon} label="Moon Phase" desc="Lunar tracker" color="text-sky-400" />
-          <ActionCard to="/dashboard/settings" icon={User} label="Settings" desc="Update profile" color="text-primary" />
+          <ActionCard to="/dashboard/kundli" icon={Star} label={t('dashboard.actionBirthChart')} desc={t('dashboard.actionBirthChartDesc')} color="text-purple-400" />
+          <ActionCard to="/dashboard/compatibility" icon={Heart} label={t('dashboard.actionCompatibility')} desc={t('dashboard.actionCompatibilityDesc')} color="text-pink-400" />
+          <ActionCard to="/dashboard/chat" icon={MessageCircle} label={t('dashboard.actionAiAstrologer')} desc={t('dashboard.actionAiAstrologerDesc')} color="text-amber-400" />
+          <ActionCard to="/dashboard/horoscope" icon={Moon} label={t('dashboard.actionHoroscope')} desc={t('dashboard.actionHoroscopeDesc')} color="text-blue-400" />
+          <ActionCard to="/dashboard/moon" icon={Moon} label={t('dashboard.actionMoonPhase')} desc={t('dashboard.actionMoonPhaseDesc')} color="text-sky-400" />
+          <ActionCard to="/dashboard/settings" icon={User} label={t('dashboard.actionSettings')} desc={t('dashboard.actionSettingsDesc')} color="text-primary" />
         </div>
       </motion.div>
 
@@ -409,7 +409,7 @@ export function DashboardHome() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <motion.div variants={stagger} initial="initial" animate="animate">
-            <SectionHeader icon={Clock} title="Recent Reports" />
+            <SectionHeader icon={Clock} title={t('dashboard.recentReports')} />
             <PremiumCard glass>
               {reportsLoading ? (
                 <div className="space-y-2">
@@ -417,9 +417,9 @@ export function DashboardHome() {
                 </div>
               ) : reports.length === 0 ? (
                 <div className="py-4 text-center">
-                  <p className="text-xs text-muted-foreground">No reports yet. Generate your first birth chart!</p>
+                  <p className="text-xs text-muted-foreground">{t('dashboard.noReports')}</p>
                   <Link to="/dashboard/kundli">
-                    <PremiumButton size="sm" className="mt-3" icon={<Star className="h-3 w-3" />}>Create Birth Chart</PremiumButton>
+                    <PremiumButton size="sm" className="mt-3" icon={<Star className="h-3 w-3" />}>{t('dashboard.createBirthChart')}</PremiumButton>
                   </Link>
                 </div>
               ) : (
@@ -446,17 +446,17 @@ export function DashboardHome() {
 
         <div>
           <motion.div variants={stagger} initial="initial" animate="animate">
-            <SectionHeader icon={Flame} title="Streak" />
+            <SectionHeader icon={Flame} title={t('dashboard.streak')} />
             <PremiumCard glass className="text-center">
               <div className="mb-1 text-5xl font-bold text-primary">{streak.currentStreak}</div>
               <p className="mb-2 text-xs text-muted-foreground">
-                {streak.currentStreak === 0 ? 'Start your cosmic journey today' :
-                  `${streak.currentStreak} day${streak.currentStreak > 1 ? 's' : ''} of connection`}
+                {streak.currentStreak === 0 ? t('dashboard.streakStart') :
+                  t('dashboard.streakMessage', { n: streak.currentStreak })}
               </p>
               <div className="h-1 w-full rounded-full bg-muted">
                 <div className="h-1 rounded-full bg-primary transition-all duration-500" style={{ width: `${Math.min(100, (streak.currentStreak / 30) * 100)}%` }} />
               </div>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">Best: {streak.longestStreak} days</p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">{t('dashboard.streakBest', { n: streak.longestStreak })}</p>
             </PremiumCard>
           </motion.div>
         </div>
@@ -477,12 +477,12 @@ export function DashboardHome() {
                   <Crown className="h-5 w-5 text-primary" />
                 </motion.div>
                 <div>
-                  <h3 className="text-base font-semibold text-primary">Unlock Premium Insights</h3>
-                  <p className="text-xs text-muted-foreground">Get unlimited AI consultations, detailed Dasha analysis, and advanced chart comparisons.</p>
+                  <h3 className="text-base font-semibold text-primary">{t('dashboard.upsellTitle')}</h3>
+                  <p className="text-xs text-muted-foreground">{t('dashboard.upsellDesc')}</p>
                 </div>
               </div>
               <Link to="/pricing">
-                <PremiumButton icon={<ArrowRight className="h-3 w-3" />}>Upgrade Now</PremiumButton>
+                <PremiumButton icon={<ArrowRight className="h-3 w-3" />}>{t('dashboard.upgradeNow')}</PremiumButton>
               </Link>
             </div>
           </PremiumCard>

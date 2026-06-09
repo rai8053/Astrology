@@ -7,6 +7,8 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
 import { useT } from '@/lib/i18n/useT';
+import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export function ContactPage() {
   const { t } = useT();
@@ -15,11 +17,26 @@ export function ContactPage() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSent(true);
-    setTimeout(() => { setName(''); setEmail(''); setSubject(''); setMessage(''); setSent(false); }, 3000);
+    if (sending || sent) return;
+    setSending(true);
+    setError(null);
+    try {
+      await api.post('/api/contact', { name, email, subject, message });
+      setSent(true);
+      setName(''); setEmail(''); setSubject(''); setMessage('');
+      setTimeout(() => { setSent(false); }, 3000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to send message';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -64,7 +81,7 @@ export function ContactPage() {
                   <label className="block text-xs font-medium text-text-secondary mb-1">{t('contact.messageLabel')}</label>
                   <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5} className="input-glass w-full resize-none" placeholder={t('contact.messagePlaceholder')} />
                 </div>
-                <PremiumButton type="submit" disabled={sent} icon={sent ? <Sparkles className="w-4 h-4" /> : <Send className="w-4 h-4" />} className="w-full">
+                <PremiumButton type="submit" disabled={sent} loading={sending} icon={sent ? <Sparkles className="w-4 h-4" /> : <Send className="w-4 h-4" />} className="w-full">
                   {sent ? t('contact.send') : t('contact.send')}
                 </PremiumButton>
               </form>

@@ -136,6 +136,7 @@ export function DashboardLayout() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userMenuTriggerRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const sidebarTriggerRef = useRef<HTMLButtonElement>(null);
   const { t } = useT();
 
   const navItems = [
@@ -171,7 +172,7 @@ export function DashboardLayout() {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
     };
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { closeUserMenu(); setSidebarOpen(false); }
+      if (e.key === 'Escape') { closeUserMenu(); setSidebarOpen(false); sidebarTriggerRef.current?.focus(); }
     };
     document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleKey);
@@ -341,6 +342,7 @@ export function DashboardLayout() {
 
               {/* Mobile Hamburger */}
               <motion.button
+                ref={sidebarTriggerRef}
                 whileTap={{ scale: 0.9 }}
                 className="lg:hidden p-2 -mr-2"
                 onClick={() => setSidebarOpen(true)}

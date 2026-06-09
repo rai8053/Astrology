@@ -2,6 +2,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { User, Sun, Moon, Globe, Save, ExternalLink, CreditCard, CheckCircle2, XCircle, Trash2, AlertTriangle, DollarSign, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
@@ -37,10 +40,22 @@ const FLAGS: Record<string, string> = {
   fr: '≡ƒç½≡ƒç╖', de: '≡ƒç⌐≡ƒç¬', ar: '≡ƒç╕≡ƒçª', ja: '≡ƒç»≡ƒç╡', zh: '≡ƒç¿≡ƒç│',
 };
 const LANG_NAMES: Record<string, string> = {
-  en: 'English', hi: 'αñ╣αñ┐αñ¿αÑìαñªαÑÇ', bn: 'αª¼αª╛αªéαª▓αª╛', es: 'Espa├▒ol', pt: 'Portugu├¬s',
+  en: 'English', hi: 'αñ╣αñ┐αñ¿αÑìαñªαÑÇ', bn: 'αª¼αª╛αªéα▓α▓╛', es: 'Espa├▒ol', pt: 'Portugu├¬s',
   fr: 'Fran├ºais', de: 'Deutsch', ar: '╪º┘ä╪╣╪▒╪¿┘è╪⌐', ja: 'µùÑµ£¼Φ¬₧', zh: 'Σ╕¡µûç',
 };
 const LANG_LIST = Object.entries(FLAGS).map(([code, flag]) => ({ code: code as Language, flag, label: LANG_NAMES[code] }));
+
+const profileSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email(),
+  birthDate: z.string().optional(),
+  birthTime: z.string().optional(),
+  birthPlace: z.string().optional(),
+  birthState: z.string().optional(),
+  birthCountry: z.string().optional(),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
 function showPremiumToast(type: 'success' | 'error', title: string, message: string) {
   const Icon = type === 'success' ? CheckCircle2 : XCircle;
@@ -82,22 +97,25 @@ export function SettingsPage() {
   const { user, setUser } = useAuthStore();
   const { theme, setTheme } = useThemeStore();
   const { language, setLanguage } = useI18nStore();
-  const [name, setName] = useState(user?.name || '');
-  const nameTouched = useRef(false);
-  const [email, setEmail] = useState(user?.email || '');
-  const emailTouched = useRef(false);
   const [langOpen, setLangOpen] = useState(false);
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const currencyRef = useRef<HTMLDivElement>(null);
-  const [birthDate, setBirthDate] = useState('');
-  const [birthTime, setBirthTime] = useState('');
-  const [birthPlace, setBirthPlace] = useState('');
-  const [birthState, setBirthState] = useState('');
-  const [birthCountry, setBirthCountry] = useState('');
-  const [saveState, setSaveState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const initializedRef = useRef(false);
+  const [saveFeedback, setSaveFeedback] = useState<'success' | 'error' | null>(null);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { register, handleSubmit, formState: { isDirty, isSubmitting, errors }, watch, setValue, reset, getValues } = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: user?.name || '',
+      email: user?.email || '',
+      birthDate: '',
+      birthTime: '',
+      birthPlace: '',
+      birthState: '',
+      birthCountry: '',
+    },
+  });
 
   const { data: profileData } = useQuery({
     queryKey: ['user-profile'],
@@ -110,6 +128,21 @@ export function SettingsPage() {
   });
 
   const hasBirthData = !!(profileData?.data?.birthDate && profileData?.data?.birthTime && profileData?.data?.birthPlace);
+
+  useEffect(() => {
+    const p = profileData?.data;
+    if (p) {
+      reset({
+        name: p.name ?? '',
+        email: p.email ?? '',
+        birthDate: p.birthDate ?? '',
+        birthTime: p.birthTime ?? '',
+        birthPlace: p.birthPlace ?? '',
+        birthState: p.birthState ?? '',
+        birthCountry: p.birthCountry ?? '',
+      });
+    }
+  }, [profileData, reset]);
 
   const languageMutation = useMutation({
     mutationFn: (lang: Language) => api.patch('/api/user/profile', { language: lang }),
@@ -133,21 +166,9 @@ export function SettingsPage() {
 
   useEffect(() => {
     return () => {
-      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     };
   }, []);
-
-  useEffect(() => {
-    const p = profileData?.data;
-    if (p && !initializedRef.current) {
-      initializedRef.current = true;
-      setBirthDate(p.birthDate ?? '');
-      setBirthTime(p.birthTime ?? '');
-      setBirthPlace(p.birthPlace ?? '');
-      setBirthState(p.birthState ?? '');
-      setBirthCountry(p.birthCountry ?? '');
-    }
-  }, [profileData]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -164,7 +185,7 @@ export function SettingsPage() {
     mutationFn: (data: { name?: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string }) =>
       api.patch<{ message: string } & UserProfile>('/api/user/profile', data),
     onSuccess: (res) => {
-      setSaveState('success');
+      setSaveFeedback('success');
       const saved = res.data;
       if (saved) {
         setUser({ ...user!, name: saved.name ?? user!.name, birthDate: saved.birthDate ?? user!.birthDate, birthTime: saved.birthTime ?? user!.birthTime, birthPlace: saved.birthPlace ?? user!.birthPlace });
@@ -172,23 +193,27 @@ export function SettingsPage() {
       }
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       showPremiumToast('success', t('settings.profileUpdated'), t('settings.profileUpdatedMsg'));
-      if (successTimerRef.current) clearTimeout(successTimerRef.current);
-      successTimerRef.current = setTimeout(() => setSaveState('idle'), 2000);
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = setTimeout(() => setSaveFeedback(null), 2000);
     },
     onError: (err) => {
-      setSaveState('error');
+      setSaveFeedback('error');
       showPremiumToast('error', t('settings.saveFailed'), err instanceof Error ? err.message : t('settings.saveFailedMsg'));
-      if (successTimerRef.current) clearTimeout(successTimerRef.current);
-      successTimerRef.current = setTimeout(() => setSaveState('idle'), 3000);
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = setTimeout(() => setSaveFeedback(null), 3000);
     },
   });
 
-  const handleSave = () => {
-    if (saveState === 'loading') return;
-    setSaveState('loading');
-    const payload: { name?: string; email?: string; birthDate: string; birthTime: string; birthPlace: string; birthState?: string; birthCountry?: string } = { birthDate, birthTime, birthPlace, birthState, birthCountry };
-    if (nameTouched.current && name) payload.name = name;
-    if (emailTouched.current && email) payload.email = email;
+  const onSubmit = (data: ProfileFormValues) => {
+    const payload = {
+      name: data.name,
+      email: data.email,
+      birthDate: data.birthDate ?? getValues('birthDate') ?? '',
+      birthTime: data.birthTime ?? getValues('birthTime') ?? '',
+      birthPlace: data.birthPlace ?? getValues('birthPlace') ?? '',
+      birthState: data.birthState ?? getValues('birthState') ?? '',
+      birthCountry: data.birthCountry ?? getValues('birthCountry') ?? '',
+    };
     updateMutation.mutate(payload);
   };
 
@@ -216,14 +241,15 @@ export function SettingsPage() {
     mutationFn: () => api.post('/api/user/reset-profile'),
     onSuccess: () => {
       setShowResetConfirm(false);
-      setName('');
-      nameTouched.current = false;
-      setEmail('');
-      setBirthDate('');
-      setBirthTime('');
-      setBirthPlace('');
-      setBirthState('');
-      setBirthCountry('');
+      reset({
+        name: '',
+        email: '',
+        birthDate: '',
+        birthTime: '',
+        birthPlace: '',
+        birthState: '',
+        birthCountry: '',
+      });
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       showPremiumToast('success', t('settings.resetDataSuccess'), '');
     },
@@ -232,48 +258,22 @@ export function SettingsPage() {
     },
   });
 
-  const hasChanges =
-    nameTouched.current ||
-    birthDate !== (profileData?.data?.birthDate ?? '') ||
-    birthTime !== (profileData?.data?.birthTime ?? '') ||
-    birthPlace !== (profileData?.data?.birthPlace ?? '') ||
-    birthState !== (profileData?.data?.birthState ?? '') ||
-    birthCountry !== (profileData?.data?.birthCountry ?? '');
-
-  const getButtonStyle = () => {
-    switch (saveState) {
-      case 'loading':
-        return {
-          label: t('settings.saving'),
-          icon: <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>,
-          disabled: true,
-          variant: 'primary' as const,
-        };
-      case 'success':
-        return {
-          label: t('settings.savedSuccess'),
-          icon: <CheckCircle2 className="w-4 h-4" />,
-          disabled: true,
-          variant: 'primary' as const,
-        };
-      case 'error':
-        return {
-          label: t('settings.tryAgain'),
-          icon: <XCircle className="w-4 h-4" />,
-          disabled: false,
-          variant: 'outline' as const,
-        };
-      default:
-        return {
-          label: t('settings.saveChanges'),
-          icon: <Save className="w-3.5 h-3.5" />,
-          disabled: false,
-          variant: 'primary' as const,
-        };
-    }
-  };
-
-  const btn = getButtonStyle();
+  const loading = isSubmitting || updateMutation.isPending;
+  const btnLabel = loading ? t('settings.saving') : saveFeedback === 'success' ? t('settings.savedSuccess') : saveFeedback === 'error' ? t('settings.tryAgain') : t('settings.saveChanges');
+  const btnIcon = loading ? (
+    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  ) : saveFeedback === 'success' ? (
+    <CheckCircle2 className="w-4 h-4" />
+  ) : saveFeedback === 'error' ? (
+    <XCircle className="w-4 h-4" />
+  ) : (
+    <Save className="w-3.5 h-3.5" />
+  );
+  const btnDisabled = loading || saveFeedback === 'success';
+  const btnVariant = saveFeedback === 'error' ? 'outline' as const : 'primary' as const;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
@@ -292,51 +292,51 @@ export function SettingsPage() {
               <h3 className="font-sans text-lg font-semibold">{t('settings.profile')}</h3>
             </div>
             <div className="space-y-4">
-              <Input label={t('settings.nameLabel')} value={name} onChange={(e) => { setName(e.target.value); nameTouched.current = true; }} placeholder={t('settings.namePlaceholder')} />
-              <Input label={t('auth.email')} value={email} onChange={(e) => { setEmail(e.target.value); emailTouched.current = true; }} placeholder={t('auth.emailPlaceholder')} />
+              <Input label={t('settings.nameLabel')} {...register('name')} placeholder={t('settings.namePlaceholder')} error={errors.name?.message} />
+              <Input label={t('auth.email')} {...register('email')} placeholder={t('auth.emailPlaceholder')} error={errors.email?.message} />
               {hasBirthData ? (
                 <>
                   <div className="space-y-1.5">
                     <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.dob')}</label>
-                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{birthDate || 'ΓÇö'}</p>
+                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthDate') || 'ΓÇö'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthTime')}</label>
-                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{birthTime || 'ΓÇö'}</p>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthTime') || 'ΓÇö'}</p>
                     </div>
                     <div className="space-y-1.5">
                       <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthPlace')}</label>
-                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{birthPlace || 'ΓÇö'}</p>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthPlace') || 'ΓÇö'}</p>
                     </div>
                   </div>
                 </>
               ) : (
                 <>
-                  <Input label={t('onboarding.dob')} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+                  <Input label={t('onboarding.dob')} type="date" {...register('birthDate')} />
                   <div className="grid grid-cols-2 gap-4">
-                    <Input label={t('onboarding.birthTime')} type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
-                    <BirthPlaceInput label={t('onboarding.birthPlace')} value={birthPlace} onChange={(v) => setBirthPlace(v)} placeholder={t('settings.placeExample')} state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
+                    <Input label={t('onboarding.birthTime')} type="time" {...register('birthTime')} />
+                    <BirthPlaceInput label={t('onboarding.birthPlace')} value={watch('birthPlace') || ''} onChange={(v) => setValue('birthPlace', v, { shouldDirty: true })} placeholder={t('settings.placeExample')} state={watch('birthState') || ''} onStateChange={(v) => setValue('birthState', v, { shouldDirty: true })} country={watch('birthCountry') || ''} onCountryChange={(v) => setValue('birthCountry', v, { shouldDirty: true })} />
                   </div>
                 </>
               )}
               <PremiumButton
-                onClick={handleSave}
-                disabled={btn.disabled}
-                variant={btn.variant}
-                icon={btn.icon}
+                onClick={handleSubmit(onSubmit)}
+                disabled={btnDisabled}
+                variant={btnVariant}
+                icon={btnIcon}
                 className={`w-full transition-all duration-300 ${
-                  saveState === 'success'
+                  saveFeedback === 'success'
                     ? '!bg-emerald-500/20 !text-emerald-400 !border-emerald-500/30'
-                    : saveState === 'error'
+                    : saveFeedback === 'error'
                     ? '!bg-red-500/10 !text-red-400 !border-red-500/30'
                     : ''
                 }`}
               >
-                {btn.label}
+                {btnLabel}
               </PremiumButton>
               <AnimatePresence>
-                {hasChanges && saveState === 'idle' && (
+                {isDirty && saveFeedback === null && (
                   <motion.p
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
