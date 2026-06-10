@@ -6,17 +6,13 @@ import { Toaster } from 'react-hot-toast';
 import posthog from 'posthog-js';
 import App from './app/App';
 import { ScrollProgress } from './components/ScrollProgress';
+import { useI18nStore } from './lib/i18n/store';
 import './styles/globals.css';
 
-const RTL = ['ar', 'ur', 'he', 'fa'];
-const savedLang = (() => {
-  try {
-    return localStorage.getItem('soma-language') || 'en';
-  } catch { return 'en'; }
-})();
-const savedDir: string = RTL.includes(savedLang) ? 'rtl' : 'ltr';
-document.documentElement.setAttribute('lang', savedLang);
-document.documentElement.setAttribute('dir', savedDir);
+const { language } = useI18nStore.getState();
+const dir = ['ar', 'ur', 'he', 'fa'].includes(language) ? 'rtl' : 'ltr';
+document.documentElement.setAttribute('lang', language);
+document.documentElement.setAttribute('dir', dir);
 
 if (import.meta.env.VITE_POSTHOG_KEY) {
   posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
