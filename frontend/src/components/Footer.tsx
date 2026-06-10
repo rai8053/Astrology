@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 export function Footer() {
-  const { t } = useT();
+  const { t } = useTranslation();
   return (
     <footer className="border-t border-border-primary dark:border-dark-border-primary">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 py-12">

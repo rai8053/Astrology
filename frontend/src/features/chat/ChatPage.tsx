@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { api } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -91,7 +91,7 @@ function ChatBubble({ message, index }: { message: ChatMessage; index: number })
 }
 
 export function ChatPage() {
-  const { t, language } = useT();
+  const { t, language } = useTranslation();
   const suggestedPrompts = [
     t('chat.promptRulingPlanet'),
     t('chat.promptBalanceDosha'),

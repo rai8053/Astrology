@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, MapPin, X } from 'lucide-react';
 import { PremiumButton } from './PremiumButton';
 import { setManualCountryOverride } from '@/lib/pricing';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 const STORAGE_KEY = 'soma_location_asked';
 const LOCATION_GRANTED_KEY = 'soma_location_granted';
@@ -26,7 +26,7 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
 
 export function LocationPopup() {
   const [visible, setVisible] = useState(false);
-  const { t } = useT();
+  const { t } = useTranslation();
   const [handling, setHandling] = useState(false);
 
   useEffect(() => {

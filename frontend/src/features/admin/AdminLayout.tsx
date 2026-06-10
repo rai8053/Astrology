@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { BarChart3, Users, FileText, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 const adminLinks = (t: any) => [
   { path: '/admin', icon: BarChart3, label: t('admin.overview') },
@@ -12,7 +12,7 @@ const adminLinks = (t: any) => [
 ];
 
 export function AdminLayout() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const location = useLocation();
 
   return (

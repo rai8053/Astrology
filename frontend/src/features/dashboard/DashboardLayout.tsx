@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuthStore, useThemeStore } from '@/lib/store';
 import { PremiumButton } from '@/components/PremiumButton';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import { useI18nStore } from '@/lib/i18n/store';
 import { ALL_LANGUAGES, type LanguageEntry } from '@/data/languages';
 
 function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useThemeStore();
-  const { t: trans } = useT();
+  const { t: trans } = useTranslation();
   const t = theme || 'system';
   const cycle = { light: 'dark' as const, dark: 'system' as const, system: 'light' as const };
   const next = cycle[t];
@@ -137,7 +137,7 @@ export function DashboardLayout() {
   const userMenuTriggerRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarTriggerRef = useRef<HTMLButtonElement>(null);
-  const { t } = useT();
+  const { t } = useTranslation();
 
   const navItems = [
     { path: '/dashboard', icon: Home, label: t('layout.overview') },

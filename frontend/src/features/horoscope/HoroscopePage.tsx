@@ -5,14 +5,14 @@ import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { CardSkeleton } from '@/components/Skeleton';
 import { RASHIS } from '@/lib/utils';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import type { DailyHoroscope } from '@shared/types/api';
 
 const staggerContainer = { animate: { transition: { staggerChildren: 0.03 } } };
 const staggerItem = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 export function HoroscopePage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const [selectedRashi, setSelectedRashi] = useState('Mesh');
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
 

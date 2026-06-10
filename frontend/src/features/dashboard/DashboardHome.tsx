@@ -12,7 +12,7 @@ import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { PremiumButton } from '@/components/PremiumButton';
 import { useAuthStore } from '@/lib/store';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import { usePersonalDashboard } from './components/usePersonalDashboard';
 import { useStreak } from '@/lib/useStreak';
 import { StatCard } from '@/components/astrology/StatCard';
@@ -127,7 +127,7 @@ function FileIcon({ type }: { type: string }) {
 }
 
 export function DashboardHome() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const greeting = getGreeting();
   const { data: dash, isLoading: dashLoading, error: dashError } = usePersonalDashboard();

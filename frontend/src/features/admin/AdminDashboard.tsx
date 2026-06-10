@@ -4,10 +4,10 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { StatsSkeleton } from '@/components/Skeleton';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 export function AdminDashboard() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const { data: analytics, isLoading } = useQuery({
     queryKey: ['admin-analytics'],
     queryFn: () => api.get<{ totalUsers: number; activeSubscriptions: number; reportsThisMonth: number; revenueThisMonth: number }>('/api/admin/analytics'),

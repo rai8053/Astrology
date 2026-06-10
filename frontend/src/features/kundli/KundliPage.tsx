@@ -8,8 +8,8 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { Input } from '@/components/ui/Input';
 import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
-import { useI18nStore } from '@/lib/i18n/store';
+import { useTranslation } from '@/lib/i18n';
+import { useI18nStore } from '@/lib/i18n';
 import { NavamsaChart } from './NavamsaChart';
 import type { BirthDetails, VedicProfile, AstroInsight, Remedy, TransitEvent } from '@shared/types/api';
 
@@ -232,7 +232,7 @@ function TransitCard({ event }: { event: TransitEvent }) {
 
 
 function ViewToggle({ view, onChange }: { view: 'summary' | 'detailed'; onChange: (v: 'summary' | 'detailed') => void }) {
-  const { t } = useT();
+  const { t } = useTranslation();
   return (
     <div className="flex rounded-lg border border-ink/10 dark:border-white/[0.06] overflow-hidden">
       <button
@@ -260,7 +260,7 @@ function ViewToggle({ view, onChange }: { view: 'summary' | 'detailed'; onChange
 }
 
 export function KundliPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const language = useI18nStore((s) => s.language);
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
   const [formData, setFormData] = useState<BirthDetails>({

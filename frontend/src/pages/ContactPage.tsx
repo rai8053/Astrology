@@ -6,12 +6,12 @@ import { Footer } from '@/components/Footer';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export function ContactPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');

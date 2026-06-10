@@ -4,14 +4,14 @@ import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { TableSkeleton } from '@/components/Skeleton';
 import { formatDate } from '@/lib/utils';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 interface UserRow {
   id: string; email: string; name: string; role: string; emailVerified: boolean; createdAt: string;
 }
 
 export function AdminUsers() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: () => api.get<UserRow[]>('/api/admin/users'),

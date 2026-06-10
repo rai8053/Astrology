@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 interface UsageRow {
   feature: string;
@@ -11,7 +11,7 @@ interface UsageRow {
 }
 
 export function AdminAnalytics() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const { data } = useQuery({
     queryKey: ['admin-usage'],
     queryFn: () => api.get<UsageRow[]>('/api/admin/usage'),

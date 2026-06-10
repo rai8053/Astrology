@@ -13,13 +13,13 @@ import { getDetectedCountry, setManualCountryOverride, getCurrencyInfo, formatPr
 import { getCountryName } from '@shared/config/pricing';
 import type { CountryCode } from '@shared/config/pricing';
 import toast from 'react-hot-toast';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 export function PricingPage() {
   const [yearly, setYearly] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
-  const { t } = useT();
+  const { t } = useTranslation();
   const [detectedCountry, setDetectedCountry] = useState<string>('US');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
 

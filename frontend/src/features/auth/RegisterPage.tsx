@@ -10,7 +10,7 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/lib/store';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import { fetchGoogleClientId } from '@/lib/google';
 import toast from 'react-hot-toast';
 import { SEO } from '@/components/SEO';
@@ -43,7 +43,7 @@ function calcStrength(password: string): { score: number; label: string; color: 
 export function RegisterPage() {
   const { register: registerUser, loginWithGoogle, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
-  const { t } = useT();
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [googleClientId, setGoogleClientId] = useState('');
   const { register, handleSubmit, watch, setError, formState: { errors, isSubmitting } } = useForm<RegisterForm>({

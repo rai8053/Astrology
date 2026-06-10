@@ -7,7 +7,7 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { Input } from '@/components/ui/Input';
 import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import type { CompatibilityInput, CompatibilityResult } from '@shared/types/api';
 
 interface PartnerErrors {
@@ -33,7 +33,7 @@ function validatePartner(name: string, date: string, time: string, place: string
 }
 
 export function CompatibilityPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const [input, setInput] = useState<CompatibilityInput & {
     partnerA: { birthState: string; birthCountry: string };
     partnerB: { birthState: string; birthCountry: string };

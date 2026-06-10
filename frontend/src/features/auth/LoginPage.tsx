@@ -10,7 +10,7 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/lib/store';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import { fetchGoogleClientId } from '@/lib/google';
 import toast from 'react-hot-toast';
 import { SEO } from '@/components/SEO';
@@ -24,7 +24,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const [googleClientId, setGoogleClientId] = useState('');
   const { login, loginWithGoogle, isAuthenticated } = useAuthStore();
-  const { t } = useT();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),

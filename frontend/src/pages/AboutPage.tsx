@@ -5,10 +5,10 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 export function AboutPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
 
   const TEAM = [
     { name: t('about.team1Name'), role: t('about.team1Role'), bio: t('about.team1Bio'), avatar: 'AS' },

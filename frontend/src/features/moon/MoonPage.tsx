@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { CardSkeleton } from '@/components/Skeleton';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import type { MoonPhaseInfo } from '@shared/types/api';
 
 function MoonSvg({ illumination, phaseName }: { illumination: number; phaseName: string }) {
@@ -48,7 +48,7 @@ function MoonSvg({ illumination, phaseName }: { illumination: number; phaseName:
 }
 
 export function MoonPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
 

@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 export function LoadingScreen() {
-  const { t } = useT();
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0 }}

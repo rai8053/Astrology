@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
 import { Star, Moon, Sun, Compass } from 'lucide-react';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import type { AstrologySnapshot as SnapshotData } from '@shared/types/api';
 
 const item = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 export function AstrologySnapshotCard({ data, isLoading }: { data?: SnapshotData | null; isLoading: boolean }) {
-  const { t } = useT();
+  const { t } = useTranslation();
   const fields: { label: string; key: keyof SnapshotData; icon: typeof Star; color: string }[] = [
     { label: t('onboarding.ascendant'), key: 'ascendant', icon: Compass, color: 'text-amber-400' },
     { label: t('onboarding.moonSign'), key: 'moonRashi', icon: Moon, color: 'text-blue-400' },

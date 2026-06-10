@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import type { CosmicEnergy } from '@shared/types/api';
 
 const levelColors: Record<string, { text: string; bar: string; glow: string }> = {
@@ -12,7 +12,7 @@ const levelColors: Record<string, { text: string; bar: string; glow: string }> =
 };
 
 export function CosmicEnergyCard({ data, isLoading }: { data?: CosmicEnergy | null; isLoading: boolean }) {
-  const { t } = useT();
+  const { t } = useTranslation();
   const levelLabels: Record<string, string> = {
     Excellent: t('dashboard.cosmicExcellent'),
     High: t('dashboard.cosmicHigh'),

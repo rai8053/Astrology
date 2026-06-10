@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumButton } from './PremiumButton';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAuthStore, useThemeStore } from '@/lib/store';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 function useMediaQuery(query: string) {
@@ -29,7 +29,7 @@ export function Navbar() {
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
   const { setTheme, resolved } = useThemeStore();
-  const { t } = useT();
+  const { t } = useTranslation();
   const isLanding = location.pathname === '/';
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);

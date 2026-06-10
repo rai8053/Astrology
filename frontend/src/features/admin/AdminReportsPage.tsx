@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { api } from '@/lib/api';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 export function AdminReportsPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ['admin-reports'],
     queryFn: () => api.get<{ id: string; type: string; createdAt: string; user: { name: string; email: string } }[]>('/api/admin/reports'),

@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
 import { Calendar, ArrowUpRight, Minus, AlertTriangle } from 'lucide-react';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import type { TransitAlert } from '@shared/types/api';
 
 export function TransitAlertsCard({ data, isLoading }: { data?: TransitAlert[] | null; isLoading: boolean }) {
-  const { t } = useT();
+  const { t } = useTranslation();
   const impactStyles: Record<string, { icon: typeof ArrowUpRight; color: string; bg: string; label: string }> = {
     positive: { icon: ArrowUpRight, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: t('dashboard.impactPositive') },
     neutral: { icon: Minus, color: 'text-blue-400', bg: 'bg-blue-500/10', label: t('dashboard.impactNeutral') },

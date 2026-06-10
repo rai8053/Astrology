@@ -8,6 +8,16 @@ import App from './app/App';
 import { ScrollProgress } from './components/ScrollProgress';
 import './styles/globals.css';
 
+const RTL = ['ar', 'ur', 'he', 'fa'];
+const savedLang = (() => {
+  try {
+    return localStorage.getItem('soma-language') || 'en';
+  } catch { return 'en'; }
+})();
+const savedDir: string = RTL.includes(savedLang) ? 'rtl' : 'ltr';
+document.documentElement.setAttribute('lang', savedLang);
+document.documentElement.setAttribute('dir', savedDir);
+
 if (import.meta.env.VITE_POSTHOG_KEY) {
   posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
     api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com',

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Sparkles, Heart, Briefcase, Activity, DollarSign, Hash, Palette, Lightbulb } from 'lucide-react';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 import type { PersonalHoroscope } from '@shared/types/api';
 
 type Period = 'today' | 'tomorrow' | 'week' | 'month';
@@ -14,7 +14,7 @@ export function HoroscopeSection({
   period: Period;
   onPeriodChange: (p: Period) => void;
 }) {
-  const { t } = useT();
+  const { t } = useTranslation();
   const TABS: { key: Period; label: string }[] = [
     { key: 'today', label: t('dashboard.today') },
     { key: 'tomorrow', label: t('dashboard.tomorrow') },

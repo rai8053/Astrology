@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
-import { useT } from '@/lib/i18n/useT';
-import type { TranslationKey } from '@/lib/i18n/translations';
+import { useTranslation } from '@/lib/i18n';
+import type { TranslationKey } from '@/lib/i18n';
 import { Sparkles, Moon, Heart, Star, Globe, MessageCircle, ArrowRight, Shield, Zap, Users, Check, Quote, ChevronDown, Sun, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
@@ -126,7 +126,7 @@ const faqs = [
 ];
 
 function DashboardPreview() {
-  const { t } = useT();
+  const { t } = useTranslation();
   return (
     <div className="relative w-full max-w-4xl mx-auto">
       <motion.div
@@ -193,7 +193,7 @@ function DashboardPreview() {
 }
 
 export function Landing() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuthStore();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -591,7 +591,7 @@ function FaqItem({ question, answer, index }: { question: string; answer: string
 }
 
 function PricingSection() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const [yearly, setYearly] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();

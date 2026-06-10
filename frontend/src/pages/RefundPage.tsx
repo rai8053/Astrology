@@ -3,11 +3,11 @@ import { RotateCcw } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PremiumCard } from '@/components/ui/PremiumCard';
-import { useT } from '@/lib/i18n/useT';
-import type { TranslationKey } from '@/lib/i18n/translations';
+import { useTranslation } from '@/lib/i18n';
+import type { TranslationKey } from '@/lib/i18n';
 
 export function RefundPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
       <Navbar />

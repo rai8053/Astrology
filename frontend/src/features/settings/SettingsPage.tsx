@@ -1,4 +1,4 @@
-ï»¿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { User, Sun, Moon, Globe, Save, ExternalLink, CreditCard, CheckCircle2, XCircle, Trash2, AlertTriangle, DollarSign, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,9 +11,9 @@ import { Input } from '@/components/ui/Input';
 import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumButton } from '@/components/PremiumButton';
 import { useAuthStore, useThemeStore } from '@/lib/store';
-import { useI18nStore } from '@/lib/i18n/store';
-import type { Language } from '@/lib/i18n/translations';
-import { useT } from '@/lib/i18n/useT';
+import { useI18nStore } from '@/lib/i18n';
+import { type Language } from '@/lib/i18n';
+import { useTranslation } from '@/lib/i18n';
 import { REGIONAL_PRICING, setManualCountryOverride, getDetectedCountry } from '@/lib/pricing';
 import toast from 'react-hot-toast';
 
@@ -36,12 +36,12 @@ interface Subscription {
 }
 
 const FLAGS: Record<string, string> = {
-  en: 'â‰¡Æ’Ã§Â¼â‰¡Æ’Ã§Âº', hi: 'â‰¡Æ’Ã§Â«â‰¡Æ’Ã§â”‚', bn: 'â‰¡Æ’Ã§Âºâ‰¡Æ’Ã§âŒ', es: 'â‰¡Æ’Ã§Â¬â‰¡Æ’Ã§â••', pt: 'â‰¡Æ’Ã§â•¡â‰¡Æ’Ã§â•£',
-  fr: 'â‰¡Æ’Ã§Â½â‰¡Æ’Ã§â•–', de: 'â‰¡Æ’Ã§âŒâ‰¡Æ’Ã§Â¬', ar: 'â‰¡Æ’Ã§â••â‰¡Æ’Ã§Âª', ja: 'â‰¡Æ’Ã§Â»â‰¡Æ’Ã§â•¡', zh: 'â‰¡Æ’Ã§Â¿â‰¡Æ’Ã§â”‚',
+  en: '=ƒç¼=ƒçº', hi: '=ƒç«=ƒç¦', bn: '=ƒçº=ƒç¬', es: '=ƒç¬=ƒç+', pt: '=ƒç¦=ƒç¦',
+  fr: '=ƒç½=ƒç+', de: '=ƒç¬=ƒç¬', ar: '=ƒç+=ƒçª', ja: '=ƒç»=ƒç¦', zh: '=ƒç¿=ƒç¦',
 };
 const LANG_NAMES: Record<string, string> = {
-  en: 'English', hi: 'Î±Ã±â•£Î±Ã±â”Î±Ã±Â¿Î±Ã‘Ã¬Î±Ã±ÂªÎ±Ã‘Ã‡', bn: 'Î±ÂªÂ¼Î±Âªâ•›Î±ÂªÃ©Î±â–“Î±â–“â•›', es: 'Espaâ”œâ–’ol', pt: 'Portuguâ”œÂ¬s',
-  fr: 'Franâ”œÂºais', de: 'Deutsch', ar: 'â•ªÂºâ”˜Ã¤â•ªâ•£â•ªâ–’â•ªÂ¿â”˜Ã¨â•ªâŒ', ja: 'ÂµÃ¹Ã‘ÂµÂ£Â¼Î¦Â¬â‚§', zh: 'Î£â••Â¡ÂµÃ»Ã§',
+  en: 'English', hi: 'añ¦añ+añ¿aÑìañªaÑÇ', bn: 'aª¼aª+aªéa¦a¦+', es: 'Espa+¦ol', pt: 'Portugu+¬s',
+  fr: 'Fran+ºais', de: 'Deutsch', ar: '+º+ä+¦+¦+¿+è+¬', ja: 'µùÑµ£¼F¬P', zh: 'S+¡µûç',
 };
 const LANG_LIST = Object.entries(FLAGS).map(([code, flag]) => ({ code: code as Language, flag, label: LANG_NAMES[code] }));
 
@@ -93,7 +93,7 @@ function showPremiumToast(type: 'success' | 'error', title: string, message: str
 }
 
 export function SettingsPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   const { user, setUser } = useAuthStore();
   const { theme, setTheme } = useThemeStore();
   const { language, setLanguage } = useI18nStore();
@@ -298,16 +298,16 @@ export function SettingsPage() {
                 <>
                   <div className="space-y-1.5">
                     <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.dob')}</label>
-                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthDate') || 'Î“Ã‡Ã¶'}</p>
+                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthDate') || 'GÇö'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthTime')}</label>
-                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthTime') || 'Î“Ã‡Ã¶'}</p>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthTime') || 'GÇö'}</p>
                     </div>
                     <div className="space-y-1.5">
                       <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthPlace')}</label>
-                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthPlace') || 'Î“Ã‡Ã¶'}</p>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthPlace') || 'GÇö'}</p>
                     </div>
                   </div>
                 </>
@@ -492,7 +492,7 @@ export function SettingsPage() {
               >
                 <span>{REGIONAL_PRICING[detectedCountry]?.flag}</span>
                 <span className="flex-1 text-left">
-                  {REGIONAL_PRICING[detectedCountry]?.currency.code} ({REGIONAL_PRICING[detectedCountry]?.currency.symbol}) Î“Ã‡Ã¶ {REGIONAL_PRICING[detectedCountry]?.currency.locale}
+                  {REGIONAL_PRICING[detectedCountry]?.currency.code} ({REGIONAL_PRICING[detectedCountry]?.currency.symbol}) GÇö {REGIONAL_PRICING[detectedCountry]?.currency.locale}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${currencyOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -510,7 +510,7 @@ export function SettingsPage() {
                       }`}
                     >
                       <span>{cfg.flag}</span>
-                      <span>{cfg.currency.code} ({cfg.currency.symbol}) Î“Ã‡Ã¶ {cfg.currency.locale}</span>
+                      <span>{cfg.currency.code} ({cfg.currency.symbol}) GÇö {cfg.currency.locale}</span>
                     </button>
                   ))}
                 </div>

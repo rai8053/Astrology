@@ -4,10 +4,10 @@ import { Compass, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { PremiumButton } from '@/components/PremiumButton';
-import { useT } from '@/lib/i18n/useT';
+import { useTranslation } from '@/lib/i18n';
 
 export function NotFoundPage() {
-  const { t } = useT();
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
       <Navbar />

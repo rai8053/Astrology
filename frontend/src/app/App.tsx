@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
 import { brand } from '@/config/brand';
-import { useI18nStore } from '@/lib/i18n/store';
+import { useI18nStore } from '@/lib/i18n';
 import posthog from 'posthog-js';
 import { easeOut } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
