@@ -2,6 +2,7 @@ name: CI
 
 env:
   NODE_VERSION: 22
+  DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
 on:
   push:
@@ -32,8 +33,6 @@ jobs:
         with:
           working-directory: backend
           node-version: '22'
-        env:
-          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
       - name: Setup Frontend
         uses: ./.github/actions/setup
@@ -44,8 +43,6 @@ jobs:
       - name: Lint Backend
         working-directory: backend
         run: npx tsc --noEmit
-        env:
-          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
       - name: Lint Frontend
         working-directory: frontend
@@ -73,8 +70,6 @@ jobs:
       - name: Audit Backend
         working-directory: backend
         run: npm audit --audit-level=high || true
-        env:
-          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
       - name: Audit Frontend
         working-directory: frontend
@@ -144,8 +139,6 @@ jobs:
         with:
           working-directory: backend
           node-version: '22'
-        env:
-          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy?schema=public
 
       - name: Setup Frontend
         uses: ./.github/actions/setup
