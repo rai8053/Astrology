@@ -33,16 +33,16 @@ export function NavamsaChart({ placements }: { placements: VedicProfile['planeta
   return (
     <PremiumCard glass>
       <div className="flex items-center gap-2 mb-4">
-        <Star className="w-4 h-4 text-gold" />
-        <h3 className="font-serif font-semibold">{t('kundli.navamsaChart')}</h3>
-        <span className="text-[9px] uppercase font-sans font-bold text-ink/30 dark:text-parchment/30 tracking-wider ml-auto">{t('kundli.navamsaSubtitle')}</span>
+        <Star className="w-4 h-4 text-primary-light" />
+        <h3 className="font-display text-base font-medium">{t('kundli.navamsaChart')}</h3>
+        <span className="text-[9px] uppercase font-sans font-bold text-muted-foreground tracking-wider ml-auto">{t('kundli.navamsaSubtitle')}</span>
       </div>
       <div className="grid grid-cols-4 gap-1.5">
         {navamsaSigns.map((sign) => {
           const planetsInSign = signMap.get(sign) || [];
           return (
-            <div key={sign} className="border border-ink/10 dark:border-white/[0.06] rounded-lg p-2 min-h-[64px] bg-ink/3 dark:bg-white/[0.02]">
-              <p className="text-[8px] font-sans font-bold uppercase tracking-wider text-gold/60 mb-1">{sign}</p>
+            <div key={sign} className="sacred-border rounded-lg p-2 min-h-[64px] bg-card/30">
+              <p className="text-[8px] font-sans font-bold uppercase tracking-wider text-primary-light/60 mb-1">{sign}</p>
               {planetsInSign.length === 0 ? (
                 <p className="text-[7px] text-ink/20 dark:text-parchment/20">—</p>
               ) : (

@@ -7,10 +7,10 @@ interface ScoreRingProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 90) return 'stroke-pink-400';
-  if (score >= 70) return 'stroke-blue-400';
-  if (score >= 50) return 'stroke-green-400';
-  return 'stroke-amber-400';
+  if (score >= 90) return 'stroke-[#C9943A]';
+  if (score >= 70) return 'stroke-[#DBA84E]';
+  if (score >= 50) return 'stroke-[#ECC77A]';
+  return 'stroke-[#C9943A]';
 }
 
 export function ScoreRing({ value, label, size = 64 }: ScoreRingProps) {

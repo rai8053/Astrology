@@ -10,6 +10,7 @@ import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { useTranslation } from '@/lib/i18n';
 import { useI18nStore } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 import { NavamsaChart } from './NavamsaChart';
 import type { BirthDetails, VedicProfile, AstroInsight, Remedy, TransitEvent } from '@shared/types/api';
 
@@ -53,10 +54,11 @@ const itemVariants = {
 };
 
 function NorthIndianChart({ placements, lagna, rashi }: { placements: VedicProfile['planetaryPlacements']; lagna: string; rashi: string }) {
-  const SIZE = 280;
+  const SIZE = 320;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
-  const R = 110;
+  const R = 120;
+  const ZODIAC = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
 
   type HouseSlot = { a: number; label: string; placements: typeof placements };
   const houses: HouseSlot[] = [
@@ -83,56 +85,56 @@ function NorthIndianChart({ placements, lagna, rashi }: { placements: VedicProfi
     <div className="flex justify-center">
       <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="drop-shadow-lg">
         <defs>
-          <radialGradient id="chart-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(245,158,11,0.06)" />
-            <stop offset="100%" stopColor="rgba(245,158,11,0)" />
+          <radialGradient id="chartGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(201,148,58,0.08)" />
+            <stop offset="100%" stopColor="rgba(201,148,58,0)" />
           </radialGradient>
         </defs>
-        <circle cx={CX} cy={CY} r={R + 20} fill="url(#chart-glow)" />
+        <circle cx={CX} cy={CY} r={R + 25} fill="url(#chartGlow)" />
+
+        {/* Outer zodiac glyph ring */}
+        {ZODIAC.map((z, i) => {
+          const a = ((i * 30 + 15) * Math.PI) / 180;
+          return (
+            <text key={i} x={CX + (R + 18) * Math.cos(a)} y={CY + (R + 18) * Math.sin(a)}
+              textAnchor="middle" dominantBaseline="central"
+              fontSize="10" fill="rgba(201,148,58,0.35)" fontFamily="serif">{z}</text>
+          );
+        })}
 
         {/* House wedges and labels */}
         {houses.map((h, i) => {
           const angle = ((h.a - 90) * Math.PI) / 180;
-          const outerX = CX + (R + 10) * Math.cos(angle);
-          const outerY = CY + (R + 10) * Math.sin(angle);
-          const innerX = CX + 35 * Math.cos(angle);
-          const innerY = CY + 35 * Math.sin(angle);
           const nextAngle = ((h.a + 30 - 90) * Math.PI) / 180;
           const midAngle = ((h.a + 15 - 90) * Math.PI) / 180;
           const labelX = CX + (R + 32) * Math.cos(midAngle);
           const labelY = CY + (R + 32) * Math.sin(midAngle);
-
-          const midR = R / 2 + 17;
-          const planetX = CX + midR * Math.cos(midAngle);
-          const planetY = CY + midR * Math.sin(midAngle);
-
           const isLagnaHouse = i === 0;
           const isFirst = i === 0;
 
           return (
             <g key={i}>
               <line
-                x1={CX + 35 * Math.cos(angle)}
-                y1={CY + 35 * Math.sin(angle)}
+                x1={CX + 40 * Math.cos(angle)}
+                y1={CY + 40 * Math.sin(angle)}
                 x2={CX + (R + 10) * Math.cos(angle)}
                 y2={CY + (R + 10) * Math.sin(angle)}
-                stroke="rgba(245,158,11,0.2)"
-                strokeWidth={1}
-                className="dark:opacity-30"
+                stroke="rgba(201,148,58,0.3)"
+                strokeWidth={0.8}
               />
               {isFirst && (
                 <line
-                  x1={CX + 35 * Math.cos(angle)}
-                  y1={CY + 35 * Math.sin(angle)}
-                  x2={CX + 35 * Math.cos(nextAngle)}
-                  y2={CY + 35 * Math.sin(nextAngle)}
-                  stroke="rgba(245,158,11,0.2)"
-                  strokeWidth={1}
+                  x1={CX + 40 * Math.cos(angle)}
+                  y1={CY + 40 * Math.sin(angle)}
+                  x2={CX + 40 * Math.cos(nextAngle)}
+                  y2={CY + 40 * Math.sin(nextAngle)}
+                  stroke="rgba(201,148,58,0.3)"
+                  strokeWidth={0.8}
                 />
               )}
-              <circle cx={CX} cy={CY} r={35} fill="none" stroke="rgba(245,158,11,0.2)" strokeWidth={1} />
-              <text x={CX} y={CY + 1.5} textAnchor="middle" fontSize="8" fill="rgba(245,158,11,0.5)" className="font-sans">As</text>
-              <text x={labelX} y={labelY} textAnchor="middle" fontSize="7" fill="rgba(107,114,128,0.6)" className="font-sans font-bold">{h.label}</text>
+              <circle cx={CX} cy={CY} r={40} fill="none" stroke="rgba(201,148,58,0.25)" strokeWidth={0.8} />
+              <text x={CX} y={CY + 1.5} textAnchor="middle" fontSize="9" fill="rgba(201,148,58,0.5)" fontFamily="var(--font-sans)">As</text>
+              <text x={labelX} y={labelY} textAnchor="middle" fontSize="8" fill="rgba(156,163,175,0.5)" fontFamily="var(--font-sans)" fontWeight="bold">{h.label}</text>
             </g>
           );
         })}
@@ -141,10 +143,10 @@ function NorthIndianChart({ placements, lagna, rashi }: { placements: VedicProfi
         {houses.map((h) => {
           if (!h.placements.length) return null;
           const midAngle = ((h.a + 15 - 90) * Math.PI) / 180;
-          const midR = R / 2 + 17;
+          const midR = R / 2 + 20;
           const count = h.placements.length;
           return h.placements.map((p, pi) => {
-            const offset = count > 1 ? (pi - (count - 1) / 2) * 16 : 0;
+            const offset = count > 1 ? (pi - (count - 1) / 2) * 18 : 0;
             const perpAngle = midAngle + Math.PI / 2;
             const px = CX + midR * Math.cos(midAngle) + offset * Math.cos(perpAngle);
             const py = CY + midR * Math.sin(midAngle) + offset * Math.sin(perpAngle);
@@ -152,8 +154,8 @@ function NorthIndianChart({ placements, lagna, rashi }: { placements: VedicProfi
             if (!symbol) return null;
             return (
               <g key={`${p.planet}-${pi}`}>
-                <circle cx={px} cy={py} r={8} fill={symbol.color} opacity={0.15} />
-                <text x={px} y={py + 1.5} textAnchor="middle" fontSize="5" fill={symbol.color} className="font-sans font-bold">{symbol.symbol}</text>
+                <circle cx={px} cy={py} r={9} fill={symbol.color} opacity={0.15} />
+                <text x={px} y={py + 1.5} textAnchor="middle" fontSize="6" fill={symbol.color} fontFamily="var(--font-sans)" fontWeight="bold">{symbol.symbol}</text>
               </g>
             );
           });
@@ -234,24 +236,26 @@ function TransitCard({ event }: { event: TransitEvent }) {
 function ViewToggle({ view, onChange }: { view: 'summary' | 'detailed'; onChange: (v: 'summary' | 'detailed') => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex rounded-lg border border-ink/10 dark:border-white/[0.06] overflow-hidden">
+    <div className="flex rounded-lg border border-primary/15 overflow-hidden bg-card/50">
       <button
         onClick={() => onChange('summary')}
-        className={`px-3 py-1.5 text-xs font-medium transition-all ${
+        className={cn(
+          'px-3 py-1.5 text-xs font-medium transition-all',
           view === 'summary'
-            ? 'bg-gold text-white shadow-sm'
-            : 'text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment hover:bg-ink/5 dark:hover:bg-white/[0.04]'
-        }`}
+            ? 'text-primary border-b-2 border-primary'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
       >
         {t('kundli.summarized')}
       </button>
       <button
         onClick={() => onChange('detailed')}
-        className={`px-3 py-1.5 text-xs font-medium transition-all ${
+        className={cn(
+          'px-3 py-1.5 text-xs font-medium transition-all',
           view === 'detailed'
-            ? 'bg-gold text-white shadow-sm'
-            : 'text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment hover:bg-ink/5 dark:hover:bg-white/[0.04]'
-        }`}
+            ? 'text-primary border-b-2 border-primary'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
       >
         {t('kundli.detailed')}
       </button>
@@ -383,11 +387,37 @@ export function KundliPage() {
           className="lg:col-span-2 space-y-4"
         >
           <PremiumCard glass className="sticky top-20">
+            {/* Step Progress */}
+            <div className="flex items-center justify-between mb-6 px-1">
+              {[
+                { label: t('kundli.birthDetails') || 'Birth Details', icon: Star },
+                { label: 'Location', icon: Compass },
+                { label: t('kundli.generate') || 'Generate', icon: Sparkles },
+              ].map((step, i) => {
+                const done = profile && i < 2;
+                const active = !profile && i === 0;
+                return (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <div className={cn(
+                      'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all',
+                      done ? 'bg-primary text-primary-foreground' :
+                      active ? 'bg-primary/20 text-primary border border-primary/40' :
+                      'bg-primary/10 text-muted-foreground',
+                    )}>{i + 1}</div>
+                    <span className={cn(
+                      'text-[10px] font-medium hidden sm:inline',
+                      done ? 'text-primary-light' : active ? 'text-foreground' : 'text-muted-foreground',
+                    )}>{step.label}</span>
+                    {i < 2 && <div className="w-6 h-px bg-primary/20 mx-1 hidden sm:block" />}
+                  </div>
+                );
+              })}
+            </div>
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-gold" />
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Compass className="w-4 h-4 text-primary-light" />
               </div>
-              <h3 className="font-serif text-lg font-semibold">{t('kundli.birthDetails')}</h3>
+              <h3 className="font-display text-lg font-medium">{t('kundli.birthDetails')}</h3>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input id="k_name" label={t('kundli.name')} value={formData.name} onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setErrors({ ...errors, name: '' }); }} required placeholder={t('kundli.namePlaceholder')} error={errors.name} />
@@ -396,12 +426,16 @@ export function KundliPage() {
                 <Input id="k_time" label={t('kundli.time')} type="time" value={formData.birthTime} onChange={(e) => { setFormData({ ...formData, birthTime: e.target.value }); setErrors({ ...errors, birthTime: '' }); }} required error={errors.birthTime} />
               </div>
               <BirthPlaceInput id="k_place" label={t('kundli.place')} value={formData.birthPlace} onChange={(v) => { setFormData({ ...formData, birthPlace: v }); setErrors({ ...errors, birthPlace: '' }); }} required placeholder={t('kundli.placePlaceholder')} error={errors.birthPlace} state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
-              <PremiumButton type="submit" loading={mutation.isPending} icon={<Sparkles className="w-3.5 h-3.5" />} className="w-full">
-                {profile ? t('kundli.regenerate') : t('kundli.generate')}
+              <PremiumButton type="submit" loading={mutation.isPending} className="w-full gold-gradient text-primary-foreground font-medium rounded-xl py-3">
+                {mutation.isPending ? t('kundli.loading') || 'Generating...' : <>✦ {profile ? t('kundli.regenerate') || 'Regenerate Kundli' : t('kundli.generate') || 'Reveal My Kundli'}</>}
               </PremiumButton>
               {mutation.isError && (
                 <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {t('kundli.generateError')}</p>
               )}
+              <p className="text-[10px] text-muted-foreground text-center pt-1">
+                <Shield className="w-3 h-3 inline-block mr-1" />
+                {t('kundli.privacyNotice') || 'Your data stays private — never stored'}
+              </p>
             </form>
 
             {profile && (
@@ -411,11 +445,12 @@ export function KundliPage() {
                     <button
                       key={s.key}
                       onClick={() => scrollToSection(s.key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-medium transition-all ${
+                      className={cn(
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-medium transition-all',
                         activeSection === s.key
-                          ? 'bg-gold/10 text-gold shadow-sm'
-                          : 'text-ink/40 dark:text-parchment/40 hover:text-ink dark:hover:text-parchment hover:bg-ink/5 dark:hover:bg-white/[0.04]'
-                      }`}
+                          ? 'bg-primary/10 text-primary-light border border-primary/20'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-primary/[0.04]',
+                      )}
                     >
                       <s.icon className="w-3 h-3" />
                       {s.label}

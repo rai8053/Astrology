@@ -211,7 +211,7 @@ export function DashboardHome() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-4">
         <motion.div
           animate={{ rotate: [0, 5, 0, -5, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
@@ -219,77 +219,148 @@ export function DashboardHome() {
         >
           <greeting.icon className="h-6 w-6 text-primary" />
         </motion.div>
-        <div className="min-w-0">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t(greeting.key)}</h1>
-          <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl md:text-3xl font-display tracking-tight text-foreground">
+            {displayName ? `Namaste, ${displayName.split(' ')[0]}` : t(greeting.key)}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('dashboard.subtitle') || 'Your cosmic forecast for today'}
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span>{snapshot.moonRashi || '—'} &middot; {snapshot.nakshatra || '—'}</span>
             {sub?.data?.plan && sub.data.plan !== 'FREE' && (
               <>
                 <span className="h-1 w-1 rounded-full bg-primary/40" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{sub.data.plan}</span>
+                <span className="badge-primary">{sub.data.plan}</span>
               </>
             )}
-          </p>
+          </div>
         </div>
       </motion.div>
 
-      {/* Section 1: Astrology Profile */}
+      {/* Cosmic Snapshot */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-medium tracking-[0.04em] uppercase text-muted-foreground mr-1">{t('dashboard.cosmicSnapshot') || 'Your Cosmos'}</span>
+        {[
+          { label: t('kundli.moonRashi') || 'Moon', value: snapshot.moonRashi || '—', glyph: '☽' },
+          { label: t('kundli.ascendantLabel') || 'Rising', value: snapshot.ascendant || '—', glyph: '↑' },
+          { label: t('kundli.nakshatraLabel') || 'Nakshatra', value: snapshot.nakshatra || '—', glyph: '✦' },
+        ].map((item, i) => (
+          <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/15 text-[11px] font-medium text-foreground bg-primary/[0.04]">
+            <span className="text-primary-light">{item.glyph}</span>
+            {item.value}
+          </span>
+        ))}
+      </motion.div>
+
+      {/* Section 1: Astrology Profile - 4 Key Stats */}
       <motion.div variants={stagger} initial="initial" animate="animate">
         <SectionHeader icon={User} title={t('dashboard.astrologyProfile')} />
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          <StatCard icon={<Moon className="h-4 w-4 text-blue-400" />} label={t('kundli.moonRashi')} value={snapshot.moonRashi || '—'} />
-          <StatCard
-            icon={<Star className="h-4 w-4 text-purple-400" />}
-            label={t('dashboard.birthStar')}
-            value={snapshot.nakshatra && snapshot.nakshatraLord ? `${snapshot.nakshatra} — ${snapshot.nakshatraLord}` : '—'}
-          />
-          <StatCard icon={<Sun className="h-4 w-4 text-amber-400" />} label={t('kundli.ascendantLabel')} value={snapshot.ascendant || '—'} />
-          <StatCard icon={<Shield className="h-4 w-4 text-rose-400" />} label={t('dashboard.lagnaLord')} value={snapshot.lagnaLord || '—'} />
-          <StatCard
-            icon={<CalendarDays className="h-4 w-4 text-sky-400" />}
-            label={t('dashboard.lunarDay')}
-            value={tithi?.name ? `${tithi.name} (${tithi.paksha || '—'})` : '—'}
-          />
-          <StatCard icon={<Compass className="h-4 w-4 text-cyan-400" />} label={t('dashboard.yoga')} value={yoga?.name || '—'} />
-          <StatCard
-            icon={<Layers className="h-4 w-4 text-indigo-400" />}
-            label={t('moon.title')}
-            value={moonPhase ? `${moonPhase.phaseName} ${moonPhase.illumination}%` : '—'}
-          />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { icon: '☽', label: t('kundli.moonRashi'), value: snapshot.moonRashi || '—', sub: snapshot.nakshatra || '' },
+            { icon: '☉', label: t('kundli.ascendantLabel'), value: snapshot.ascendant || '—', sub: snapshot.lagnaLord || '' },
+            { icon: '✦', label: t('dashboard.birthStar'), value: snapshot.nakshatra || '—', sub: snapshot.nakshatraLord || '' },
+            { icon: '🔥', label: t('kundli.elementLabel') || 'Element', value: snapshot.element || '—', sub: snapshot.doshaDominance || '' },
+          ].map((stat, i) => (
+            <motion.div key={i} variants={itemAnim}>
+              <div className="sacred-border rounded-xl p-4 bg-card/50">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg text-primary-light">
+                    {stat.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{stat.label}</p>
+                    <p className="gold-text text-sm font-semibold">{stat.value}</p>
+                    {stat.sub && <p className="text-[10px] text-muted-foreground truncate">{stat.sub}</p>}
+                  </div>
+                </div>
+                <div className="mt-2 h-[2px] w-full rounded-full bg-primary/10">
+                  <div className="h-full rounded-full bg-primary/40 transition-all" style={{ width: `${60 + Math.random() * 30}%` }} />
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </motion.div>
 
-      {/* Section 2: Today's Horoscope & Cosmic Energy */}
-      <motion.div variants={stagger} initial="initial" animate="animate" className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <SectionHeader icon={Sparkles} title={t('dashboard.todaysHoroscope')} />
-          <HoroscopeCard
-            prediction={horoscope.prediction}
-            dailyAdvice={horoscope.dailyAdvice}
-            love={horoscope.love}
-            career={horoscope.career}
-            health={horoscope.health}
-            finance={horoscope.finance}
-          />
-        </div>
-        <div>
-          <SectionHeader icon={Zap} title={t('dashboard.cosmicEnergy')} />
-          <PremiumCard glass className="flex h-full flex-col items-center justify-center text-center">
-            <div className={`mb-1 text-5xl font-bold ${
-              cosmicEnergy.level === 'Excellent' ? 'text-emerald-400' :
-              cosmicEnergy.level === 'High' ? 'text-blue-400' :
-              cosmicEnergy.level === 'Moderate' ? 'text-amber-400' : 'text-red-400'
-            }`}>{cosmicEnergy.score ?? '—'}</div>
-            <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{cosmicEnergy.level || '—'}</div>
-            <div className="mb-2 h-1.5 w-full rounded-full bg-muted">
-              <div className={`h-1.5 rounded-full transition-all duration-1000 ${
-                cosmicEnergy.level === 'Excellent' ? 'w-11/12 bg-emerald-400' :
-                cosmicEnergy.level === 'High' ? 'w-3/4 bg-blue-400' :
-                cosmicEnergy.level === 'Moderate' ? 'w-1/2 bg-amber-400' : 'w-1/4 bg-red-400'
-              }`} />
+      {/* Section 2: Today's Cosmic Weather */}
+      <motion.div variants={stagger} initial="initial" animate="animate" className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="lg:col-span-3">
+          <SectionHeader icon={Sparkles} title={t('dashboard.todaysHoroscope') || 'Today\'s Cosmic Weather'} />
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Moon className="h-4 w-4 text-primary-light" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">
+                  {horoscope.luckyDay || new Date().toLocaleDateString()}
+                </p>
+                <p className="text-[11px] text-muted-foreground/60">
+                  {moonPhase?.phaseName || ''} {moonPhase?.illumination ? `· ${moonPhase.illumination}%` : ''}
+                </p>
+              </div>
             </div>
-            <p className="text-[10px] text-muted-foreground">{cosmicEnergy.description || '—'}</p>
-          </PremiumCard>
+            <p className="text-sm leading-relaxed text-foreground">
+              {horoscope.prediction || t('horoscope.starsAligning')}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {[
+                { label: t('horoscope.scoreLove') || 'Love', value: horoscope.love, color: 'bg-rose-500/20' },
+                { label: t('horoscope.scoreCareer') || 'Career', value: horoscope.career, color: 'bg-blue-500/20' },
+                { label: t('horoscope.scoreHealth') || 'Health', value: horoscope.health, color: 'bg-emerald-500/20' },
+                { label: t('horoscope.scoreWealth') || 'Finance', value: horoscope.finance, color: 'bg-amber-500/20' },
+              ].filter(s => s.value != null).map((s, i) => (
+                <span key={i} className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium ${s.color} text-foreground`}>
+                  {s.label} {s.value}%
+                </span>
+              ))}
+            </div>
+            {horoscope.dailyAdvice && (
+              <p className="mt-3 border-t border-border pt-3 text-xs italic leading-relaxed text-muted-foreground">
+                &ldquo;{horoscope.dailyAdvice}&rdquo;
+              </p>
+            )}
+            <Link to="/dashboard/horoscope" className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-primary-light hover:underline">
+              {t('dashboard.readFullHoroscope') || 'Read Full Horoscope'} <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+        <div className="lg:col-span-2 space-y-3">
+          <div>
+            <SectionHeader icon={Zap} title={t('dashboard.cosmicEnergy')} />
+            <PremiumCard glass className="flex flex-col items-center justify-center text-center py-5">
+              <div className={`text-4xl font-bold ${
+                cosmicEnergy.level === 'Excellent' ? 'gold-text' :
+                cosmicEnergy.level === 'High' ? 'text-blue-400' :
+                cosmicEnergy.level === 'Moderate' ? 'text-amber-400' : 'text-red-400'
+              }`}>{cosmicEnergy.score ?? '—'}</div>
+              <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{cosmicEnergy.level || '—'}</div>
+              <div className="mt-2 h-1 w-full rounded-full bg-primary/10">
+                <div className={`h-1 rounded-full transition-all duration-1000 ${
+                  cosmicEnergy.level === 'Excellent' ? 'w-11/12 bg-gradient-to-r from-primary to-primary-light' :
+                  cosmicEnergy.level === 'High' ? 'w-3/4 bg-blue-400' :
+                  cosmicEnergy.level === 'Moderate' ? 'w-1/2 bg-amber-400' : 'w-1/4 bg-red-400'
+                }`} />
+              </div>
+              <p className="mt-2 text-[10px] text-muted-foreground">{cosmicEnergy.description || '—'}</p>
+            </PremiumCard>
+          </div>
+          <div>
+            <SectionHeader icon={Gem} title={t('dashboard.luckyInsights') || 'Daily Insights'} />
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: t('dashboard.luckyNumber') || 'Number', value: horoscope.luckyNumber != null ? `${horoscope.luckyNumber}` : '—' },
+                { label: t('dashboard.luckyColor') || 'Color', value: horoscope.luckyColor || '—' },
+              ].map((item, i) => (
+                <PremiumCard key={i} glass className="text-center py-3 px-2">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{item.label}</p>
+                  <p className="gold-text text-sm font-bold mt-0.5">{item.value}</p>
+                </PremiumCard>
+              ))}
+            </div>
+          </div>
         </div>
       </motion.div>
 

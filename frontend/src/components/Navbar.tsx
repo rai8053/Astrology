@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, Menu, X, Sun, Moon, User, Settings, Shield, LogOut, Crown, ChevronDown } from 'lucide-react';
+import { Menu, X, Sun, Moon, User, Settings, Shield, LogOut, Crown, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumButton } from './PremiumButton';
@@ -110,7 +110,7 @@ export function Navbar() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
         scrolled
-          ? 'glass-nav shadow-lg backdrop-blur-xl'
+          ? 'glass-nav shadow-lg backdrop-blur-xl border-b border-primary/10'
           : isLanding
           ? 'bg-transparent'
           : 'glass-nav',
@@ -126,11 +126,12 @@ export function Navbar() {
         )}>
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 group-hover:cosmic-glow transition-all duration-300">
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
-            <span className="text-base font-semibold tracking-tight text-foreground">
-              Astro<span className="font-light text-primary-light">Nova</span>
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="text-primary">
+              <path d="M14 3C11.5 3 7 5.5 7 14s4.5 11 7 11c-3 0-7-4-7-11S11 3 14 3z" fill="currentColor" opacity="0.6"/>
+              <path d="M16 4a10 10 0 0 0-3 20 10 10 0 0 0 3-20z" fill="currentColor" opacity="0.3"/>
+            </svg>
+            <span className="text-base font-display tracking-tight text-foreground" style={{ fontSize: '18px' }}>
+              Soma <span className="text-primary-light">&</span> Surya
             </span>
           </Link>
 
@@ -144,19 +145,17 @@ export function Navbar() {
                   key={link.href}
                   to={link.href}
                   className={cn(
-                    'relative px-3 py-2 text-sm rounded-lg transition-all duration-200',
+                    'relative px-3 py-2 text-xs font-medium tracking-[0.04em] uppercase transition-all duration-200 group',
                     isActive
-                      ? 'text-primary-light bg-primary/5'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-primary/[0.04]',
+                      ? 'text-primary-light'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {t(link.labelKey as any)}
-                  {isActive && (
-                    <motion.span
-                      layoutId="nav-active"
-                      className="absolute bottom-0 left-2 right-2 h-[2px] bg-primary rounded-full"
-                    />
-                  )}
+                  <span className={cn(
+                    'absolute bottom-0 left-2 right-2 h-[1px] bg-primary rounded-full transition-transform duration-200 origin-left',
+                    isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
+                  )} />
                 </Link>
               );
             })}
@@ -276,9 +275,12 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl overflow-hidden"
+            className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl overflow-hidden relative"
           >
-            <div className="px-5 py-5 space-y-3">
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='100' cy='100' r='80' fill='none' stroke='%23C9943A' stroke-width='0.5'/%3E%3Ccircle cx='100' cy='100' r='60' fill='none' stroke='%23C9943A' stroke-width='0.3'/%3E%3Ccircle cx='100' cy='100' r='40' fill='none' stroke='%23C9943A' stroke-width='0.3'/%3E%3C/svg%3E")`, backgroundSize: '200px 200px', backgroundPosition: 'center' }}
+            />
+            <div className="px-5 py-5 space-y-3 relative z-[1]">
               {isAuthenticated && (
                 <div className="flex items-center gap-3 px-1 pb-3 border-b border-border">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">

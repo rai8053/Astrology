@@ -126,49 +126,49 @@ const faqs = [
 ];
 
 function ZodiacWheel() {
-  const zodias = [
-    '♈', '♉', '♊', '♋', '♌', '♍',
-    '♎', '♏', '♐', '♑', '♒', '♓',
-  ];
+  const zodiacs = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+  const starM = [150,78,162,123,200,101,178,139,220,150,178,161,200,199,162,177,
+    150,222,138,177,100,199,122,161,80,150,122,139,100,101,138,123];
   return (
     <div className="relative w-72 h-72 sm:w-80 sm:h-80 mx-auto">
-      <div className="absolute inset-0 rounded-full border border-primary/10 animate-spin" style={{ animationDuration: '60s' }}>
-        {zodias.map((z, i) => {
-          const angle = (i * 30 - 90) * (Math.PI / 180);
-          const r = 130;
-          const x = Math.cos(angle) * r + 160;
-          const y = Math.sin(angle) * r + 160;
-          return (
-            <span
-              key={i}
-              className="absolute text-lg sm:text-xl text-primary-lighter/60"
-              style={{ left: x, top: y, transform: 'translate(-50%, -50%)' }}
-            >
-              {z}
-            </span>
-          );
-        })}
-      </div>
-      <div className="absolute inset-0 rounded-full border border-primary/5 animate-spin" style={{ animationDuration: '90s', animationDirection: 'reverse' }}>
-        {zodias.map((_, i) => {
-          const angle = (i * 30) * (Math.PI / 180);
-          const r = 100;
-          const x = Math.cos(angle) * r + 160;
-          const y = Math.sin(angle) * r + 160;
-          return (
-            <span
-              key={i}
-              className="absolute w-1.5 h-1.5 rounded-full bg-primary/30"
-              style={{ left: x, top: y, transform: 'translate(-50%, -50%)' }}
-            />
-          );
-        })}
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center cosmic-glow">
-          <Compass className="w-7 h-7 text-primary-light" />
-        </div>
-      </div>
+      <svg viewBox="0 0 300 300" className="w-full h-full">
+        <defs>
+          <radialGradient id="mGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(201,148,58,0.10)" />
+            <stop offset="100%" stopColor="rgba(201,148,58,0)" />
+          </radialGradient>
+        </defs>
+        <style>{`
+          @keyframes sz { to { transform: rotate(360deg); } }
+          @keyframes sd { to { transform: rotate(-360deg); } }
+          @keyframes ss { to { transform: rotate(360deg); } }
+          @keyframes fo { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        `}</style>
+        <rect x="0" y="0" width="300" height="300" fill="url(#mGlow)" rx="150" />
+        <circle cx="150" cy="150" r="140" fill="none" stroke="rgba(201,148,58,0.08)" strokeWidth="0.5" />
+        <circle cx="150" cy="150" r="135" fill="none" stroke="rgba(201,148,58,0.05)" strokeWidth="0.5" strokeDasharray="2 4" />
+        <g style={{ transformOrigin:'150px 150px', animation:'sz 120s linear infinite' }}>
+          {zodiacs.map((z,i)=>{
+            const a=(i*30-90)*Math.PI/180;
+            return <text key={i} x={150+Math.cos(a)*130} y={150+Math.sin(a)*130}
+              textAnchor="middle" dominantBaseline="central"
+              fill="rgba(201,148,58,0.45)" fontSize="18" fontFamily="serif">{z}</text>;
+          })}
+        </g>
+        <g style={{ transformOrigin:'150px 150px', animation:'sd 80s linear infinite' }}>
+          {Array.from({length:24}).map((_,i)=>{
+            const a=i*15*Math.PI/180;
+            return <circle key={i} cx={150+Math.cos(a)*100} cy={150+Math.sin(a)*100} r="2" fill="rgba(201,148,58,0.18)" />;
+          })}
+        </g>
+        <g style={{ transformOrigin:'150px 150px', animation:'ss 200s linear infinite' }}>
+          <polygon points={starM.join(',')} fill="none" stroke="rgba(201,148,58,0.12)" strokeWidth="1" />
+        </g>
+        <circle cx="150" cy="150" r="50" fill="none" stroke="rgba(201,148,58,0.06)" strokeWidth="0.5" />
+        <text x="150" y="152" textAnchor="middle" dominantBaseline="central"
+          fontSize="24" fill="rgba(201,148,58,0.3)" fontFamily="serif"
+          style={{animation:'fo 4s ease-in-out infinite'}}>ॐ</text>
+      </svg>
     </div>
   );
 }
@@ -228,9 +228,9 @@ export function Landing() {
           <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-background" />
           <div className="absolute inset-0" style={{
             backgroundImage: `
-              radial-gradient(ellipse at 20% 30%, rgba(124,58,237,0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 40%, rgba(6,182,212,0.05) 0%, transparent 40%),
-              radial-gradient(ellipse at 50% 80%, rgba(245,158,11,0.04) 0%, transparent 45%)
+              radial-gradient(ellipse at 20% 30%, rgba(201,148,58,0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 40%, rgba(229,62,62,0.04) 0%, transparent 40%),
+              radial-gradient(ellipse at 50% 80%, rgba(201,148,58,0.04) 0%, transparent 45%)
             `,
           }} />
         </motion.div>
@@ -248,15 +248,15 @@ export function Landing() {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
-                className="tag mb-6 inline-block"
+                className="tag mb-6 inline-block border-primary/20"
               >
-                {t('landing.heroTag')}
+                ✦ {t('landing.heroTag')}
               </motion.span>
 
-              <h1 className="text-[2.5rem] sm:text-5xl md:text-7xl font-sans font-bold tracking-[-0.03em] leading-[0.92] mb-5 text-balance">
+              <h1 className="text-[2.5rem] sm:text-5xl md:text-7xl font-display font-medium tracking-[-0.03em] leading-[0.92] mb-5 text-balance">
                 {t('landing.heroTitle1')}
                 <br />
-                <span className="accent-gradient inline-block mt-2">{t('landing.heroTitle2')}</span>
+                <span className="gold-text inline-block mt-2">{t('landing.heroTitle2')}</span>
               </h1>
 
               <p className="text-base sm:text-lg text-muted-foreground max-w-xl mb-10 leading-relaxed">
@@ -292,9 +292,9 @@ export function Landing() {
                 transition={{ delay: 1, duration: 0.6 }}
                 className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground"
               >
-                <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> {t('landing.trustEncrypted')}</span>
-                <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> {t('landing.trustRealtime')}</span>
-                <span className="flex items-center gap-1.5"><Users className="w-3 h-3" /> {t('landing.trustUsers')}</span>
+                <span className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-primary-light" /> {t('landing.trustEncrypted')}</span>
+                <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-primary-light" /> {t('landing.trustRealtime')}</span>
+                <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-primary-light" /> {t('landing.trustUsers')}</span>
               </motion.div>
             </motion.div>
 
