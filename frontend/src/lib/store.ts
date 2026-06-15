@@ -112,34 +112,3 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) => set({ user }),
 }));
 
-type Theme = 'light' | 'dark' | 'system';
-
-interface ThemeState {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  resolved: 'light' | 'dark';
-}
-
-function getResolved(theme: Theme): 'light' | 'dark' {
-  if (theme === 'dark') return 'dark';
-  if (theme === 'light') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-function applyTheme(resolved: 'light' | 'dark') {
-  document.documentElement.classList.toggle('dark', resolved === 'dark');
-}
-
-const storedTheme = (localStorage.getItem('theme') as Theme) || 'system';
-applyTheme(getResolved(storedTheme));
-
-export const useThemeStore = create<ThemeState>((set) => ({
-  theme: storedTheme,
-  resolved: getResolved(storedTheme),
-  setTheme: (theme) => {
-    localStorage.setItem('theme', theme);
-    const resolved = getResolved(theme);
-    applyTheme(resolved);
-    set({ theme, resolved });
-  },
-}));

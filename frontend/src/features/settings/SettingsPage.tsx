@@ -10,7 +10,8 @@ import { PremiumCard } from '@/components/ui/PremiumCard';
 import { Input } from '@/components/ui/Input';
 import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumButton } from '@/components/PremiumButton';
-import { useAuthStore, useThemeStore } from '@/lib/store';
+import { useAuthStore } from '@/lib/store';
+import { useThemeStore } from '@/hooks/useTheme';
 import { useI18nStore } from '@/lib/i18n';
 import { type Language } from '@/lib/i18n';
 import { useTranslation } from '@/lib/i18n';
@@ -36,12 +37,12 @@ interface Subscription {
 }
 
 const FLAGS: Record<string, string> = {
-  en: '=ƒç¼=ƒçº', hi: '=ƒç«=ƒç¦', bn: '=ƒçº=ƒç¬', es: '=ƒç¬=ƒç+', pt: '=ƒç¦=ƒç¦',
-  fr: '=ƒç½=ƒç+', de: '=ƒç¬=ƒç¬', ar: '=ƒç+=ƒçª', ja: '=ƒç»=ƒç¦', zh: '=ƒç¿=ƒç¦',
+  en: '=ï¿½ï¿½=ï¿½ï¿½', hi: '=ï¿½ï¿½=ï¿½ï¿½', bn: '=ï¿½ï¿½=ï¿½ï¿½', es: '=ï¿½ï¿½=ï¿½ï¿½+', pt: '=ï¿½ï¿½=ï¿½ï¿½',
+  fr: '=ï¿½ï¿½=ï¿½ï¿½+', de: '=ï¿½ï¿½=ï¿½ï¿½', ar: '=ï¿½ï¿½+=ï¿½ï¿½', ja: '=ï¿½ï¿½=ï¿½ï¿½', zh: '=ï¿½ï¿½=ï¿½ï¿½',
 };
 const LANG_NAMES: Record<string, string> = {
-  en: 'English', hi: 'añ¦añ+añ¿aÑìañªaÑÇ', bn: 'aª¼aª+aªéa¦a¦+', es: 'Espa+¦ol', pt: 'Portugu+¬s',
-  fr: 'Fran+ºais', de: 'Deutsch', ar: '+º+ä+¦+¦+¿+è+¬', ja: 'µùÑµ£¼F¬P', zh: 'S+¡µûç',
+  en: 'English', hi: 'aï¿½aï¿½+aï¿½aï¿½ï¿½aï¿½aï¿½ï¿½', bn: 'aï¿½ï¿½aï¿½+aï¿½ï¿½aï¿½aï¿½+', es: 'Espa+ï¿½ol', pt: 'Portugu+ï¿½s',
+  fr: 'Fran+ï¿½ais', de: 'Deutsch', ar: '+ï¿½+ï¿½+ï¿½+ï¿½+ï¿½+ï¿½+ï¿½', ja: 'ï¿½ï¿½Ñµï¿½ï¿½Fï¿½P', zh: 'S+ï¿½ï¿½ï¿½ï¿½',
 };
 const LANG_LIST = Object.entries(FLAGS).map(([code, flag]) => ({ code: code as Language, flag, label: LANG_NAMES[code] }));
 
@@ -298,16 +299,16 @@ export function SettingsPage() {
                 <>
                   <div className="space-y-1.5">
                     <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.dob')}</label>
-                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthDate') || 'GÇö'}</p>
+                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthDate') || 'Gï¿½ï¿½'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthTime')}</label>
-                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthTime') || 'GÇö'}</p>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthTime') || 'Gï¿½ï¿½'}</p>
                     </div>
                     <div className="space-y-1.5">
                       <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthPlace')}</label>
-                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthPlace') || 'GÇö'}</p>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthPlace') || 'Gï¿½ï¿½'}</p>
                     </div>
                   </div>
                 </>
@@ -492,7 +493,7 @@ export function SettingsPage() {
               >
                 <span>{REGIONAL_PRICING[detectedCountry]?.flag}</span>
                 <span className="flex-1 text-left">
-                  {REGIONAL_PRICING[detectedCountry]?.currency.code} ({REGIONAL_PRICING[detectedCountry]?.currency.symbol}) GÇö {REGIONAL_PRICING[detectedCountry]?.currency.locale}
+                  {REGIONAL_PRICING[detectedCountry]?.currency.code} ({REGIONAL_PRICING[detectedCountry]?.currency.symbol}) Gï¿½ï¿½ {REGIONAL_PRICING[detectedCountry]?.currency.locale}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${currencyOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -510,7 +511,7 @@ export function SettingsPage() {
                       }`}
                     >
                       <span>{cfg.flag}</span>
-                      <span>{cfg.currency.code} ({cfg.currency.symbol}) GÇö {cfg.currency.locale}</span>
+                      <span>{cfg.currency.code} ({cfg.currency.symbol}) Gï¿½ï¿½ {cfg.currency.locale}</span>
                     </button>
                   ))}
                 </div>

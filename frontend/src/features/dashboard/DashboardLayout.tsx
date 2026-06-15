@@ -3,7 +3,8 @@ import { Sparkles, Home, Moon, Star, Heart, MessageCircle, Settings, BarChart3, 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { useAuthStore, useThemeStore } from '@/lib/store';
+import { useAuthStore } from '@/lib/store';
+import { useThemeStore } from '@/hooks/useTheme';
 import { PremiumButton } from '@/components/PremiumButton';
 import { useTranslation } from '@/lib/i18n';
 import { useI18nStore } from '@/lib/i18n/store';

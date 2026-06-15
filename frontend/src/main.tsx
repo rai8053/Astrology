@@ -7,7 +7,10 @@ import posthog from 'posthog-js';
 import App from './app/App';
 import { ScrollProgress } from './components/ScrollProgress';
 import { useI18nStore } from './lib/i18n/store';
+import { initTheme, useThemeStore } from './hooks/useTheme';
 import './styles/globals.css';
+
+initTheme();
 
 const { language } = useI18nStore.getState();
 const dir = ['ar', 'ur', 'he', 'fa'].includes(language) ? 'rtl' : 'ltr';
@@ -25,17 +28,16 @@ if (import.meta.env.VITE_POSTHOG_KEY) {
 }
 
 function ThemeObserver() {
+  const setTheme = useThemeStore((s) => s.setTheme);
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = () => {
-      const stored = localStorage.getItem('theme') as string | null;
-      if (stored === 'system' || !stored) {
-        document.documentElement.classList.toggle('dark', mq.matches);
-      }
+      const { theme } = useThemeStore.getState();
+      if (theme === 'system') setTheme('system');
     };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, []);
+  }, [setTheme]);
   return null;
 }
 

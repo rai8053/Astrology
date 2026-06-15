@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumButton } from './PremiumButton';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { useAuthStore, useThemeStore } from '@/lib/store';
+import { useAuthStore } from '@/lib/store';
+import { useThemeStore } from '@/hooks/useTheme';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
