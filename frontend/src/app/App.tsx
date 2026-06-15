@@ -31,6 +31,9 @@ const AdminUsers = lazy(() => import('@/features/admin/AdminUsers').then(m => ({
 const AdminAnalytics = lazy(() => import('@/features/admin/AdminAnalytics').then(m => ({ default: m.AdminAnalytics })));
 const AdminReportsPage = lazy(() => import('@/features/admin/AdminReportsPage').then(m => ({ default: m.AdminReportsPage })));
 const PricingPage = lazy(() => import('@/features/landing/PricingPage').then(m => ({ default: m.PricingPage })));
+const NumerologyPage = lazy(() => import('@/features/numerology/NumerologyPage').then(m => ({ default: m.NumerologyPage })));
+const TarotPage = lazy(() => import('@/features/tarot/TarotPage').then(m => ({ default: m.TarotPage })));
+const TransitsPage = lazy(() => import('@/features/transits/TransitsPage').then(m => ({ default: m.TransitsPage })));
 const AboutPage = lazy(() => import('@/pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const ContactPage = lazy(() => import('@/pages/ContactPage').then(m => ({ default: m.ContactPage })));
 const FAQPage = lazy(() => import('@/pages/FAQPage').then(m => ({ default: m.FAQPage })));
@@ -47,8 +50,11 @@ const pageVariants = {
 
 const pageTitles: Record<string, string> = {
   '/': 'Soma & Surya — AI-Powered Vedic Astrology',
-  '/pricing': 'Pricing Plans — Soma & Surya',
-  '/login': 'Login — Soma & Surya',
+  '/pricing': 'Pricing Plans — AstroNova',
+  '/numerology': 'Numerology Calculator — AstroNova',
+  '/tarot': 'Tarot Reading — AstroNova',
+  '/transits': 'Planetary Transits — AstroNova',
+  '/login': 'Login — AstroNova',
   '/register': 'Create Account — Soma & Surya',
   '/about': 'About Us — Soma & Surya',
   '/contact': 'Contact Us — Soma & Surya',
@@ -72,7 +78,10 @@ const pageTitles: Record<string, string> = {
 const pageDescriptions: Record<string, string> = {
   '/': 'AI-powered Vedic astrology platform with personalized birth charts, daily horoscopes, and compatibility analysis.',
   '/pricing': 'Choose your plan — Free, Pro, Premium, or Enterprise. Unlock AI astrologer chat, detailed birth charts, and more.',
-  '/login': 'Sign in to your Soma & Surya account to access your personalized Vedic astrology dashboard.',
+  '/numerology': 'Calculate your Life Path, Destiny, and Soul Urge numbers with our free numerology calculator.',
+  '/tarot': 'Get mystical tarot card readings with single card, three-card, and Celtic Cross spreads.',
+  '/transits': 'Track current planetary positions, moon phases, and upcoming transit events.',
+  '/login': 'Sign in to your AstroNova account to access your personalized Vedic astrology dashboard.',
   '/register': 'Create your Soma & Surya account and discover your Vedic birth chart, daily horoscope, and more.',
   '/about': 'Learn about Soma & Surya — where ancient Vedic wisdom meets modern AI technology.',
   '/contact': 'Get in touch with the Soma & Surya team. We\'d love to hear from you.',
@@ -165,6 +174,9 @@ export default function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageWrap cosmic><Landing /></PageWrap>} />
           <Route path="/pricing" element={<PageWrap cosmic><PricingPage /></PageWrap>} />
+          <Route path="/numerology" element={<PageWrap cosmic><NumerologyPage /></PageWrap>} />
+          <Route path="/tarot" element={<PageWrap cosmic><TarotPage /></PageWrap>} />
+          <Route path="/transits" element={<PageWrap cosmic><TransitsPage /></PageWrap>} />
           <Route path="/login" element={<PageWrap><LoginPage /></PageWrap>} />
           <Route path="/register" element={<PageWrap><RegisterPage /></PageWrap>} />
           <Route path="/dashboard" element={<ProtectedRoute><PageWrap><DashboardLayout /></PageWrap></ProtectedRoute>}>

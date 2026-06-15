@@ -9,6 +9,7 @@ export type TranslationKey =
   | 'nav.upgradePlan' | 'nav.adminPanel' | 'nav.signOut'
   | 'nav.lightMode' | 'nav.darkMode' | 'nav.menu' | 'nav.themeAria'
   | 'nav.users' | 'nav.analytics' | 'nav.userMenu'
+  | 'nav.numerology' | 'nav.tarot'
   | 'home.title' | 'home.subtitle' | 'home.cta' | 'home.learnMore'
   | 'auth.welcome' | 'auth.begin' | 'auth.email' | 'auth.password'
   | 'auth.confirmPassword' | 'auth.name' | 'auth.signIn' | 'auth.signUp'
@@ -152,6 +153,14 @@ export type TranslationKey =
   | 'landing.pressAsFeatured'
   | 'landing.faqTitle' | 'landing.faqDesc'
   | 'landing.ctaTitle' | 'landing.ctaDesc' | 'landing.ctaStartFree'
+  | 'landing.heroGenerateKundli' | 'landing.heroExploreHoroscope'
+  | 'landing.howItWorksTitle' | 'landing.howItWorksDesc'
+  | 'landing.howItWorksStep1' | 'landing.howItWorksStep1Desc'
+  | 'landing.howItWorksStep2' | 'landing.howItWorksStep2Desc'
+  | 'landing.howItWorksStep3' | 'landing.howItWorksStep3Desc'
+  | 'landing.howItWorksStep4' | 'landing.howItWorksStep4Desc'
+  | 'landing.tarotPreviewTitle' | 'landing.tarotPreviewDesc'
+  | 'landing.numerologyPreviewTitle' | 'landing.numerologyPreviewDesc'
   | 'onboarding.step1Title' | 'onboarding.step1Desc'
   | 'onboarding.step2Title' | 'onboarding.step2Desc'
   | 'onboarding.step3Title' | 'onboarding.step3Desc'
@@ -1521,6 +1530,7 @@ const en: Record<string, string> = {
   'nav.signOut': 'साइन आउट', 'nav.lightMode': 'लाइट मोड', 'nav.darkMode': 'डार्क मोड',
   'nav.menu': 'nav.menu', 'nav.themeAria': 'थीम बदलें',
   'nav.users': 'nav.users', 'nav.analytics': 'nav.analytics', 'nav.userMenu': 'User menu',
+  'nav.numerology': 'Numerology', 'nav.tarot': 'Tarot',
   'home.title': 'Soma & Surya', 'home.subtitle': 'AI-Powered Vedic Astrology',
   'home.cta': 'Begin Your Journey', 'home.learnMore': 'Learn More',
   'auth.welcome': 'Begin Your Journey', 'auth.begin': 'Créez votre compte',

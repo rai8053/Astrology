@@ -1,5 +1,5 @@
-::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { @apply bg-accent/20 rounded-full; cursor: pointer; border: 2px solid transparent; background-clip: content-box; }
-::-webkit-scrollbar-thumb:hover { @apply bg-accent/40; border: 2px solid transparent; background-clip: content-box; }
-* { scrollbar-width: thin; scrollbar-color: rgba(212, 175, 55, 0.2) transparent; }
+::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.25); border-radius: 9999px; cursor: pointer; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(124, 58, 237, 0.4); border: 2px solid transparent; background-clip: content-box; }
+* { scrollbar-width: thin; scrollbar-color: rgba(124, 58, 237, 0.25) transparent; }

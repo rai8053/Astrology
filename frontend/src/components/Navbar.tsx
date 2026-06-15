@@ -22,6 +22,15 @@ function useMediaQuery(query: string) {
   return matches;
 }
 
+const NAV_LINKS = [
+  { labelKey: 'nav.home', href: '/' },
+  { labelKey: 'nav.kundli', href: '/dashboard/kundli' },
+  { labelKey: 'nav.horoscope', href: '/dashboard/horoscope' },
+  { labelKey: 'nav.numerology', href: '/numerology' },
+  { labelKey: 'nav.tarot', href: '/tarot' },
+  { labelKey: 'nav.pricing', href: '/pricing' },
+] as const;
+
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -30,7 +39,6 @@ export function Navbar() {
   const { user, logout, isAuthenticated } = useAuthStore();
   const { setTheme, resolved } = useThemeStore();
   const { t } = useTranslation();
-  const isLanding = location.pathname === '/';
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -84,19 +92,14 @@ export function Navbar() {
     return () => document.removeEventListener('keydown', handler);
   }, [open]);
 
-  const links = isLanding ? [
-    { label: t('nav.features'), href: '#features' },
-    { label: t('nav.pricing'), href: '#pricing' },
-    { label: t('nav.faq'), href: '#faq' },
-  ] : [];
-
   const displayName = user?.name?.trim() || localStorage.getItem('googleName') || '';
   const initials = displayName
     ? displayName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U';
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
-  const planBadge = user?.plan && user.plan !== 'FREE' ? user.plan : null;
+
+  const isLanding = location.pathname === '/';
 
   return (
     <motion.nav
@@ -105,37 +108,66 @@ export function Navbar() {
       transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
-        scrolled ? 'glass-nav shadow-sm' : isLanding ? 'bg-transparent' : 'glass-nav',
+        scrolled
+          ? 'glass-nav shadow-lg backdrop-blur-xl'
+          : isLanding
+          ? 'bg-transparent'
+          : 'glass-nav',
       )}
     >
-      <div className="max-w-7xl mx-auto px-5 sm:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className={cn(
+        'mx-auto px-5 sm:px-8 transition-all duration-500',
+        scrolled ? 'max-w-6xl' : 'max-w-7xl',
+      )}>
+        <div className={cn(
+          'flex items-center justify-between transition-all duration-500',
+          scrolled ? 'h-14' : 'h-16',
+        )}>
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 group-hover:cosmic-glow transition-all duration-300">
               <Sparkles className="w-4 h-4 text-primary" />
             </div>
             <span className="text-base font-semibold tracking-tight text-foreground">
-              Soma<span className="font-normal text-muted-foreground">&</span>Surya
+              Astro<span className="font-light text-primary-light">Nova</span>
             </span>
           </Link>
 
+          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
-            {links.map(l => (
-              <a
-                key={l.href}
-                href={l.href}
-                className="relative px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {l.label}
-                <span className="absolute bottom-0 left-3 right-3 h-[1.5px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-              </a>
-            ))}
+            {NAV_LINKS.map(link => {
+              const isActive = location.pathname === link.href ||
+                (link.href !== '/' && location.pathname.startsWith(link.href));
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className={cn(
+                    'relative px-3 py-2 text-sm rounded-lg transition-all duration-200',
+                    isActive
+                      ? 'text-primary-light bg-primary/5'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-primary/[0.04]',
+                  )}
+                >
+                  {t(link.labelKey as any)}
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute bottom-0 left-2 right-2 h-[2px] bg-primary rounded-full"
+                    />
+                  )}
+                </Link>
+              );
+            })}
 
             <div className="ml-4 flex items-center gap-2">
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-lg hover:bg-primary/5 text-muted-foreground transition-colors"
+                className={cn(
+                  'p-2 rounded-lg transition-all duration-200',
+                  'hover:bg-primary/5 text-muted-foreground hover:text-primary-light',
+                )}
                 aria-label={t('nav.themeAria')}
               >
                 {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -165,7 +197,7 @@ export function Navbar() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.96 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden"
+                        className="absolute right-0 mt-2 w-52 glass-card rounded-xl premium-shadow overflow-hidden"
                       >
                         <div className="px-4 py-3 border-b border-border">
                           <p className="text-sm font-medium truncate text-foreground">{displayName}</p>
@@ -222,6 +254,7 @@ export function Navbar() {
             </div>
           </div>
 
+          {/* Mobile Menu Trigger */}
           <motion.button
             ref={menuTriggerRef}
             whileTap={{ scale: 0.9 }}
@@ -234,6 +267,7 @@ export function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -241,7 +275,7 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border bg-background overflow-hidden"
+            className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl overflow-hidden"
           >
             <div className="px-5 py-5 space-y-3">
               {isAuthenticated && (
@@ -255,50 +289,63 @@ export function Navbar() {
                   </div>
                 </div>
               )}
-              {links.map(l => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setOpen(false)}
-                  className="block text-sm py-2 px-3 rounded-lg hover:bg-primary/5 text-muted-foreground transition-colors"
-                >
-                  {l.label}
-                </a>
-              ))}
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
-                className="flex items-center gap-3 w-full text-sm py-2 px-3 rounded-lg hover:bg-primary/5 text-muted-foreground transition-colors"
-              >
-                {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                {resolved === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}
-              </motion.button>
-              <div className="px-3 py-2">
-                <LanguageSwitcher />
-              </div>
-              <div className="pt-2 space-y-2">
-                {isAuthenticated ? (
-                  <>
-                    <Link to="/dashboard" onClick={() => setOpen(false)}>
-                      <PremiumButton className="w-full">{t('nav.dashboard')}</PremiumButton>
-                    </Link>
-                    {isAdmin && (
-                      <Link to="/admin" onClick={() => setOpen(false)}>
-                        <PremiumButton variant="ghost" className="w-full">{t('nav.adminPanel')}</PremiumButton>
-                      </Link>
+
+              {NAV_LINKS.map(link => {
+                const isActive = location.pathname === link.href ||
+                  (link.href !== '/' && location.pathname.startsWith(link.href));
+                return (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      'block text-sm py-2 px-3 rounded-lg transition-colors',
+                      isActive
+                        ? 'text-primary-light bg-primary/5'
+                        : 'text-muted-foreground hover:bg-primary/5',
                     )}
-                    <PremiumButton variant="ghost" className="w-full" onClick={logout}>{t('nav.signOut')}</PremiumButton>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/login" onClick={() => setOpen(false)}>
-                      <PremiumButton variant="secondary" className="w-full">{t('nav.login')}</PremiumButton>
-                    </Link>
-                    <Link to="/register" onClick={() => setOpen(false)}>
-                      <PremiumButton className="w-full">{t('landing.startFree')}</PremiumButton>
-                    </Link>
-                  </>
-                )}
+                  >
+                    {t(link.labelKey as any)}
+                  </Link>
+                );
+              })}
+
+              <div className="border-t border-border pt-3 space-y-3">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
+                  className="flex items-center gap-3 w-full text-sm py-2 px-3 rounded-lg hover:bg-primary/5 text-muted-foreground transition-colors"
+                >
+                  {resolved === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  {resolved === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}
+                </motion.button>
+                <div className="px-3 py-2">
+                  <LanguageSwitcher />
+                </div>
+                <div className="pt-2 space-y-2">
+                  {isAuthenticated ? (
+                    <>
+                      <Link to="/dashboard" onClick={() => setOpen(false)}>
+                        <PremiumButton className="w-full">{t('nav.dashboard')}</PremiumButton>
+                      </Link>
+                      {isAdmin && (
+                        <Link to="/admin" onClick={() => setOpen(false)}>
+                          <PremiumButton variant="ghost" className="w-full">{t('nav.adminPanel')}</PremiumButton>
+                        </Link>
+                      )}
+                      <PremiumButton variant="ghost" className="w-full" onClick={logout}>{t('nav.signOut')}</PremiumButton>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/login" onClick={() => setOpen(false)}>
+                        <PremiumButton variant="secondary" className="w-full">{t('nav.login')}</PremiumButton>
+                      </Link>
+                      <Link to="/register" onClick={() => setOpen(false)}>
+                        <PremiumButton className="w-full">{t('landing.startFree')}</PremiumButton>
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
