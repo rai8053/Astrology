@@ -310,13 +310,14 @@ export async function seedKnowledgeBase(): Promise<{ created: number; skipped: n
     try {
       const embedding = await embeddingService.generateEmbedding(article.content);
 
+      const tagsArray = `{${article.tags.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')}}`;
       await prisma.$executeRawUnsafe(
         `INSERT INTO "KnowledgeArticle" (id, title, content, category, tags, source, embedding, "createdAt", "updatedAt")
-         VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, NOW(), NOW())`,
+         VALUES (gen_random_uuid()::text, $1, $2, $3, $4::text[], $5, $6, NOW(), NOW())`,
         article.title,
         article.content,
         article.category,
-        `{${article.tags.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')}}`,
+        tagsArray,
         article.source || null,
         embedding,
       );

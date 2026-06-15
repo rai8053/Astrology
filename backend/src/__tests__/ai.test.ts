@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 const itWithKey = process.env.OPENROUTER_API_KEY ? it : it.skip;
 
 describe('AI module', () => {
-  itWithKey('generateAIResponse returns text', async () => {
+  itWithKey('generateAIResponse returns text', { timeout: 35000 }, async () => {
     const { generateAIResponse } = await import('../lib/ai.js');
     const result = await generateAIResponse('Say hello in 3 words', 'Be concise.');
     expect(result).toHaveProperty('text');
@@ -12,7 +12,7 @@ describe('AI module', () => {
     expect(result.text.length).toBeGreaterThan(0);
   });
 
-  itWithKey('generateStructuredJSON returns parsed object', async () => {
+  itWithKey('generateStructuredJSON returns parsed object', { timeout: 35000 }, async () => {
     const { generateStructuredJSON } = await import('../lib/ai.js');
     const result = await generateStructuredJSON<{ test: string }>(
       'Return { "test": "hello" }',
