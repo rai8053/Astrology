@@ -8,6 +8,7 @@ export interface ApiResponse<T = unknown> {
     limit?: number;
     total?: number;
     totalPages?: number;
+    hasMore?: boolean;
   };
 }
 

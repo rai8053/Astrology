@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Send, MessageCircle, Sparkles, Trash2, Bot, User, Stars, Crown } from 'lucide-react';
+import { Send, MessageCircle, Sparkles, Trash2, Bot, User, Stars, Crown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,19 +8,10 @@ import { api } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { useTranslation } from '@/lib/i18n';
-
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-interface ChatSession {
-  id: string;
-  title: string;
-  updatedAt: string;
-}
+import type { ChatMessageDTO, ChatSessionDTO, PaginatedMessages, PaginatedSessions } from '@shared/types/chat';
 
 const DAILY_FREE_LIMIT = 10;
+const MESSAGES_PER_PAGE = 50;
 
 function TypingIndicator() {
   return (
@@ -56,7 +47,7 @@ function MarkdownContent({ content }: { content: string }) {
   );
 }
 
-function ChatBubble({ message, index }: { message: ChatMessage; index: number }) {
+function ChatBubble({ message, index }: { message: ChatMessageDTO; index: number }) {
   const isUser = message.role === 'user';
   return (
     <motion.div
@@ -99,7 +90,7 @@ export function ChatPage() {
     t('chat.promptCareer'),
   ];
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [streaming, setStreaming] = useState(false);
@@ -107,12 +98,15 @@ export function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [dailyUsed, setDailyUsed] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
+  const [msgPage, setMsgPage] = useState(1);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [totalMessages, setTotalMessages] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: sessionsData, refetch: refetchSessions } = useQuery({
     queryKey: ['chat-sessions'],
-    queryFn: () => api.get<ChatSession[]>('/api/chat/sessions'),
+    queryFn: () => api.get<PaginatedSessions>('/api/chat/sessions'),
   });
 
   const { data: subData } = useQuery({
@@ -131,7 +125,6 @@ export function ChatPage() {
       const payload: Record<string, unknown> = { message, language };
       if (sessionId) payload.sessionId = sessionId;
 
-      // Use streaming
       const token = localStorage.getItem('accessToken');
       const baseUrl = '';
       const res = await fetch(`${baseUrl}/api/chat/stream`, {
@@ -159,12 +152,21 @@ export function ChatPage() {
       if (!data.success) throw new Error(data.error || 'Request failed');
       return data.data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       if (data?.reply) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+        setMessages((prev) => [...prev, {
+          id: `msg-${Date.now()}`,
+          sessionId: data.sessionId || sessionId || '',
+          role: 'assistant',
+          content: data.reply,
+          tokenCount: data.reply.length,
+          model: data.model || null,
+          embeddingId: null,
+          createdAt: new Date().toISOString(),
+        }]);
       }
       if (data?.sessionId && data.sessionId !== sessionId) setSessionId(data.sessionId);
-      if (data?.dailyUsed) setDailyUsed(data.dailyUsed);
+      if (data?.dailyUsed) setDailyUsed(data.dailyUsed as number);
       refetchSessions();
       setError(null);
       setStreamText('');
@@ -219,10 +221,43 @@ export function ChatPage() {
     return { reply: result.reply || '', sessionId: result.sessionId, dailyUsed: result.dailyUsed };
   }, []);
 
+  const loadSessionMessages = useCallback(async (id: string, page: number = 1) => {
+    try {
+      const res = await api.get<PaginatedMessages>(`/api/chat/sessions/${id}/messages?page=${page}&limit=${MESSAGES_PER_PAGE}&order=oldest`);
+      if (page === 1) {
+        setMessages(res.data.messages || []);
+      } else {
+        setMessages((prev) => [...prev, ...(res.data.messages || [])]);
+      }
+      const m = res.meta as { page?: number; hasMore?: boolean; total?: number } | undefined;
+      if (m) {
+        if (m.page != null) setMsgPage(m.page);
+        if (m.hasMore != null) setHasMoreMessages(m.hasMore);
+        if (m.total != null) setTotalMessages(m.total);
+      }
+      setSessionId(id);
+    } catch { /* ignore */ }
+  }, []);
+
+  const loadMoreMessages = () => {
+    if (sessionId) {
+      loadSessionMessages(sessionId, msgPage + 1);
+    }
+  };
+
   const handleSend = async (msg?: string) => {
     const text = msg ?? input;
     if (!text.trim() || streaming) return;
-    setMessages((prev) => [...prev, { role: 'user', content: text }]);
+    setMessages((prev) => [...prev, {
+      id: `temp-${Date.now()}`,
+      sessionId: sessionId || '',
+      role: 'user',
+      content: text,
+      tokenCount: text.length,
+      model: null,
+      embeddingId: null,
+      createdAt: new Date().toISOString(),
+    }]);
     setInput('');
     setStreaming(true);
     setStreamText('');
@@ -280,7 +315,16 @@ export function ChatPage() {
           }
         }
 
-        setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+        setMessages((prev) => [...prev, {
+          id: `msg-${Date.now()}`,
+          sessionId: sid || sessionId || '',
+          role: 'assistant',
+          content: reply,
+          tokenCount: reply.length,
+          model: null,
+          embeddingId: null,
+          createdAt: new Date().toISOString(),
+        }]);
         if (sid && sid !== sessionId) setSessionId(sid);
         if (used) setDailyUsed(used);
         refetchSessions();
@@ -288,7 +332,16 @@ export function ChatPage() {
       } else {
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Request failed');
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.data.reply }]);
+        setMessages((prev) => [...prev, {
+          id: `msg-${Date.now()}`,
+          sessionId: data.data.sessionId || sessionId || '',
+          role: 'assistant',
+          content: data.data.reply,
+          tokenCount: data.data.reply.length,
+          model: data.data.model || null,
+          embeddingId: null,
+          createdAt: new Date().toISOString(),
+        }]);
         if (data.data.sessionId && data.data.sessionId !== sessionId) setSessionId(data.data.sessionId);
         if (data.data.dailyUsed) setDailyUsed(data.data.dailyUsed);
         refetchSessions();
@@ -307,6 +360,9 @@ export function ChatPage() {
     setMessages([]);
     setSessionId(null);
     setStreamText('');
+    setMsgPage(1);
+    setHasMoreMessages(false);
+    setTotalMessages(0);
   };
 
   useEffect(() => {
@@ -314,11 +370,7 @@ export function ChatPage() {
   }, [messages, streaming, streamText]);
 
   const loadSession = async (id: string) => {
-    try {
-      const res = await api.get<{ messages: ChatMessage[] }>(`/api/chat/sessions/${id}`);
-      setMessages(res.data.messages || []);
-      setSessionId(id);
-    } catch { /* ignore */ }
+    await loadSessionMessages(id, 1);
   };
 
   const deleteSession = async (id: string) => {
@@ -330,6 +382,8 @@ export function ChatPage() {
   };
 
   const limitRemaining = isPremium ? Infinity : DAILY_FREE_LIMIT - dailyUsed;
+
+  const sessions = sessionsData?.data?.sessions || [];
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
@@ -370,9 +424,9 @@ export function ChatPage() {
             <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/40 dark:text-parchment/40 mb-3 px-1">
               {t('chat.history')}
             </h3>
-            {sessionsData?.data?.length ? (
+            {sessions.length ? (
               <div className="space-y-1 max-h-[300px] lg:max-h-[400px] overflow-y-auto scrollbar-thin">
-                {sessionsData.data.map((s) => (
+                {sessions.map((s) => (
                   <div key={s.id} className="group flex items-center gap-1">
                     <button
                       onClick={() => loadSession(s.id)}
@@ -398,6 +452,17 @@ export function ChatPage() {
         <div className="lg:col-span-3 order-1 lg:order-2">
           <PremiumCard glass className="h-[550px] md:h-[600px] flex flex-col p-0 overflow-hidden">
             <div className="flex-1 overflow-y-auto p-4 md:p-5 scrollbar-thin">
+              {hasMoreMessages && (
+                <div className="text-center mb-4">
+                  <button
+                    onClick={loadMoreMessages}
+                    className="text-[11px] text-gold/60 hover:text-gold transition-colors font-medium"
+                  >
+                    ↑ {t('chat.loadMore') || 'Load earlier messages'}
+                  </button>
+                </div>
+              )}
+
               <AnimatePresence mode="wait">
                 {messages.length === 0 && !streaming && !streamText && (
                   <motion.div
@@ -434,7 +499,7 @@ export function ChatPage() {
               </AnimatePresence>
 
               {messages.map((m, i) => (
-                <ChatBubble key={i} message={m} index={i} />
+                <ChatBubble key={m.id || i} message={m} index={i} />
               ))}
 
               {streamText && (

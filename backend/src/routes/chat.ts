@@ -8,8 +8,25 @@ import { prisma } from '../lib/prisma.js';
 import { logger } from '../lib/logger.js';
 import { calculateBirthDetails } from '../services/astrology/calculator.js';
 import { RASHI_DATA, RASHI_KEYS } from '../services/astrology/constants.js';
+import {
+  findOrCreateSession,
+  getSession,
+  listSessions,
+  softDeleteSession,
+  addMessages,
+  getMessages,
+  buildContextString,
+  checkDailyLimit,
+  DAILY_FREE_LIMIT,
+  trackUsage,
+  updateSessionTimestamp,
+  getMessageHistory,
+} from '../services/chat.js';
+import { retrievalService, memoryService } from '../services/rag/index.js';
 
 export const chatRouter = Router();
+
+// ─── Validation Schemas ──────────────────
 
 const chatSchema = z.object({
   message: z.string().min(1, 'Message is required').max(5000, 'Message too long (max 5000 chars)'),
@@ -17,22 +34,13 @@ const chatSchema = z.object({
   language: z.string().optional(),
 });
 
-const DAILY_FREE_LIMIT = 10;
+const paginationSchema = z.object({
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(200).optional().default(50),
+  order: z.enum(['newest', 'oldest']).optional().default('oldest'),
+});
 
-async function checkDailyLimit(userId: string): Promise<{ allowed: boolean; used: number; limit: number }> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const count = await prisma.usageRecord.count({
-    where: { userId, feature: 'chat', createdAt: { gte: today } },
-  });
-
-  const sub = await prisma.subscription.findUnique({ where: { userId } });
-  const isPremium = sub && (sub.plan !== 'FREE' || (sub.status === 'TRIALING' && sub.trialEnd && sub.trialEnd > new Date()));
-  if (isPremium) return { allowed: true, used: count, limit: Infinity };
-
-  return { allowed: count < DAILY_FREE_LIMIT, used: count, limit: DAILY_FREE_LIMIT };
-}
+// ─── System Prompt Builder ───────────────
 
 async function buildPersonalizedPrompt(userId: string): Promise<string> {
   const user = await prisma.user.findUnique({
@@ -48,7 +56,6 @@ async function buildPersonalizedPrompt(userId: string): Promise<string> {
   parts.push(`Time of Birth: ${user.birthTime}`);
   if (user.birthPlace) parts.push(`Place of Birth: ${user.birthPlace}`);
 
-  // Calculate full birth chart on the fly
   const details = calculateBirthDetails(user.birthDate, user.birthTime);
   const rd = RASHI_DATA[details.rashiKey] || RASHI_DATA.Mesh;
   const ld = RASHI_DATA[details.lagnaKey] || RASHI_DATA.Mesh;
@@ -84,13 +91,10 @@ async function buildPersonalizedPrompt(userId: string): Promise<string> {
 
   parts.push('');
   parts.push('--- 7TH HOUSE (MARRIAGE) ---');
-  // 7th house = (Ascendant sign index + 6) % 12
   const seventhHouseSignIdx = (details.lagnaIndex + 6) % 12;
   const seventhHouseKey = RASHI_KEYS[seventhHouseSignIdx];
   const seventhLord = RASHI_DATA[seventhHouseKey]?.lord?.split('/')[0].trim() || 'Unknown';
-  // Find planets in 7th house
   const planetsIn7th = planets.filter(p => p.pos.house === 7).map(p => p.name.split('(')[0].trim());
-  // Find 7th lord position
   const lordPlanet = planets.find(p => p.name.includes(seventhLord));
   parts.push(`7th House Sign: ${seventhHouseKey} (${RASHI_DATA[seventhHouseKey]?.translation || ''})`);
   parts.push(`7th Lord: ${seventhLord}`);
@@ -98,7 +102,6 @@ async function buildPersonalizedPrompt(userId: string): Promise<string> {
   if (planetsIn7th.length > 0) parts.push(`Planets in 7th House: ${planetsIn7th.join(', ')}`);
   else parts.push('No planets in 7th House');
 
-  // Venus position for marriage analysis
   const venusLord = RASHI_DATA[RASHI_KEYS[details.venus.signIndex]]?.lord?.split('/')[0].trim() || 'Unknown';
   parts.push(`Venus (karaka of marriage) in: ${details.venus.signName}, House ${details.venus.house}, ruled by ${venusLord}`);
 
@@ -159,6 +162,70 @@ BOUNDARIES:
   return instruction;
 }
 
+// ─── RAG Context Builder ────────────────
+
+async function buildRAGContext(
+  message: string,
+  sessionId: string,
+  userId: string,
+): Promise<{
+  knowledgeContext: string;
+  retrievalSources: string[];
+  retrievalLatency: number;
+  historyFormatted: string;
+}> {
+  const retrievalStart = Date.now();
+
+  const [retrievalResult, memContext] = await Promise.all([
+    retrievalService.retrieve(message, { k: 5, minScore: 0.3 }),
+    memoryService.buildContextWindow(sessionId, userId, ''),
+  ]);
+
+  const retrievalLatency = Date.now() - retrievalStart;
+
+  const knowledgeContext = retrievalResult.results.length > 0
+    ? `\n\nRELEVANT ASTROLOGICAL KNOWLEDGE:\n${retrievalResult.results.map((r, i) =>
+        `[${i + 1}] ${r.article.title}\n${r.article.content.slice(0, 500)}${r.article.content.length > 500 ? '...' : ''}`
+      ).join('\n\n')}`
+    : '';
+
+  const retrievalSources = retrievalResult.results.map(r => r.article.id);
+
+  const historyFormatted = memContext.historyFormatted
+    ? `Previous conversation:\n${memContext.historyFormatted}`
+    : '';
+
+  if (retrievalResult.results.length > 0) {
+    retrievalService.logMetrics(
+      sessionId,
+      null,
+      message.slice(0, 200),
+      retrievalResult.results.length,
+      retrievalResult.results.length,
+      retrievalLatency,
+      retrievalResult.metrics.tokensIn,
+    ).catch(() => {});
+  }
+
+  return { knowledgeContext, retrievalSources, retrievalLatency, historyFormatted };
+}
+
+function formatPrompt(
+  message: string,
+  historyFormatted: string,
+  knowledgeContext: string,
+  workingMemory: string,
+): string {
+  const parts: string[] = [];
+  if (historyFormatted) parts.push(historyFormatted);
+  if (workingMemory) parts.push(`\nKey details from this conversation:\n${workingMemory}`);
+  if (knowledgeContext) parts.push(knowledgeContext);
+  parts.push(`\nUser: ${message}`);
+  return parts.join('\n');
+}
+
+// ─── POST / — Non-streaming chat ─────────
+
 chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req, res) => {
   const { message, sessionId, language } = req.body as z.infer<typeof chatSchema>;
   const userId = req.user!.userId;
@@ -171,48 +238,46 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
         reply: `You've used ${limit.used}/${limit.limit} free questions today. Upgrade to Premium for unlimited chat, detailed chart analysis, and more.`,
         sessionId: null,
         limitExceeded: true,
+        dailyUsed: limit.used,
+        dailyLimit: limit.limit,
       },
     });
     return;
   }
 
-  let session = sessionId
-    ? await prisma.chatSession.findFirst({ where: { id: sessionId, userId } })
-    : null;
-
-  if (!session) {
-    session = await prisma.chatSession.create({
-      data: { userId, title: message.slice(0, 60), messages: [] },
-    });
-  }
-
-  const messages = (session.messages as Array<{ role: string; content: string }>) || [];
-  const context = messages.slice(-10).map(m => `${m.role}: ${m.content}`).join('\n').slice(-3000);
-  const prompt = `Previous conversation:\n${context}\n\nUser: ${message}`;
+  const session = await findOrCreateSession(userId, sessionId, message);
   const birthData = await buildPersonalizedPrompt(userId);
   const systemInstruction = buildSystemInstruction(birthData, language);
 
+  const { knowledgeContext, retrievalSources, historyFormatted } = await buildRAGContext(
+    message, session.id, userId,
+  );
+
+  const prompt = formatPrompt(message, historyFormatted, knowledgeContext, '');
+
   try {
-    logger.info({ sessionId: session.id, messageLength: message.length, hasBirthData: !!birthData, hasLanguage: !!language, dailyUsed: limit.used }, 'Chat request starting');
+    logger.info({
+      sessionId: session.id, messageLength: message.length,
+      hasBirthData: !!birthData, hasLanguage: !!language,
+      retrievalCount: (retrievalSources.length),
+      dailyUsed: limit.used,
+    }, 'Chat request starting');
 
     const aiResponse = await generateAIResponse(prompt, systemInstruction);
 
     logger.info({ provider: aiResponse.provider, model: aiResponse.model, textLength: aiResponse.text.length }, 'Chat AI response succeeded');
 
-    const updatedMessages = [
-      ...messages,
-      { role: 'user', content: message },
-      { role: 'assistant', content: aiResponse.text },
-    ];
+    await addMessages(session.id, [
+      {
+        role: 'user', content: message, tokenCount: message.length,
+        embeddingId: retrievalSources[0] || undefined,
+        metadata: { retrievalSources, retrievalCount: retrievalSources.length },
+      },
+      { role: 'assistant', content: aiResponse.text, model: aiResponse.model, tokenCount: aiResponse.text.length },
+    ]);
 
-    await prisma.chatSession.update({
-      where: { id: session.id },
-      data: { messages: JSON.parse(JSON.stringify(updatedMessages)) },
-    });
-
-    await prisma.usageRecord.create({
-      data: { userId, feature: 'chat', tokensIn: message.length, tokensOut: aiResponse.text.length },
-    }).catch(() => {});
+    await updateSessionTimestamp(session.id);
+    await trackUsage(userId, 'chat', message.length, aiResponse.text.length);
 
     res.json({
       success: true,
@@ -220,6 +285,8 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
         reply: aiResponse.text,
         sessionId: session.id,
         provider: aiResponse.provider,
+        model: aiResponse.model,
+        retrievalCount: retrievalSources.length,
         dailyUsed: limit.used + 1,
         dailyLimit: limit.limit,
       },
@@ -234,10 +301,11 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
       ? 'Astrology AI unavailable (credits exhausted — add credits or switch OpenRouter models)'
       : `Chat error: ${errMsg}`;
 
-    await prisma.chatSession.update({
-      where: { id: session.id },
-      data: { messages: JSON.parse(JSON.stringify([...messages, { role: 'user', content: message }, { role: 'assistant', content: userMessage }])) },
-    }).catch(() => {});
+    await addMessages(session.id, [
+      { role: 'user', content: message },
+      { role: 'assistant', content: userMessage },
+    ]).catch(() => {});
+    await updateSessionTimestamp(session.id).catch(() => {});
 
     res.json({
       success: false,
@@ -245,6 +313,8 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
     });
   }
 }));
+
+// ─── POST /stream — Streaming chat ──────
 
 chatRouter.post('/stream', authenticate, validate(chatSchema), asyncHandler(async (req, res) => {
   const { message, sessionId, language } = req.body as z.infer<typeof chatSchema>;
@@ -258,26 +328,22 @@ chatRouter.post('/stream', authenticate, validate(chatSchema), asyncHandler(asyn
         reply: `You've used ${limit.used}/${limit.limit} free questions today. Upgrade to Premium for unlimited access.`,
         sessionId: null,
         limitExceeded: true,
+        dailyUsed: limit.used,
+        dailyLimit: limit.limit,
       },
     });
     return;
   }
 
-  let session = sessionId
-    ? await prisma.chatSession.findFirst({ where: { id: sessionId, userId } })
-    : null;
-
-  if (!session) {
-    session = await prisma.chatSession.create({
-      data: { userId, title: message.slice(0, 60), messages: [] },
-    });
-  }
-
-  const messages = (session.messages as Array<{ role: string; content: string }>) || [];
-  const context = messages.slice(-10).map(m => `${m.role}: ${m.content}`).join('\n').slice(-3000);
-  const prompt = `Previous conversation:\n${context}\n\nUser: ${message}`;
+  const session = await findOrCreateSession(userId, sessionId, message);
   const birthData = await buildPersonalizedPrompt(userId);
   const systemInstruction = buildSystemInstruction(birthData, language);
+
+  const { knowledgeContext, retrievalSources, historyFormatted } = await buildRAGContext(
+    message, session.id, userId,
+  );
+
+  const prompt = formatPrompt(message, historyFormatted, knowledgeContext, '');
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -286,7 +352,6 @@ chatRouter.post('/stream', authenticate, validate(chatSchema), asyncHandler(asyn
 
   let fullText = '';
   const controller = new AbortController();
-
   req.on('close', () => controller.abort());
 
   try {
@@ -296,28 +361,24 @@ chatRouter.post('/stream', authenticate, validate(chatSchema), asyncHandler(asyn
       res.write(`data: ${JSON.stringify({ text: fullText })}\n\n`);
     }
 
-    const updatedMessages = [
-      ...messages,
-      { role: 'user', content: message },
+    await addMessages(session.id, [
+      {
+        role: 'user', content: message,
+        embeddingId: retrievalSources[0] || undefined,
+        metadata: { retrievalSources, retrievalCount: retrievalSources.length },
+      },
       { role: 'assistant', content: fullText },
-    ];
+    ]);
 
-    await prisma.chatSession.update({
-      where: { id: session.id },
-      data: { messages: JSON.parse(JSON.stringify(updatedMessages)) },
-    });
-
-    await prisma.usageRecord.create({
-      data: { userId, feature: 'chat', tokensIn: message.length, tokensOut: fullText.length },
-    }).catch(() => {});
+    await updateSessionTimestamp(session.id);
+    await trackUsage(userId, 'chat', message.length, fullText.length);
 
     res.write(`data: ${JSON.stringify({ done: true, sessionId: session.id, dailyUsed: limit.used + 1, dailyLimit: limit.limit })}\n\n`);
     res.end();
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    const errStack = error instanceof Error ? error.stack : '';
     const isCreditError = errMsg.toLowerCase().includes('credit') || errMsg.includes('402') || errMsg.toLowerCase().includes('payment') || errMsg.toLowerCase().includes('insufficient_quota');
-    logger.error({ errMsg, errStack, sessionId: session.id, isCreditError }, 'Chat stream failed');
+    logger.error({ errMsg, sessionId: session.id, isCreditError }, 'Chat stream failed');
 
     const userMessage = isCreditError
       ? 'Astrology AI unavailable (credits exhausted — add credits or switch OpenRouter models)'
@@ -328,27 +389,59 @@ chatRouter.post('/stream', authenticate, validate(chatSchema), asyncHandler(asyn
   }
 }));
 
+// ─── GET /sessions — List sessions (paginated) ──
+
 chatRouter.get('/sessions', authenticate, asyncHandler(async (req, res) => {
-  const sessions = await prisma.chatSession.findMany({
-    where: { userId: req.user!.userId },
-    orderBy: { updatedAt: 'desc' },
-    select: { id: true, title: true, updatedAt: true, createdAt: true },
-    take: 50,
-  });
-  res.json({ success: true, data: sessions });
+  const userId = req.user!.userId;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 50));
+
+  const result = await listSessions(userId, page, limit);
+
+  res.json({ success: true, data: { sessions: result.data }, meta: result.meta });
 }));
+
+// ─── GET /sessions/:id — Session detail ──
 
 chatRouter.get('/sessions/:id', authenticate, asyncHandler(async (req, res) => {
-  const session = await prisma.chatSession.findFirst({
-    where: { id: req.params.id, userId: req.user!.userId },
+  const session = await getSession(req.params.id, req.user!.userId);
+  if (!session) {
+    return res.status(404).json({ success: false, error: 'Session not found' });
+  }
+
+  res.json({
+    success: true,
+    data: {
+      id: session.id,
+      title: session.title,
+      createdAt: session.createdAt.toISOString(),
+      updatedAt: session.updatedAt.toISOString(),
+    },
   });
-  if (!session) return res.status(404).json({ success: false, error: 'Session not found' });
-  res.json({ success: true, data: session });
 }));
 
-chatRouter.delete('/sessions/:id', authenticate, asyncHandler(async (req, res) => {
-  await prisma.chatSession.deleteMany({
-    where: { id: req.params.id, userId: req.user!.userId },
+// ─── GET /sessions/:id/messages — Paginated messages ──
+
+chatRouter.get('/sessions/:id/messages', authenticate, asyncHandler(async (req, res) => {
+  const userId = req.user!.userId;
+  const params = paginationSchema.parse(req.query);
+
+  const result = await getMessages(req.params.id, userId, {
+    page: params.page,
+    limit: params.limit,
+    order: params.order,
   });
+
+  res.json({
+    success: true,
+    data: { messages: result.data },
+    meta: result.meta,
+  });
+}));
+
+// ─── DELETE /sessions/:id — Soft delete ──
+
+chatRouter.delete('/sessions/:id', authenticate, asyncHandler(async (req, res) => {
+  await softDeleteSession(req.params.id, req.user!.userId);
   res.json({ success: true, message: 'Session deleted' });
 }));

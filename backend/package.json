@@ -9,7 +9,9 @@
     "start": "node dist/index.cjs",
     "lint": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed:rag": "tsx src/scripts/seed-rag.ts",
+    "embed:rags": "tsx src/scripts/generate-embeddings.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
