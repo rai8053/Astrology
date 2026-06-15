@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../lib/logger.js';
 import type { MessageRole } from '@shared/types/chat';
-import type { ChatMessage, ChatSession, Prisma } from '@prisma/client';
+import type { ChatMessage, ChatSession } from '@prisma/client';
 
 type PaginationMeta = {
   page: number;
@@ -196,7 +196,7 @@ export async function addMessage(
       tokenCount: options?.tokenCount ?? estimateTokenCount(content),
       model: options?.model ?? null,
       embeddingId: options?.embeddingId ?? null,
-      metadata: (options?.metadata as Prisma.InputJsonValue) ?? null,
+      metadata: (options?.metadata ?? null) as any,
     },
   });
 }
@@ -220,7 +220,7 @@ export async function addMessages(
       tokenCount: m.tokenCount ?? estimateTokenCount(m.content),
       model: m.model ?? null,
       embeddingId: m.embeddingId ?? null,
-      metadata: (m.metadata as Prisma.InputJsonValue) ?? null,
+      metadata: (m.metadata ?? null) as any,
     })),
   });
   return created.count;

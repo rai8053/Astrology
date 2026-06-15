@@ -108,7 +108,8 @@ export class RetrievalService {
 
     sql += ' ORDER BY title ASC';
 
-    return prisma.$queryRawUnsafe<ArticleWithEmbedding[]>(sql, ...params);
+    const rows = await prisma.$queryRawUnsafe(sql, ...params) as ArticleWithEmbedding[];
+    return rows;
   }
 
   async logMetrics(
@@ -141,19 +142,19 @@ export class RetrievalService {
     const queryVector = await embeddingService.generateEmbedding(query);
 
     const sql = `SELECT id, title, content, category, tags, source, "createdAt" as createdat, "updatedAt" as updatedat, embedding FROM "KnowledgeArticle" WHERE id != ALL($1::text[]) AND embedding IS NOT NULL ORDER BY title ASC`;
-    const articles = await prisma.$queryRawUnsafe<ArticleWithEmbedding[]>(sql, excludeIds);
+    const articles = await prisma.$queryRawUnsafe(sql, excludeIds) as ArticleWithEmbedding[];
 
     const scored = articles
-      .filter(a => Array.isArray(a.embedding) && a.embedding!.length > 0)
-      .map(a => ({
+      .filter((a: ArticleWithEmbedding) => Array.isArray(a.embedding) && a.embedding!.length > 0)
+      .map((a: ArticleWithEmbedding) => ({
         article: a,
         score: embeddingService.computeCosineSimilarity(queryVector, a.embedding!),
       }))
-      .filter(r => r.score >= MIN_SCORE_THRESHOLD)
-      .sort((a, b) => b.score - a.score)
+      .filter((r: { score: number }) => r.score >= MIN_SCORE_THRESHOLD)
+      .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
       .slice(0, k);
 
-    return scored.map(r => ({
+    return scored.map((r: { article: ArticleWithEmbedding; score: number }) => ({
       article: {
         id: r.article.id,
         title: r.article.title,
