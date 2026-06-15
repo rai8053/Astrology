@@ -1,5 +1,6 @@
 import { Star } from 'lucide-react';
 import { PremiumCard } from '@/components/ui/PremiumCard';
+import { useTranslation } from '@/lib/i18n';
 import type { VedicProfile } from '@shared/types/api';
 
 const NAVAMSA_COLORS: Record<string, string> = {
@@ -14,6 +15,7 @@ const NAVAMSA_COLORS: Record<string, string> = {
 };
 
 export function NavamsaChart({ placements }: { placements: VedicProfile['planetaryPlacements'] }) {
+  const { t } = useTranslation();
   const withNavamsa = placements.filter(p => p.navamsaSign);
   if (!withNavamsa.length) return null;
 
@@ -32,8 +34,8 @@ export function NavamsaChart({ placements }: { placements: VedicProfile['planeta
     <PremiumCard glass>
       <div className="flex items-center gap-2 mb-4">
         <Star className="w-4 h-4 text-gold" />
-        <h3 className="font-serif font-semibold">Navamsa (D9) Chart</h3>
-        <span className="text-[9px] uppercase font-sans font-bold text-ink/30 dark:text-parchment/30 tracking-wider ml-auto">Divisional Chart for Marriage & Dharma</span>
+        <h3 className="font-serif font-semibold">{t('kundli.navamsaChart')}</h3>
+        <span className="text-[9px] uppercase font-sans font-bold text-ink/30 dark:text-parchment/30 tracking-wider ml-auto">{t('kundli.navamsaSubtitle')}</span>
       </div>
       <div className="grid grid-cols-4 gap-1.5">
         {navamsaSigns.map((sign) => {
@@ -63,10 +65,10 @@ export function NavamsaChart({ placements }: { placements: VedicProfile['planeta
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="border-b border-ink/10 dark:border-white/[0.06]">
-              <th className="pb-2 font-sans text-[8px] uppercase tracking-wider text-ink/40 dark:text-parchment/40 font-bold">Planet</th>
-              <th className="pb-2 font-sans text-[8px] uppercase tracking-wider text-ink/40 dark:text-parchment/40 font-bold">Rashi Sign</th>
-              <th className="pb-2 font-sans text-[8px] uppercase tracking-wider text-ink/40 dark:text-parchment/40 font-bold">Navamsa Sign</th>
-              <th className="pb-2 font-sans text-[8px] uppercase tracking-wider text-ink/40 dark:text-parchment/40 font-bold">D9 House</th>
+              <th className="pb-2 font-sans text-[8px] uppercase tracking-wider text-ink/40 dark:text-parchment/40 font-bold">{t('kundli.navamsaPlanet')}</th>
+              <th className="pb-2 font-sans text-[8px] uppercase tracking-wider text-ink/40 dark:text-parchment/40 font-bold">{t('kundli.navamsaRashi')}</th>
+              <th className="pb-2 font-sans text-[8px] uppercase tracking-wider text-ink/40 dark:text-parchment/40 font-bold">{t('kundli.navamsaSign')}</th>
+              <th className="pb-2 font-sans text-[8px] uppercase tracking-wider text-ink/40 dark:text-parchment/40 font-bold">{t('kundli.navamsaHouse')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink/5 dark:divide-white/[0.03]">

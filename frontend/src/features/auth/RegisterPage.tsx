@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -15,18 +15,21 @@ import { fetchGoogleClientId } from '@/lib/google';
 import toast from 'react-hot-toast';
 import { SEO } from '@/components/SEO';
 
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((d) => d.password === d.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
-type RegisterForm = z.infer<typeof registerSchema>;
+interface RegisterForm { name: string; email: string; password: string; confirmPassword: string }
 
-function calcStrength(password: string): { score: number; label: string; color: string; width: string } {
+function createRegisterSchema(t: (k: string) => string) {
+  return z.object({
+    name: z.string().min(2, t('auth.nameMinLength')),
+    email: z.string().email(t('auth.invalidEmail')),
+    password: z.string().min(8, t('auth.passwordMinLength8')),
+    confirmPassword: z.string(),
+  }).refine((d) => d.password === d.confirmPassword, {
+    message: t('auth.passwordsNoMatch'),
+    path: ['confirmPassword'],
+  });
+}
+
+function calcStrength(password: string, t: (k: string) => string): { score: number; label: string; color: string; width: string } {
   let score = 0;
   if (password.length >= 8) score += 25;
   if (password.length >= 12) score += 10;
@@ -35,9 +38,9 @@ function calcStrength(password: string): { score: number; label: string; color: 
   if (/[0-9]/.test(password)) score += 15;
   if (/[^A-Za-z0-9]/.test(password)) score += 15;
   if (password.length >= 16) score += 10;
-  if (score >= 80) return { score, label: 'Strong', color: 'bg-emerald-500', width: 'w-3/4' };
-  if (score >= 50) return { score, label: 'Medium', color: 'bg-amber-500', width: 'w-1/2' };
-  return { score, label: 'Weak', color: 'bg-red-500', width: 'w-1/4' };
+  if (score >= 80) return { score, label: t('password.strong'), color: 'bg-emerald-500', width: 'w-3/4' };
+  if (score >= 50) return { score, label: t('password.medium'), color: 'bg-amber-500', width: 'w-1/2' };
+  return { score, label: t('password.weak'), color: 'bg-red-500', width: 'w-1/4' };
 }
 
 export function RegisterPage() {
@@ -46,6 +49,7 @@ export function RegisterPage() {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [googleClientId, setGoogleClientId] = useState('');
+  const registerSchema = useMemo(() => createRegisterSchema(t), [t]);
   const { register, handleSubmit, watch, setError, formState: { errors, isSubmitting } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   });
@@ -55,7 +59,7 @@ export function RegisterPage() {
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const watchedPassword = watch('password');
-  const pw = watchedPassword ? calcStrength(watchedPassword) : null;
+  const pw = watchedPassword ? calcStrength(watchedPassword, t) : null;
 
   const onSubmit = async (data: RegisterForm) => {
     try {

@@ -55,7 +55,7 @@ export function ContactPage() {
               { icon: Mail, label: t('contact.email'), value: 'hello@somaandsurya.com' },
               { icon: MessageSquare, label: t('contact.support'), value: 'support@somaandsurya.com' },
               { icon: MapPin, label: t('contact.location'), value: 'Mumbai, India' },
-              { icon: Clock, label: t('contact.responseTime'), value: 'Within 24 hours' },
+              { icon: Clock, label: t('contact.responseTime'), value: t('contact.responseTimeValue') },
             ].map((item) => (
               <PremiumCard key={item.label} glass>
                 <div className="flex items-center gap-3">

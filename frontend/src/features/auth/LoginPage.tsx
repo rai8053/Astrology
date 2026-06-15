@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, AlertCircle, Lock, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -15,17 +15,21 @@ import { fetchGoogleClientId } from '@/lib/google';
 import toast from 'react-hot-toast';
 import { SEO } from '@/components/SEO';
 
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-type LoginForm = z.infer<typeof loginSchema>;
+interface LoginForm { email: string; password: string }
+
+function createLoginSchema(t: (k: string) => string) {
+  return z.object({
+    email: z.string().email(t('auth.invalidEmail')),
+    password: z.string().min(6, t('auth.passwordMinLength')),
+  });
+}
 
 export function LoginPage() {
   const [googleClientId, setGoogleClientId] = useState('');
   const { login, loginWithGoogle, isAuthenticated } = useAuthStore();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const loginSchema = useMemo(() => createLoginSchema(t), [t]);
   const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });

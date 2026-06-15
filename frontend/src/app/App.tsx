@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '@/lib/store';
 import { brand } from '@/config/brand';
-import { useI18nStore } from '@/lib/i18n';
+import { useI18nStore, useTranslation } from '@/lib/i18n';
 import posthog from 'posthog-js';
 import { easeOut } from '@/lib/animations';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -161,6 +161,7 @@ export default function App() {
   }, []);
 
   const language = useI18nStore((s) => s.language);
+  const { t } = useTranslation();
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -210,7 +211,7 @@ export default function App() {
   return (
     <HelmetProvider>
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-gold focus:text-cosmic focus:rounded-lg focus:text-sm focus:font-sans focus:font-bold focus:outline-none">
-        Skip to main content
+        {t('common.skipToContent')}
       </a>
       <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>
       <LocationPopup />

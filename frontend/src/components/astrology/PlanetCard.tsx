@@ -1,3 +1,4 @@
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 interface PlanetCardProps {
@@ -31,6 +32,7 @@ function getPlanetStyle(name: string): string {
 }
 
 export function PlanetCard({ name, sign, signFull, house, degrees, minutes, interpretation }: PlanetCardProps) {
+  const { t } = useTranslation();
   const planetStyle = getPlanetStyle(name);
   const subtitle = signFull?.split('(')[1]?.replace(')', '') || signFull || '—';
 
@@ -45,7 +47,7 @@ export function PlanetCard({ name, sign, signFull, house, degrees, minutes, inte
       <p className="text-sm text-muted-foreground">
         {subtitle}
         <span className="mx-1">&middot;</span>
-        House {house ?? '—'}
+        {t('kundli.planetHouse')} {house ?? '—'}
         <span className="mx-1">&middot;</span>
         {degrees ?? '—'}°{minutes ?? '—'}'
       </p>

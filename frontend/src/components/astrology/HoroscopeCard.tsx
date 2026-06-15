@@ -1,3 +1,4 @@
+import { useTranslation } from '@/lib/i18n';
 import { ScoreRing } from './ScoreRing';
 
 interface HoroscopeCardProps {
@@ -11,7 +12,8 @@ interface HoroscopeCardProps {
 }
 
 export function HoroscopeCard({ prediction, dailyAdvice, love, career, health, finance, date }: HoroscopeCardProps) {
-  const today = date || new Date().toLocaleDateString('en-US', {
+  const { t, language } = useTranslation();
+  const today = date || new Date().toLocaleDateString(language, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
@@ -19,13 +21,13 @@ export function HoroscopeCard({ prediction, dailyAdvice, love, career, health, f
     <div className="rounded-2xl border border-border bg-card p-5">
       <p className="mb-1 text-xs font-medium text-muted-foreground">{today}</p>
       <p className="text-sm leading-relaxed text-foreground">
-        {prediction || 'The stars are aligning in your favor today.'}
+        {prediction || t('horoscope.starsAligning')}
       </p>
       <div className="mt-4 grid grid-cols-4 gap-2">
-        <ScoreRing value={love} label="Love" />
-        <ScoreRing value={career} label="Career" />
-        <ScoreRing value={health} label="Health" />
-        <ScoreRing value={finance} label="Wealth" />
+        <ScoreRing value={love} label={t('horoscope.scoreLove')} />
+        <ScoreRing value={career} label={t('horoscope.scoreCareer')} />
+        <ScoreRing value={health} label={t('horoscope.scoreHealth')} />
+        <ScoreRing value={finance} label={t('horoscope.scoreWealth')} />
       </div>
       {dailyAdvice && (
         <p className="mt-3 border-t border-border pt-3 text-xs italic leading-relaxed text-muted-foreground">
