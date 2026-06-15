@@ -72,6 +72,44 @@
   --color-parchment: #faf8f5;
 }
 
+/* ── Light Mode Overrides ── */
+:root:not(.dark) {
+  --color-background: #f8f7f4;
+  --color-foreground: #1a1a2e;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0efe9;
+  --color-card: #ffffff;
+  --color-card-foreground: #334155;
+  --color-muted: #f0efe9;
+  --color-muted-foreground: #64748b;
+
+  --color-primary: #7c3aed;
+  --color-primary-light: #6d28d9;
+  --color-primary-lighter: #8b5cf6;
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #0891b2;
+  --color-secondary-light: #06b6d4;
+
+  --color-accent: #d97706;
+  --color-accent-light: #f59e0b;
+  --color-accent-hover: #b45309;
+
+  --color-border: #e2e0d8;
+  --color-border-primary: #cbd5e1;
+
+  --color-bg-primary: #f8f7f4;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f0efe9;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #334155;
+  --color-text-tertiary: #64748b;
+  --color-border-secondary: #e2e0d8;
+
+  --color-ink: #faf8f5;
+  --color-parchment: #1a1a2e;
+}
+
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
 
@@ -84,12 +122,12 @@
   body:focus { outline: none; }
 
   ::selection {
-    background: rgba(124, 58, 237, 0.3);
+    background: color-mix(in srgb, var(--color-primary) 30%, transparent);
     color: #ffffff;
   }
 
   *:focus-visible {
-    outline: 2px solid rgba(139, 92, 246, 0.5);
+    outline: 2px solid color-mix(in srgb, var(--color-primary) 50%, transparent);
     outline-offset: 2px;
     border-radius: 6px;
   }
@@ -108,28 +146,28 @@
 
   /* ── Glassmorphism ── */
   .glass {
-    background: rgba(11, 16, 38, 0.6);
+    background: color-mix(in srgb, var(--color-surface) 60%, transparent);
     backdrop-filter: blur(20px) saturate(1.3);
     -webkit-backdrop-filter: blur(20px) saturate(1.3);
-    border: 1px solid rgba(124, 58, 237, 0.15);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
   }
   .glass-light {
-    background: rgba(11, 16, 38, 0.4);
+    background: color-mix(in srgb, var(--color-surface) 40%, transparent);
     backdrop-filter: blur(12px) saturate(1.2);
     -webkit-backdrop-filter: blur(12px) saturate(1.2);
-    border: 1px solid rgba(124, 58, 237, 0.1);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
   }
   .glass-nav {
-    background: rgba(5, 8, 22, 0.75);
+    background: color-mix(in srgb, var(--color-background) 75%, transparent);
     backdrop-filter: blur(24px) saturate(1.4);
     -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border-bottom: 1px solid rgba(124, 58, 237, 0.12);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 12%, transparent);
   }
   .glass-card {
-    background: rgba(11, 16, 38, 0.55);
+    background: color-mix(in srgb, var(--color-card) 55%, transparent);
     backdrop-filter: blur(16px) saturate(1.25);
     -webkit-backdrop-filter: blur(16px) saturate(1.25);
-    border: 1px solid rgba(124, 58, 237, 0.12);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 12%, transparent);
   }
 
   /* ── Cosmic Glow ── */
@@ -171,7 +209,7 @@
 
   /* ── Animated Gradient Background ── */
   .gradient-cosmic {
-    background: linear-gradient(135deg, #050816 0%, #0b1026 50%, #111936 100%);
+    background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 50%, var(--color-bg-tertiary) 100%);
   }
   .gradient-primary {
     background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
@@ -180,7 +218,7 @@
     background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
   }
   .gradient-accent {
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
   }
   .gradient-cyan {
     background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
@@ -218,14 +256,14 @@
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    background: rgba(124, 58, 237, 0.1);
-    color: #a78bfa;
-    border: 1px solid rgba(124, 58, 237, 0.2);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary-lighter);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
   }
   .tag-accent {
-    background: rgba(245, 158, 11, 0.1);
-    color: #fbbf24;
-    border-color: rgba(245, 158, 11, 0.2);
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+    color: var(--color-accent-light);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
   }
   .badge-primary {
     display: inline-flex;
@@ -234,14 +272,14 @@
     border-radius: 9999px;
     font-size: 0.625rem;
     font-weight: 600;
-    background: rgba(124, 58, 237, 0.15);
-    color: #a78bfa;
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    color: var(--color-primary-lighter);
     border: 1px solid rgba(124, 58, 237, 0.25);
   }
 
   /* ── Shimmer / Loading ── */
   .shimmer-surface {
-    background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.06), transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent);
     background-size: 200% 100%;
     animation: shimmer 2s ease-in-out infinite;
   }

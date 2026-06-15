@@ -7,6 +7,7 @@ import { PremiumButton } from '@/components/PremiumButton';
 import { tarotCards } from '@/data/tarotCards';
 import { Sparkles, RefreshCw, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 type Spread = 'one' | 'three' | 'celtic';
 
@@ -16,18 +17,18 @@ type DrawnCard = {
   position: number;
 };
 
-const spreadConfig = {
-  one: { label: 'Single Card', positions: 1, desc: 'Quick insight for the day' },
-  three: { label: 'Three-Card Spread', positions: 3, desc: 'Past · Present · Future' },
-  celtic: { label: 'Celtic Cross', positions: 10, desc: 'Deep comprehensive reading' },
+const SPREAD_KEYS: Record<Spread, { labelKey: string; descKey: string; positions: number }> = {
+  one: { labelKey: 'tarot.spreadOne', descKey: 'tarot.spreadOneDesc', positions: 1 },
+  three: { labelKey: 'tarot.spreadThree', descKey: 'tarot.spreadThreeDesc', positions: 3 },
+  celtic: { labelKey: 'tarot.spreadCeltic', descKey: 'tarot.spreadCelticDesc', positions: 10 },
 };
 
-const celticPositions = [
-  'Present', 'Challenge', 'Past', 'Future', 'Above',
-  'Below', 'Advice', 'External Influences', 'Hopes & Fears', 'Outcome',
+const CELTIC_POSITION_KEYS = [
+  'tarot.positionPresent', 'tarot.positionChallenge', 'tarot.positionPast', 'tarot.positionFuture', 'tarot.positionAbove',
+  'tarot.positionBelow', 'tarot.positionAdvice', 'tarot.positionExternal', 'tarot.positionHopes', 'tarot.positionOutcome',
 ];
 
-function TarotCard({ card, onClick, flipped, index }: { card: DrawnCard; onClick?: () => void; flipped: boolean; index: number }) {
+function TarotCard({ card, onClick, flipped, index, t }: { card: DrawnCard; onClick?: () => void; flipped: boolean; index: number; t: (key: string, vars?: Record<string, string | number>) => string }) {
   const data = tarotCards[card.id]!;
   return (
     <motion.div
@@ -51,7 +52,7 @@ function TarotCard({ card, onClick, flipped, index }: { card: DrawnCard; onClick
           <div className="absolute inset-0 rounded-xl glass-card flex items-center justify-center backface-hidden">
             <div className="text-center">
               <Star className="w-6 h-6 text-primary-light mx-auto mb-1" />
-              <span className="text-[10px] font-semibold text-primary-light">TAROT</span>
+              <span className="text-[10px] font-semibold text-primary-light">{t('tarot.cardBack')}</span>
             </div>
           </div>
         ) : (
@@ -60,7 +61,7 @@ function TarotCard({ card, onClick, flipped, index }: { card: DrawnCard; onClick
             card.reversed ? 'bg-red-900/20 border border-red-500/30' : 'glass-card',
           )}>
             <span className="text-[10px] font-bold leading-tight text-foreground mb-1">{data.name}</span>
-            <span className="text-[8px] text-muted-foreground">{card.reversed ? '⟳ Reversed' : ''}</span>
+            <span className="text-[8px] text-muted-foreground">{card.reversed ? `⟳ ${t('tarot.reversed')}` : ''}</span>
           </div>
         )}
       </motion.div>
@@ -69,13 +70,14 @@ function TarotCard({ card, onClick, flipped, index }: { card: DrawnCard; onClick
 }
 
 export function TarotPage() {
+  const { t } = useTranslation();
   const [spread, setSpread] = useState<Spread>('three');
   const [drawn, setDrawn] = useState<DrawnCard[]>([]);
   const [flipped, setFlipped] = useState(false);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
   const shuffle = () => {
-    const count = spreadConfig[spread].positions;
+    const count = SPREAD_KEYS[spread].positions;
     const shuffled = [...tarotCards].sort(() => Math.random() - 0.5).slice(0, count);
     setDrawn(shuffled.map((c, i) => ({ id: c.id, reversed: Math.random() > 0.7, position: i })));
     setFlipped(false);
@@ -93,10 +95,10 @@ export function TarotPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-10"
           >
-            <span className="tag-accent tag mb-4 inline-block">Tarot</span>
-            <h1 className="hero-text mb-4">Mystical Tarot Guidance</h1>
+            <span className="tag-accent tag mb-4 inline-block">{t('tarot.tag')}</span>
+            <h1 className="hero-text mb-4">{t('tarot.title')}</h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Pull cards for profound insight into love, career, and spiritual growth.
+              {t('tarot.subtitle')}
             </p>
           </motion.div>
 
@@ -106,7 +108,7 @@ export function TarotPage() {
             transition={{ delay: 0.15 }}
             className="flex flex-wrap items-center justify-center gap-3 mb-10"
           >
-            {(Object.entries(spreadConfig) as [Spread, typeof spreadConfig[Spread]][]).map(([key, cfg]) => (
+            {(Object.entries(SPREAD_KEYS) as [Spread, typeof SPREAD_KEYS[Spread]][]).map(([key, cfg]) => (
               <button
                 key={key}
                 onClick={() => { setSpread(key); setDrawn([]); setSelectedCard(null); }}
@@ -117,8 +119,8 @@ export function TarotPage() {
                     : 'bg-transparent border-border text-muted-foreground hover:border-primary/20',
                 )}
               >
-                {cfg.label}
-                <span className="block text-[10px] opacity-60">{cfg.desc}</span>
+                {t(cfg.labelKey)}
+                <span className="block text-[10px] opacity-60">{t(cfg.descKey)}</span>
               </button>
             ))}
           </motion.div>
@@ -134,7 +136,7 @@ export function TarotPage() {
               icon={<Sparkles className="w-4 h-4" />}
               onClick={shuffle}
             >
-              {drawn.length > 0 ? 'Shuffle Again' : 'Draw Cards'}
+              {drawn.length > 0 ? t('tarot.shuffleAgain') : t('tarot.drawCards')}
             </PremiumButton>
           </motion.div>
 
@@ -146,6 +148,7 @@ export function TarotPage() {
                 flipped={flipped}
                 index={i}
                 onClick={() => setSelectedCard(i)}
+                t={t}
               />
             ))}
           </div>
@@ -170,8 +173,10 @@ export function TarotPage() {
                   <div>
                     <h3 className="text-lg font-bold">{data.name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Position: {spread === 'celtic' ? celticPositions[selectedCard!] : `Card ${selectedCard! + 1}`}
-                      {card.reversed && ' · Reversed'}
+                      {spread === 'celtic'
+                        ? t(CELTIC_POSITION_KEYS[selectedCard!] ?? 'tarot.positionPresent')
+                        : t('tarot.cardLabel', { n: selectedCard! + 1 })}
+                      {card.reversed && ` · ${t('tarot.reversed')}`}
                     </p>
                   </div>
                 </div>
@@ -199,7 +204,7 @@ export function TarotPage() {
               <div className="w-20 h-20 mx-auto mb-4 rounded-full glass flex items-center justify-center">
                 <RefreshCw className="w-8 h-8 text-muted-foreground" />
               </div>
-              <p className="text-muted-foreground">Choose a spread and draw your cards</p>
+              <p className="text-muted-foreground">{t('tarot.emptyState')}</p>
             </motion.div>
           )}
         </PageContainer>

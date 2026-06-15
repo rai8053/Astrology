@@ -254,13 +254,13 @@ export function Landing() {
               </motion.span>
 
               <h1 className="text-[2.5rem] sm:text-5xl md:text-7xl font-sans font-bold tracking-[-0.03em] leading-[0.92] mb-5 text-balance">
-                Decode Your
+                {t('landing.heroTitle1')}
                 <br />
-                <span className="accent-gradient inline-block mt-2">Cosmic Blueprint</span>
+                <span className="accent-gradient inline-block mt-2">{t('landing.heroTitle2')}</span>
               </h1>
 
               <p className="text-base sm:text-lg text-muted-foreground max-w-xl mb-10 leading-relaxed">
-                AI-powered astrology, kundli insights, tarot guidance and numerology reports — all in one place.
+                {t('landing.heroDesc')}
               </p>
 
               <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
@@ -439,9 +439,9 @@ export function Landing() {
 
           <motion.div {...stagger} className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              { icon: Star, title: 'Three-Card Spread', desc: 'Past, present, and future insight' },
-              { icon: Heart, title: 'Love Reading', desc: 'Romantic guidance and clarity' },
-              { icon: Gem, title: 'Celtic Cross', desc: 'Deep spiritual exploration' },
+              { icon: Star, titleKey: 'landing.tarotPreview1Title', descKey: 'landing.tarotPreview1Desc' },
+              { icon: Heart, titleKey: 'landing.tarotPreview2Title', descKey: 'landing.tarotPreview2Desc' },
+              { icon: Gem, titleKey: 'landing.tarotPreview3Title', descKey: 'landing.tarotPreview3Desc' },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -451,8 +451,8 @@ export function Landing() {
                 <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-accent/10 flex items-center justify-center cosmic-glow-accent">
                   <item.icon className="w-5 h-5 text-accent" />
                 </div>
-                <h3 className="text-base font-semibold mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
+                <h3 className="text-base font-semibold mb-2">{t(item.titleKey)}</h3>
+                <p className="text-sm text-muted-foreground">{t(item.descKey)}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -476,9 +476,9 @@ export function Landing() {
 
           <motion.div {...stagger} className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              { number: 7, title: 'Life Path', desc: 'Your life\'s purpose and journey' },
-              { number: 3, title: 'Destiny', desc: 'Your innate talents and abilities' },
-              { number: 9, title: 'Soul Urge', desc: 'Your deepest inner desires' },
+              { number: 7, titleKey: 'landing.numPreview1Title', descKey: 'landing.numPreview1Desc' },
+              { number: 3, titleKey: 'landing.numPreview2Title', descKey: 'landing.numPreview2Desc' },
+              { number: 9, titleKey: 'landing.numPreview3Title', descKey: 'landing.numPreview3Desc' },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -488,15 +488,15 @@ export function Landing() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-cyan-500/10 flex items-center justify-center cosmic-glow-cyan">
                   <span className="text-2xl font-bold text-secondary">{item.number}</span>
                 </div>
-                <h3 className="text-base font-semibold mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
+                <h3 className="text-base font-semibold mb-2">{t(item.titleKey)}</h3>
+                <p className="text-sm text-muted-foreground">{t(item.descKey)}</p>
               </motion.div>
             ))}
           </motion.div>
 
           <motion.div {...fadeUp} className="text-center mt-10">
             <Link to="/numerology">
-              <PremiumButton variant="outline" size="lg">Calculate Your Numbers</PremiumButton>
+              <PremiumButton variant="outline" size="lg">{t('landing.numerologyCta')}</PremiumButton>
             </Link>
           </motion.div>
         </div>
@@ -829,7 +829,7 @@ function PricingSection() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-primary/5 border border-primary/10 text-primary-light">
             <span className="font-medium">{getCountryName(effectiveCountry)}</span>
             <span className="w-1 h-1 rounded-full bg-primary/30" />
-            <span>Prices in {currencyInfo.code} ({currencyInfo.symbol})</span>
+            <span>{t('landing.pricesIn', { code: currencyInfo.code, symbol: currencyInfo.symbol })}</span>
           </div>
         </div>
 

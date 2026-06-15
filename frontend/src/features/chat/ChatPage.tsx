@@ -355,7 +355,7 @@ export function ChatPage() {
           )}
           {isPremium && (
             <span className="text-[10px] text-gold font-mono bg-gold/10 px-2.5 py-1 rounded-full border border-gold/20 flex items-center gap-1">
-              <Crown className="w-3 h-3" /> Premium
+              <Crown className="w-3 h-3" /> {t('chat.premiumBadge')}
             </span>
           )}
           <PremiumButton variant="ghost" size="sm" icon={<Sparkles className="w-4 h-4" />} onClick={newSession}>
@@ -457,8 +457,8 @@ export function ChatPage() {
                 <p className="text-[10px] text-gold/60 flex items-center gap-1">
                   <Crown className="w-3 h-3" />
                   {limitRemaining <= 0
-                    ? 'Daily limit reached. Upgrade to Premium for unlimited chat.'
-                    : `${limitRemaining} free ${limitRemaining === 1 ? 'question' : 'questions'} remaining today`}
+                    ? t('chat.limitReached')
+                    : t('chat.limitRemaining', { count: limitRemaining })}
                 </p>
               </div>
             )}

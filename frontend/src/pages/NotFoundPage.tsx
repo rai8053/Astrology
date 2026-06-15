@@ -13,7 +13,7 @@ export function NotFoundPage() {
       <Navbar />
       <div className="flex items-center justify-center pt-32 pb-24 px-5">
         <Helmet>
-          <title>404 — Page Not Found — Soma & Surya</title>
+          <title>404 — {t('errors.pageNotFound')}</title>
           <meta name="robots" content="noindex" />
         </Helmet>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
@@ -21,9 +21,9 @@ export function NotFoundPage() {
             <Compass className="w-8 h-8 text-accent" />
           </motion.div>
           <h1 className="font-sans text-6xl sm:text-7xl font-bold text-accent mb-2">404</h1>
-          <p className="text-lg text-text-secondary mb-8 max-w-md mx-auto">The stars could not align for this page — it may have been moved or does not exist.</p>
+          <p className="text-lg text-text-secondary mb-8 max-w-md mx-auto">{t('errors.pageNotFoundDesc')}</p>
           <Link to="/">
-            <PremiumButton icon={<ArrowLeft className="w-4 h-4" />}>{t('common.back')} Home</PremiumButton>
+            <PremiumButton icon={<ArrowLeft className="w-4 h-4" />}>{t('errors.backHome')}</PremiumButton>
           </Link>
         </motion.div>
       </div>

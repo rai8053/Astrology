@@ -6,6 +6,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PremiumButton } from '@/components/PremiumButton';
 import { Sparkles, Calculator, Heart, Briefcase, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 type NumerologyResult = {
   lifePath: number;
@@ -121,6 +122,7 @@ function NumberCard({ num, label, meaning, color }: { num: number; label: string
 }
 
 export function NumerologyPage() {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
   const [result, setResult] = useState<NumerologyResult | null>(null);
@@ -147,10 +149,10 @@ export function NumerologyPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <span className="tag mb-4 inline-block">Numerology</span>
-            <h1 className="hero-text mb-4">Discover Your Numbers</h1>
+            <span className="tag mb-4 inline-block">{t('numerology.tag')}</span>
+            <h1 className="hero-text mb-4">{t('numerology.title')}</h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Calculate your Life Path, Destiny, and Soul Urge numbers to unlock the secrets of your cosmic identity.
+              {t('numerology.subtitle')}
             </p>
           </motion.div>
 
@@ -162,17 +164,17 @@ export function NumerologyPage() {
           >
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Your Full Name</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5">{t('numerology.nameLabel')}</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your full name"
+                  placeholder={t('numerology.namePlaceholder')}
                   className="w-full px-4 py-2.5 bg-muted border border-border rounded-lg text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary/40 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Date of Birth</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5">{t('numerology.dobLabel')}</label>
                 <input
                   type="date"
                   value={dob}
@@ -187,7 +189,7 @@ export function NumerologyPage() {
                 onClick={handleCalculate}
                 disabled={!name.trim() || !dob}
               >
-                Calculate My Numbers
+                {t('numerology.calculate')}
               </PremiumButton>
             </div>
           </motion.div>
@@ -202,19 +204,19 @@ export function NumerologyPage() {
               <div className="grid md:grid-cols-3 gap-6">
                 <NumberCard
                   num={result.lifePath}
-                  label="Life Path Number"
+                  label={t('numerology.lifePathLabel')}
                   meaning={numberMeanings[result.lifePath] || fallbackMeaning}
                   color="bg-primary/10 text-primary-light"
                 />
                 <NumberCard
                   num={result.destiny}
-                  label="Destiny Number"
+                  label={t('numerology.destinyLabel')}
                   meaning={numberMeaningsDestiny[result.destiny] || fallbackDestiny}
                   color="bg-accent/10 text-accent"
                 />
                 <NumberCard
                   num={result.soulUrge}
-                  label="Soul Urge Number"
+                  label={t('numerology.soulUrgeLabel')}
                   meaning={numberMeaningsSoul[result.soulUrge] || fallbackSoul}
                   color="bg-cyan-500/10 text-secondary"
                 />
@@ -228,27 +230,27 @@ export function NumerologyPage() {
               >
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-primary-light" />
-                  Your Numerology Profile
+                  {t('numerology.profileTitle')}
                 </h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5">
                     <Heart className="w-4 h-4 text-primary-light mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium">Life Path: {result.lifePath}</p>
+                      <p className="text-sm font-medium">{t('numerology.lifePathResult', { n: result.lifePath })}</p>
                       <p className="text-xs text-muted-foreground">{(numberMeanings[result.lifePath] || fallbackMeaning).desc}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/5">
                     <Briefcase className="w-4 h-4 text-accent mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium">Destiny: {result.destiny}</p>
+                      <p className="text-sm font-medium">{t('numerology.destinyResult', { n: result.destiny })}</p>
                       <p className="text-xs text-muted-foreground">{(numberMeaningsDestiny[result.destiny] || fallbackDestiny).desc}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-cyan-500/5 sm:col-span-2">
                     <Users className="w-4 h-4 text-secondary mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium">Soul Urge: {result.soulUrge}</p>
+                      <p className="text-sm font-medium">{t('numerology.soulUrgeResult', { n: result.soulUrge })}</p>
                       <p className="text-xs text-muted-foreground">{(numberMeaningsSoul[result.soulUrge] || fallbackSoul).desc}</p>
                     </div>
                   </div>

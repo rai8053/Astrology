@@ -1,11 +1,13 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 interface Props { children: ReactNode; fallback?: ReactNode; }
 interface State { hasError: boolean; error?: Error; }
 
 function ErrorFallback({ error }: { error?: Error }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -18,9 +20,9 @@ function ErrorFallback({ error }: { error?: Error }) {
       >
         <AlertTriangle className="w-14 h-14 text-amber-400 mb-4" />
       </motion.div>
-      <h2 className="text-2xl font-sans font-bold mb-2">Something went wrong</h2>
+      <h2 className="text-2xl font-sans font-bold mb-2">{t('errors.somethingWentWrong')}</h2>
       <p className="text-sm text-ink/50 dark:text-parchment/50 mb-6 max-w-md">
-        {error?.message || 'An unexpected error occurred'}
+        {error?.message || t('errors.unexpectedError')}
       </p>
       <motion.button
         whileHover={{ scale: 1.03 }}
@@ -28,7 +30,7 @@ function ErrorFallback({ error }: { error?: Error }) {
         onClick={() => window.location.reload()}
         className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gold to-amber-400 text-cosmic text-xs font-sans font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-gold/20 hover:shadow-gold/30 transition-all"
       >
-        <RefreshCw className="w-4 h-4" /> Reload Page
+        <RefreshCw className="w-4 h-4" /> {t('common.reloadPage')}
       </motion.button>
     </motion.div>
   );
