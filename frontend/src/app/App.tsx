@@ -108,8 +108,8 @@ function PageWrap({ children, cosmic = false }: { children: React.ReactNode; cos
   const pathKey = Object.keys(pageTitleKeys)
     .filter(k => loc.pathname === k || loc.pathname.startsWith(k + '/'))
     .sort((a, b) => b.length - a.length)[0] || '/';
-  const title = t(pageTitleKeys[pathKey]) || brand.meta.title;
-  const description = t(pageDescKeys[pathKey]) || brand.meta.description;
+  const title = t(pageTitleKeys[pathKey] ?? '') || brand.meta.title;
+  const description = t(pageDescKeys[pathKey] ?? '') || brand.meta.description;
   return (
     <motion.div id="main-content" variants={pageVariants} initial="initial" animate="animate" exit="exit">
       <Helmet>
