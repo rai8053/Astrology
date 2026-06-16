@@ -74,7 +74,7 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-5 bg-bg-primary dark:bg-dark-bg-primary">
-      <SEO title="Create Account" description={t('auth.freeAccess')} />
+      <SEO title={t('auth.createAccount')} description={t('auth.freeAccess')} />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
         <Link to="/" className="flex items-center gap-2 justify-center mb-8">
           <Sparkles className="w-6 h-6 text-accent" />

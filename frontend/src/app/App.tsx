@@ -48,67 +48,68 @@ const pageVariants = {
   exit: { opacity: 0, y: -8, transition: { duration: 0.25 } },
 };
 
-const pageTitles: Record<string, string> = {
-  '/': 'Soma & Surya — AI-Powered Vedic Astrology',
-  '/pricing': 'Pricing Plans — AstroNova',
-  '/numerology': 'Numerology Calculator — AstroNova',
-  '/tarot': 'Tarot Reading — AstroNova',
-  '/transits': 'Planetary Transits — AstroNova',
-  '/login': 'Login — AstroNova',
-  '/register': 'Create Account — Soma & Surya',
-  '/about': 'About Us — Soma & Surya',
-  '/contact': 'Contact Us — Soma & Surya',
-  '/faq': 'FAQ — Soma & Surya',
-  '/privacy': 'Privacy Policy — Soma & Surya',
-  '/terms': 'Terms of Service — Soma & Surya',
-  '/refund': 'Refund Policy — Soma & Surya',
-  '/dashboard': 'Dashboard — Soma & Surya',
-  '/dashboard/horoscope': 'Daily Horoscope — Soma & Surya',
-  '/dashboard/kundli': 'Birth Chart — Soma & Surya',
-  '/dashboard/compatibility': 'Compatibility — Soma & Surya',
-  '/dashboard/moon': 'Moon Phase Tracker — Soma & Surya',
-  '/dashboard/chat': 'AI Astrologer Chat — Soma & Surya',
-  '/dashboard/settings': 'Settings — Soma & Surya',
-  '/admin': 'Admin — Soma & Surya',
-  '/admin/users': 'User Management — Soma & Surya',
-  '/admin/analytics': 'Analytics — Soma & Surya',
-  '/admin/reports': 'Reports — Soma & Surya',
+const pageTitleKeys: Record<string, string> = {
+  '/': 'seo.homeTitle',
+  '/pricing': 'seo.pricingTitle',
+  '/numerology': 'seo.numerologyTitle',
+  '/tarot': 'seo.tarotTitle',
+  '/transits': 'seo.transitsTitle',
+  '/login': 'seo.loginTitle',
+  '/register': 'seo.registerTitle',
+  '/about': 'seo.aboutTitle',
+  '/contact': 'seo.contactTitle',
+  '/faq': 'seo.faqTitle',
+  '/privacy': 'seo.privacyTitle',
+  '/terms': 'seo.termsTitle',
+  '/refund': 'seo.refundTitle',
+  '/dashboard': 'seo.dashboardTitle',
+  '/dashboard/horoscope': 'seo.horoscopeTitle',
+  '/dashboard/kundli': 'seo.kundliTitle',
+  '/dashboard/compatibility': 'seo.compatibilityTitle',
+  '/dashboard/moon': 'seo.moonTitle',
+  '/dashboard/chat': 'seo.chatTitle',
+  '/dashboard/settings': 'seo.settingsTitle',
+  '/admin': 'seo.adminTitle',
+  '/admin/users': 'seo.adminUsersTitle',
+  '/admin/analytics': 'seo.adminAnalyticsTitle',
+  '/admin/reports': 'seo.adminReportsTitle',
 };
 
-const pageDescriptions: Record<string, string> = {
-  '/': 'AI-powered Vedic astrology platform with personalized birth charts, daily horoscopes, and compatibility analysis.',
-  '/pricing': 'Choose your plan — Free, Pro, Premium, or Enterprise. Unlock AI astrologer chat, detailed birth charts, and more.',
-  '/numerology': 'Calculate your Life Path, Destiny, and Soul Urge numbers with our free numerology calculator.',
-  '/tarot': 'Get mystical tarot card readings with single card, three-card, and Celtic Cross spreads.',
-  '/transits': 'Track current planetary positions, moon phases, and upcoming transit events.',
-  '/login': 'Sign in to your AstroNova account to access your personalized Vedic astrology dashboard.',
-  '/register': 'Create your Soma & Surya account and discover your Vedic birth chart, daily horoscope, and more.',
-  '/about': 'Learn about Soma & Surya — where ancient Vedic wisdom meets modern AI technology.',
-  '/contact': 'Get in touch with the Soma & Surya team. We\'d love to hear from you.',
-  '/faq': 'Frequently asked questions about Vedic astrology, birth charts, compatibility, and our AI-powered platform.',
-  '/privacy': 'Soma & Surya Privacy Policy — how we protect and handle your personal data.',
-  '/terms': 'Soma & Surya Terms of Service — the rules and guidelines for using our platform.',
-  '/refund': 'Soma & Surya Refund Policy — our cancellation and refund terms for paid plans.',
-  '/dashboard': 'Your personal astrology dashboard with daily horoscopes, cosmic energy score, transit alerts, and more.',
-  '/dashboard/horoscope': 'Your daily, weekly, and monthly Vedic horoscope with personalized planetary insights.',
-  '/dashboard/kundli': 'Your detailed Vedic birth chart (Kundli) with rashi, nakshatra, and planetary positions.',
-  '/dashboard/compatibility': 'Vedic compatibility analysis — compare two birth charts for relationship matching.',
-  '/dashboard/moon': 'Track moon phases, tithi, and nakshatra for optimal timing of spiritual activities.',
-  '/dashboard/chat': 'Chat with an AI Vedic astrologer for personalized spiritual guidance and answers.',
-  '/dashboard/settings': 'Manage your Soma & Surya account settings, language, and preferences.',
-  '/admin': 'Soma & Surya admin dashboard — manage users, reports, and platform analytics.',
-  '/admin/users': 'Admin user management — view and manage platform users.',
-  '/admin/analytics': 'Admin analytics dashboard with platform usage metrics and reports.',
-  '/admin/reports': 'Admin reports — view user-generated astrology reports and platform activity.',
+const pageDescKeys: Record<string, string> = {
+  '/': 'seo.homeDesc',
+  '/pricing': 'seo.pricingDesc',
+  '/numerology': 'seo.numerologyDesc',
+  '/tarot': 'seo.tarotDesc',
+  '/transits': 'seo.transitsDesc',
+  '/login': 'seo.loginDesc',
+  '/register': 'seo.registerDesc',
+  '/about': 'seo.aboutDesc',
+  '/contact': 'seo.contactDesc',
+  '/faq': 'seo.faqDesc',
+  '/privacy': 'seo.privacyDesc',
+  '/terms': 'seo.termsDesc',
+  '/refund': 'seo.refundDesc',
+  '/dashboard': 'seo.dashboardDesc',
+  '/dashboard/horoscope': 'seo.horoscopeDesc',
+  '/dashboard/kundli': 'seo.kundliDesc',
+  '/dashboard/compatibility': 'seo.compatibilityDesc',
+  '/dashboard/moon': 'seo.moonDesc',
+  '/dashboard/chat': 'seo.chatDesc',
+  '/dashboard/settings': 'seo.settingsDesc',
+  '/admin': 'seo.adminDesc',
+  '/admin/users': 'seo.adminUsersDesc',
+  '/admin/analytics': 'seo.adminAnalyticsDesc',
+  '/admin/reports': 'seo.adminReportsDesc',
 };
 
 function PageWrap({ children, cosmic = false }: { children: React.ReactNode; cosmic?: boolean }) {
   const loc = useLocation();
-  const pathKey = Object.keys(pageTitles)
+  const { t } = useTranslation();
+  const pathKey = Object.keys(pageTitleKeys)
     .filter(k => loc.pathname === k || loc.pathname.startsWith(k + '/'))
     .sort((a, b) => b.length - a.length)[0] || '/';
-  const title = pageTitles[pathKey] || brand.meta.title;
-  const description = pageDescriptions[pathKey] || brand.meta.description;
+  const title = t(pageTitleKeys[pathKey]) || brand.meta.title;
+  const description = t(pageDescKeys[pathKey]) || brand.meta.description;
   return (
     <motion.div id="main-content" variants={pageVariants} initial="initial" animate="animate" exit="exit">
       <Helmet>

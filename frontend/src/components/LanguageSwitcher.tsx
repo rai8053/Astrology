@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useI18nStore } from '@/lib/i18n';
+import { useI18nStore, useTranslation } from '@/lib/i18n';
 
 const LANGUAGES = [
   { code: 'en', name: 'English',    short: 'EN' },
@@ -30,6 +30,7 @@ function LangBadge({ short, active }: { short: string; active?: boolean }) {
 
 export function LanguageSwitcher() {
   const { language, setLanguage } = useI18nStore();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const current = LANGUAGES.find((l) => l.code === language) ?? LANGUAGES[0];
 
@@ -37,7 +38,7 @@ export function LanguageSwitcher() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label="Change language"
+        aria-label={t('common.changeLanguage') || 'Change language'}
         aria-expanded={open}
         className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-foreground hover:bg-muted transition-colors border border-transparent hover:border-border"
       >
@@ -70,7 +71,7 @@ export function LanguageSwitcher() {
           <div
             className="absolute top-full right-0 mt-[6px] z-50 min-w-[180px] bg-card border border-border rounded-xl shadow-lg overflow-hidden max-h-80 overflow-y-auto"
             role="listbox"
-            aria-label="Select language"
+            aria-label={t('common.selectLanguage') || 'Select language'}
           >
             {LANGUAGES.map((lang) => (
               <button

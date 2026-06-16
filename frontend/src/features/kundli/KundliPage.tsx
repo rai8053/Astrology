@@ -54,6 +54,7 @@ const itemVariants = {
 };
 
 function NorthIndianChart({ placements, lagna, rashi }: { placements: VedicProfile['planetaryPlacements']; lagna: string; rashi: string }) {
+  const { t } = useTranslation();
   const SIZE = 320;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
@@ -133,7 +134,7 @@ function NorthIndianChart({ placements, lagna, rashi }: { placements: VedicProfi
                 />
               )}
               <circle cx={CX} cy={CY} r={40} fill="none" stroke="rgba(201,148,58,0.25)" strokeWidth={0.8} />
-              <text x={CX} y={CY + 1.5} textAnchor="middle" fontSize="9" fill="rgba(201,148,58,0.5)" fontFamily="var(--font-sans)">As</text>
+              <text x={CX} y={CY + 1.5} textAnchor="middle" fontSize="9" fill="rgba(201,148,58,0.5)" fontFamily="var(--font-sans)">{t('kundli.ascendantAbbrev') || 'As'}</text>
               <text x={labelX} y={labelY} textAnchor="middle" fontSize="8" fill="rgba(156,163,175,0.5)" fontFamily="var(--font-sans)" fontWeight="bold">{h.label}</text>
             </g>
           );
@@ -391,7 +392,7 @@ export function KundliPage() {
             <div className="flex items-center justify-between mb-6 px-1">
               {[
                 { label: t('kundli.birthDetails') || 'Birth Details', icon: Star },
-                { label: 'Location', icon: Compass },
+                { label: t('kundli.location') || 'Location', icon: Compass },
                 { label: t('kundli.generate') || 'Generate', icon: Sparkles },
               ].map((step, i) => {
                 const done = profile && i < 2;

@@ -15,7 +15,7 @@ export function PrivacyPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
           <Shield className="w-10 h-10 text-accent mx-auto mb-3" />
           <h1 className="font-sans text-4xl sm:text-5xl font-bold tracking-tight mb-3">{t('privacy.title')}</h1>
-          <p className="text-sm text-text-tertiary">{t('privacy.lastUpdated')}: May 31, 2026</p>
+          <p className="text-sm text-text-tertiary">{t('privacy.lastUpdated')}</p>
         </motion.div>
         <PremiumCard glass>
           <div className="space-y-6 text-text-secondary">

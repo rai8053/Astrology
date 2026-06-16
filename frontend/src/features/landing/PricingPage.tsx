@@ -154,7 +154,7 @@ export function PricingPage() {
               <span>{currentConfig.flag}</span>
               <span className="font-medium">{getCountryName(detectedCountry)}</span>
               <span className="w-1 h-1 rounded-full bg-accent/30" />
-              <span>Prices in {currencyInfo.code} ({currencyInfo.symbol})</span>
+              <span>{t('landing.pricesIn', { code: currencyInfo.code, symbol: currencyInfo.symbol })}</span>
             </div>
           </div>
 

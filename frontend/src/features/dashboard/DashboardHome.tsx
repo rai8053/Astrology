@@ -221,7 +221,7 @@ export function DashboardHome() {
         </motion.div>
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl md:text-3xl font-display tracking-tight text-foreground">
-            {displayName ? `Namaste, ${displayName.split(' ')[0]}` : t(greeting.key)}
+            {displayName ? `${t('dashboard.namaste')}, ${displayName.split(' ')[0]}` : t(greeting.key)}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {t('dashboard.subtitle') || 'Your cosmic forecast for today'}

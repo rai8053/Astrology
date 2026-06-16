@@ -75,7 +75,7 @@ export function HoroscopePage() {
                 { label: t('horoscope.career') || 'Career', color: 'bg-blue-500/60', key: 'career' },
                 { label: t('horoscope.health') || 'Health', color: 'bg-emerald-500/60', key: 'health' },
                 { label: t('horoscope.finance') || 'Finance', color: 'bg-amber-500/60', key: 'finance' },
-                { label: 'Spirit', color: 'bg-purple-500/60', key: 'spirit' },
+                { label: t('horoscope.spirit') || 'Spirit', color: 'bg-purple-500/60', key: 'spirit' },
               ].map((item, i) => {
                 const hash = (horoscope.general?.length || 1) * (i + 1);
                 const score = Math.max(10, Math.min(100, horoscope.energyLevel + ((hash * 13 + i * 7) % 15) - 7));
