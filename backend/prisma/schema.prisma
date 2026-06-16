@@ -298,3 +298,22 @@ model RetrievalMetric {
   @@index([sessionId])
   @@index([createdAt])
 }
+
+model TranslationCache {
+  id              String   @id @default(cuid())
+  sourceTextHash  String
+  sourceLanguage  String   @default("en")
+  targetLanguage  String
+  translatedText  String
+  model           String?
+  tokensIn        Int      @default(0)
+  tokensOut       Int      @default(0)
+  latencyMs       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([sourceTextHash, sourceLanguage, targetLanguage])
+  @@index([sourceTextHash])
+  @@index([targetLanguage])
+  @@index([createdAt])
+}
