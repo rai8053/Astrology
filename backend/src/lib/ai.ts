@@ -84,7 +84,7 @@ class OpenRouterService implements ProviderClient {
       preferredModel: this.preferredModel,
       fallbackModels: this.fallbackModels,
       maxRetries: this.maxRetries,
-      apiKeyPrefix: apiKey.substring(0, 8) + '...',
+      hasApiKey: true,
       appUrl: process.env.APP_URL || 'http://localhost:5173',
       baseURL: 'https://openrouter.ai/api/v1',
     }, 'OpenRouterService initialized');
@@ -275,12 +275,11 @@ function resolveProvider(): OpenRouterService {
 
 export async function generateAIResponse(prompt: string, systemInstruction?: string): Promise<{ text: string; provider: string; model: string }> {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  const apiKeyPrefix = apiKey ? apiKey.substring(0, 8) + '...' : 'NOT SET';
   const modelName = process.env.OPENROUTER_MODEL || DEFAULT_FALLBACK_MODELS[0];
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
 
   logger.info({
-    apiKeyPrefix,
+    hasApiKey: !!apiKey,
     modelName,
     appUrl,
     hasSystemInstruction: !!systemInstruction,
@@ -302,7 +301,7 @@ export async function generateAIResponse(prompt: string, systemInstruction?: str
     const errMsg = error instanceof Error ? error.message : String(error);
     const errStack = error instanceof Error ? error.stack : '';
     const errStatus = (error as any)?.status;
-    logger.error({ errMsg, errStack, errStatus, apiKeyPrefix, modelName, maxTokens }, 'generateAIResponse failed');
+    logger.error({ errMsg, errStack, errStatus, hasApiKey: !!apiKey, modelName, maxTokens }, 'generateAIResponse failed');
     throw error;
   } finally {
     clearTimeout(timeout);
