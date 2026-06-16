@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "shell-quote": "^1.8.4",
     "tsx": "^4.22.3",
     "vite": "^8.0.14"
   },
