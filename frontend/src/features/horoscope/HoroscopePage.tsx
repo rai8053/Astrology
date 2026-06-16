@@ -6,12 +6,13 @@ import { PremiumCard } from '@/components/ui/PremiumCard';
 import { CardSkeleton } from '@/components/Skeleton';
 import { cn, RASHIS } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { useAstrology } from '@/hooks/useAstrology';
 import type { DailyHoroscope } from '@shared/types/api';
 
 const PLANET_RULERS: Record<string, string> = {
-  Mesh: 'Mangal', Vrishabh: 'Shukra', Mithun: 'Budh', Kark: 'Chandra',
-  Simha: 'Surya', Kanya: 'Budh', Tula: 'Shukra', Vrishchik: 'Mangal',
-  Dhanu: 'Guru', Makar: 'Shani', Kumbha: 'Shani', Meen: 'Guru',
+  Mesh: 'Mars', Vrishabh: 'Venus', Mithun: 'Mercury', Kark: 'Moon',
+  Simha: 'Sun', Kanya: 'Mercury', Tula: 'Venus', Vrishchik: 'Mars',
+  Dhanu: 'Jupiter', Makar: 'Saturn', Kumbha: 'Saturn', Meen: 'Jupiter',
 };
 
 const staggerContainer = { animate: { transition: { staggerChildren: 0.03 } } };
@@ -19,6 +20,7 @@ const staggerItem = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 
 
 export function HoroscopePage() {
   const { t } = useTranslation();
+  const { getZodiacName, getPlanetName, language } = useAstrology();
   const [selectedRashi, setSelectedRashi] = useState('Mesh');
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
 
@@ -55,7 +57,7 @@ export function HoroscopePage() {
               )}
             >
               <span className="text-2xl block">{r.symbol}</span>
-              <span className="text-[10px] font-sans font-bold uppercase block truncate tracking-wider mt-1">{r.key}</span>
+              <span className="text-[10px] font-sans font-bold uppercase block truncate tracking-wider mt-1">{getZodiacName(r.key, language)}</span>
               <span className={cn('inline-block w-1.5 h-1.5 rounded-full mt-1', elDot[r.element] || 'bg-primary/30')} />
             </motion.button>
           );
@@ -68,14 +70,14 @@ export function HoroscopePage() {
         <>
           {/* Cosmic Energy Bars */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">{t('horoscope.cosmicEnergy') || "Today's Cosmic Energy"}</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">{t('horoscope.cosmicEnergy')}</p>
             <div className="grid grid-cols-5 gap-2">
               {[
-                { label: t('horoscope.love') || 'Love', color: 'bg-rose-500/60', key: 'love' },
-                { label: t('horoscope.career') || 'Career', color: 'bg-blue-500/60', key: 'career' },
-                { label: t('horoscope.health') || 'Health', color: 'bg-emerald-500/60', key: 'health' },
-                { label: t('horoscope.finance') || 'Finance', color: 'bg-amber-500/60', key: 'finance' },
-                { label: t('horoscope.spirit') || 'Spirit', color: 'bg-purple-500/60', key: 'spirit' },
+                { label: t('horoscope.love'), color: 'bg-rose-500/60', key: 'love' },
+                { label: t('horoscope.career'), color: 'bg-blue-500/60', key: 'career' },
+                { label: t('horoscope.health'), color: 'bg-emerald-500/60', key: 'health' },
+                { label: t('horoscope.finance'), color: 'bg-amber-500/60', key: 'finance' },
+                { label: t('horoscope.spirit'), color: 'bg-purple-500/60', key: 'spirit' },
               ].map((item, i) => {
                 const hash = (horoscope.general?.length || 1) * (i + 1);
                 const score = Math.max(10, Math.min(100, horoscope.energyLevel + ((hash * 13 + i * 7) % 15) - 7));
@@ -105,10 +107,10 @@ export function HoroscopePage() {
                 <div className="flex items-center gap-4 mb-4">
                   <span className="text-5xl">{RASHIS.find(r => r.key === selectedRashi)?.symbol || '✦'}</span>
                   <div>
-                    <h2 className="text-3xl font-display tracking-tight text-foreground">{horoscope.rashi}</h2>
+                    <h2 className="text-3xl font-display tracking-tight text-foreground">{getZodiacName(selectedRashi, language)}</h2>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">{horoscope.englishName}</span>
-                      <span className="badge-primary">{PLANET_RULERS[selectedRashi] || ''}</span>
+                      <span className="text-xs text-muted-foreground">{getZodiacName(selectedRashi, 'en')}</span>
+                      <span className="badge-primary">{getPlanetName(PLANET_RULERS[selectedRashi] || '', language)}</span>
                     </div>
                   </div>
                 </div>
@@ -124,10 +126,10 @@ export function HoroscopePage() {
                           : 'bg-primary/5 text-muted-foreground hover:text-foreground',
                       )}
                     >
-                      {mode === 'summary' ? t('kundli.summarized') || 'Summary' :
-                       mode === 'detailed' ? t('kundli.detailed') || 'Detailed' :
-                       mode === 'weekly' ? t('horoscope.weekly') || 'This Week' :
-                       t('horoscope.monthly') || 'This Month'}
+                      {mode === 'summary' ? t('kundli.summarized') :
+                       mode === 'detailed' ? t('kundli.detailed') :
+                       mode === 'weekly' ? t('horoscope.weekly') :
+                       t('horoscope.monthly')}
                     </button>
                   ))}
                 </div>

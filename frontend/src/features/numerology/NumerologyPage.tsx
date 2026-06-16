@@ -50,50 +50,6 @@ function calculateSoulUrge(name: string): number {
   return sum;
 }
 
-const numberMeanings: Record<number, { title: string; desc: string; traits: string[] }> = {
-  1: { title: 'The Pioneer', desc: 'Independent, creative, and ambitious. You are a natural leader who thrives on innovation.', traits: ['Leadership', 'Independence', 'Creativity', 'Determination'] },
-  2: { title: 'The Diplomat', desc: 'Cooperative, balanced, and intuitive. You excel at building bridges and fostering harmony.', traits: ['Diplomacy', 'Cooperation', 'Intuition', 'Patience'] },
-  3: { title: 'The Creator', desc: 'Expressive, optimistic, and charismatic. Your creativity and joy inspire those around you.', traits: ['Creativity', 'Expression', 'Optimism', 'Charm'] },
-  4: { title: 'The Builder', desc: 'Practical, disciplined, and reliable. You create lasting foundations through hard work.', traits: ['Reliability', 'Discipline', 'Practicality', 'Honesty'] },
-  5: { title: 'The Adventurer', desc: 'Freedom-loving, versatile, and curious. You thrive on change and new experiences.', traits: ['Adaptability', 'Curiosity', 'Freedom', 'Versatility'] },
-  6: { title: 'The Nurturer', desc: 'Caring, responsible, and compassionate. You are the heart of your community.', traits: ['Nurturing', 'Responsibility', 'Compassion', 'Harmony'] },
-  7: { title: 'The Seeker', desc: 'Analytical, spiritual, and wise. You seek truth and deeper understanding of life.', traits: ['Wisdom', 'Analysis', 'Spirituality', 'Introspection'] },
-  8: { title: 'The Achiever', desc: 'Ambitious, efficient, and driven. You are built for success and material mastery.', traits: ['Ambition', 'Efficiency', 'Authority', 'Success'] },
-  9: { title: 'The Humanitarian', desc: 'Compassionate, generous, and visionary. You want to make the world a better place.', traits: ['Compassion', 'Generosity', 'Vision', 'Humanitarianism'] },
-  11: { title: 'The Visionary', desc: 'Highly intuitive, inspired, and enlightened. You have a profound spiritual connection.', traits: ['Intuition', 'Inspiration', 'Enlightenment', 'Sensitivity'] },
-  22: { title: 'The Master Builder', desc: 'Visionary with practical power. You can turn dreams into reality on a grand scale.', traits: ['Vision', 'Practicality', 'Leadership', 'Manifestation'] },
-  33: { title: 'The Master Teacher', desc: 'Compassionate wisdom elevated. You are here to uplift and teach humanity.', traits: ['Wisdom', 'Compassion', 'Teaching', 'Healing'] },
-  0:   { title: 'Unknown', desc: 'Unable to calculate. Please check your input.', traits: [] },
-};
-
-const fallbackMeaning = { title: 'Unknown', desc: 'Unable to calculate.', traits: [] };
-const fallbackDestiny = { title: 'Unknown', desc: 'Unable to calculate.' };
-const fallbackSoul = { title: 'Unknown', desc: 'Unable to calculate.' };
-
-const numberMeaningsDestiny: Record<number, { title: string; desc: string }> = {
-  1: { title: 'Leader', desc: 'Your destiny is to take initiative and lead others through innovation.' },
-  2: { title: 'Peacemaker', desc: 'Your path involves building bridges and creating harmony.' },
-  3: { title: 'Communicator', desc: 'You are destined to express, create, and inspire through words.' },
-  4: { title: 'Organizer', desc: 'Building lasting systems and structures is your life\'s work.' },
-  5: { title: 'Explorer', desc: 'Freedom and adventure define your journey through life.' },
-  6: { title: 'Guardian', desc: 'Nurturing and protecting others is your sacred calling.' },
-  7: { title: 'Sage', desc: 'Your destiny is to seek and share profound wisdom.' },
-  8: { title: 'Magnate', desc: 'Achieving material success and wielding power is your path.' },
-  9: { title: 'Healer', desc: 'Your life mission involves healing and serving humanity.' },
-};
-
-const numberMeaningsSoul: Record<number, { title: string; desc: string }> = {
-  1: { title: 'Ambition', desc: 'Your soul craves achievement and self-expression.' },
-  2: { title: 'Connection', desc: 'Your deepest desire is for love and partnership.' },
-  3: { title: 'Expression', desc: 'Your soul yearns to create and communicate joy.' },
-  4: { title: 'Stability', desc: 'You seek security, order, and a solid foundation.' },
-  5: { title: 'Freedom', desc: 'Your inner self longs for adventure and liberation.' },
-  6: { title: 'Harmony', desc: 'Your soul desires beauty, family, and responsibility.' },
-  7: { title: 'Wisdom', desc: 'You seek truth, knowledge, and spiritual understanding.' },
-  8: { title: 'Power', desc: 'Your soul is driven to achieve mastery and abundance.' },
-  9: { title: 'Compassion', desc: 'Your innermost desire is to serve and heal others.' },
-};
-
 function NumberCard({ num, label, meaning, color }: { num: number; label: string; meaning: { title: string; desc: string; traits?: string[] }; color: string }) {
   return (
     <motion.div
@@ -123,6 +79,32 @@ function NumberCard({ num, label, meaning, color }: { num: number; label: string
 
 export function NumerologyPage() {
   const { t } = useTranslation();
+
+  const getLifePathMeaning = (num: number) => {
+    if (num === 0) return { title: t('numerology.unknown'), desc: t('numerology.calcError'), traits: [] as string[] };
+    return {
+      title: t(`numerology.title${num}`),
+      desc: t(`numerology.desc${num}`),
+      traits: t(`numerology.traits${num}`).split(',').map((s) => s.trim()),
+    };
+  };
+
+  const getDestinyMeaning = (num: number) => {
+    if (num < 1 || num > 9) return { title: t('numerology.unknown'), desc: t('numerology.calcError') };
+    return {
+      title: t(`numerology.destiny${num}`),
+      desc: t(`numerology.destiny${num}Desc`),
+    };
+  };
+
+  const getSoulUrgeMeaning = (num: number) => {
+    if (num < 1 || num > 9) return { title: t('numerology.unknown'), desc: t('numerology.calcError') };
+    return {
+      title: t(`numerology.soul${num}`),
+      desc: t(`numerology.soul${num}Desc`),
+    };
+  };
+
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
   const [result, setResult] = useState<NumerologyResult | null>(null);
@@ -205,19 +187,19 @@ export function NumerologyPage() {
                 <NumberCard
                   num={result.lifePath}
                   label={t('numerology.lifePathLabel')}
-                  meaning={numberMeanings[result.lifePath] || fallbackMeaning}
+                  meaning={getLifePathMeaning(result.lifePath)}
                   color="bg-primary/10 text-primary-light"
                 />
                 <NumberCard
                   num={result.destiny}
                   label={t('numerology.destinyLabel')}
-                  meaning={numberMeaningsDestiny[result.destiny] || fallbackDestiny}
+                  meaning={getDestinyMeaning(result.destiny)}
                   color="bg-accent/10 text-accent"
                 />
                 <NumberCard
                   num={result.soulUrge}
                   label={t('numerology.soulUrgeLabel')}
-                  meaning={numberMeaningsSoul[result.soulUrge] || fallbackSoul}
+                  meaning={getSoulUrgeMeaning(result.soulUrge)}
                   color="bg-cyan-500/10 text-secondary"
                 />
               </div>
@@ -237,21 +219,21 @@ export function NumerologyPage() {
                     <Heart className="w-4 h-4 text-primary-light mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">{t('numerology.lifePathResult', { n: result.lifePath })}</p>
-                      <p className="text-xs text-muted-foreground">{(numberMeanings[result.lifePath] || fallbackMeaning).desc}</p>
+                      <p className="text-xs text-muted-foreground">{getLifePathMeaning(result.lifePath).desc}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/5">
                     <Briefcase className="w-4 h-4 text-accent mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">{t('numerology.destinyResult', { n: result.destiny })}</p>
-                      <p className="text-xs text-muted-foreground">{(numberMeaningsDestiny[result.destiny] || fallbackDestiny).desc}</p>
+                      <p className="text-xs text-muted-foreground">{getDestinyMeaning(result.destiny).desc}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-cyan-500/5 sm:col-span-2">
                     <Users className="w-4 h-4 text-secondary mt-0.5" />
                     <div>
                       <p className="text-sm font-medium">{t('numerology.soulUrgeResult', { n: result.soulUrge })}</p>
-                      <p className="text-xs text-muted-foreground">{(numberMeaningsSoul[result.soulUrge] || fallbackSoul).desc}</p>
+                      <p className="text-xs text-muted-foreground">{getSoulUrgeMeaning(result.soulUrge).desc}</p>
                     </div>
                   </div>
                 </div>

@@ -3,27 +3,34 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Sun, Moon, Globe, Sparkles, Clock } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
+import { useAstrology } from '@/hooks/useAstrology';
+import { RASHIS } from '@/lib/utils';
+import { getAstrologyLabel } from '@/lib/astrologyLocales';
 
-const planets = [
-  { name: 'Sun', sign: 'Gemini', degree: '14° 23\'', icon: Sun, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
-  { name: 'Moon', sign: 'Virgo', degree: '8° 47\'', icon: Moon, color: 'text-sky-400', bg: 'bg-sky-400/10' },
-  { name: 'Mercury', sign: 'Taurus', degree: '22° 15\'', icon: Globe, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-  { name: 'Venus', sign: 'Cancer', degree: '5° 38\'', icon: Sparkles, color: 'text-pink-400', bg: 'bg-pink-400/10' },
-  { name: 'Mars', sign: 'Leo', degree: '19° 52\'', icon: Sun, color: 'text-red-400', bg: 'bg-red-400/10' },
-  { name: 'Jupiter', sign: 'Aries', degree: '11° 06\'', icon: Globe, color: 'text-orange-400', bg: 'bg-orange-400/10' },
-  { name: 'Saturn', sign: 'Pisces', degree: '27° 44\'', icon: Globe, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
+const planetData = [
+  { key: 'Sun', signKey: 'Mithun', degree: "14° 23'", icon: Sun, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
+  { key: 'Moon', signKey: 'Kanya', degree: "8° 47'", icon: Moon, color: 'text-sky-400', bg: 'bg-sky-400/10' },
+  { key: 'Mercury', signKey: 'Vrishabh', degree: "22° 15'", icon: Globe, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+  { key: 'Venus', signKey: 'Kark', degree: "5° 38'", icon: Sparkles, color: 'text-pink-400', bg: 'bg-pink-400/10' },
+  { key: 'Mars', signKey: 'Simha', degree: "19° 52'", icon: Sun, color: 'text-red-400', bg: 'bg-red-400/10' },
+  { key: 'Jupiter', signKey: 'Mesh', degree: "11° 06'", icon: Globe, color: 'text-orange-400', bg: 'bg-orange-400/10' },
+  { key: 'Saturn', signKey: 'Meen', degree: "27° 44'", icon: Globe, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
 ];
 
-const transits = [
-  { date: 'Jun 15', title: 'New Moon in Gemini', desc: 'A fresh start for communication and intellectual pursuits', type: 'major' as const },
-  { date: 'Jun 18', title: 'Mercury enters Cancer', desc: 'Emotional communication takes center stage', type: 'minor' as const },
-  { date: 'Jun 21', title: 'Summer Solstice', desc: 'The longest day brings powerful solar energy', type: 'major' as const },
-  { date: 'Jun 25', title: 'Venus trine Jupiter', desc: 'A harmonious aspect for love and abundance', type: 'minor' as const },
-  { date: 'Jun 29', title: 'Full Moon in Capricorn', desc: 'Culmination of career and ambition themes', type: 'major' as const },
-  { date: 'Jul 2', title: 'Mars square Uranus', desc: 'Unexpected disruptions require adaptability', type: 'major' as const },
+const transitEvents = [
+  { date: 'Jun 15', titleKey: 'transits.newMoonGemini', descKey: 'transits.newMoonGeminiDesc', type: 'major' as const },
+  { date: 'Jun 18', titleKey: 'transits.mercuryCancer', descKey: 'transits.mercuryCancerDesc', type: 'minor' as const },
+  { date: 'Jun 21', titleKey: 'transits.summerSolstice', descKey: 'transits.summerSolsticeDesc', type: 'major' as const },
+  { date: 'Jun 25', titleKey: 'transits.venusTrineJupiter', descKey: 'transits.venusTrineJupiterDesc', type: 'minor' as const },
+  { date: 'Jun 29', titleKey: 'transits.fullMoonCapricorn', descKey: 'transits.fullMoonCapricornDesc', type: 'major' as const },
+  { date: 'Jul 2', titleKey: 'transits.marsSquareUranus', descKey: 'transits.marsSquareUranusDesc', type: 'major' as const },
 ];
 
 export function TransitsPage() {
+  const { t } = useTranslation();
+  const { getPlanetName, getZodiacName } = useAstrology();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -34,10 +41,10 @@ export function TransitsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <span className="tag mb-4 inline-block">Celestial Transits</span>
-            <h1 className="hero-text mb-4">Planetary Movements</h1>
+            <span className="tag mb-4 inline-block">{t('transits.tag') || 'Celestial Transits'}</span>
+            <h1 className="hero-text mb-4">{t('transits.title') || 'Planetary Movements'}</h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Track current planetary positions and upcoming transit events.
+              {t('transits.subtitle') || 'Track current planetary positions and upcoming transit events.'}
             </p>
           </motion.div>
 
@@ -49,12 +56,12 @@ export function TransitsPage() {
             >
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Sun className="w-5 h-5 text-primary-light" />
-                Current Planetary Positions
+                {t('transits.positions') || 'Current Planetary Positions'}
               </h2>
               <div className="space-y-3">
-                {planets.map((p, i) => (
+                {planetData.map((p, i) => (
                   <motion.div
-                    key={p.name}
+                    key={p.key}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + i * 0.06 }}
@@ -64,8 +71,8 @@ export function TransitsPage() {
                       <p.icon className={`w-5 h-5 ${p.color}`} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">{p.sign} · {p.degree}</p>
+                      <p className="text-sm font-semibold">{getPlanetName(p.key)}</p>
+                      <p className="text-xs text-muted-foreground">{getZodiacName(p.signKey)} · {p.degree}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -79,12 +86,12 @@ export function TransitsPage() {
             >
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-primary-light" />
-                Upcoming Transits
+                {t('transits.upcoming') || 'Upcoming Transits'}
               </h2>
               <div className="relative">
                 <div className="absolute left-[19px] top-2 bottom-2 w-px bg-border" />
                 <div className="space-y-6">
-                  {transits.map((t, i) => (
+                  {transitEvents.map((tEvent, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, y: 10 }}
@@ -92,13 +99,13 @@ export function TransitsPage() {
                       transition={{ delay: 0.4 + i * 0.08 }}
                       className="relative flex gap-4"
                     >
-                      <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${t.type === 'major' ? 'bg-accent/10' : 'bg-primary/10'}`}>
-                        <div className={`w-2 h-2 rounded-full ${t.type === 'major' ? 'bg-accent' : 'bg-primary-light'}`} />
+                      <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${tEvent.type === 'major' ? 'bg-accent/10' : 'bg-primary/10'}`}>
+                        <div className={`w-2 h-2 rounded-full ${tEvent.type === 'major' ? 'bg-accent' : 'bg-primary-light'}`} />
                       </div>
                       <div className="glass-card rounded-xl p-4 flex-1">
-                        <span className="text-[10px] font-bold tracking-wider text-primary-lighter uppercase">{t.date}</span>
-                        <h3 className="text-sm font-semibold mt-1">{t.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-1">{t.desc}</p>
+                        <span className="text-[10px] font-bold tracking-wider text-primary-lighter uppercase">{tEvent.date}</span>
+                        <h3 className="text-sm font-semibold mt-1">{t(tEvent.titleKey)}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{t(tEvent.descKey)}</p>
                       </div>
                     </motion.div>
                   ))}

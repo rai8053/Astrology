@@ -927,4 +927,20 @@
   "terms.section9Body": "Section9Body",
   "terms.section9Title": "Section9",
   "terms.title": "शीर्षक"
+,
+  "footer.tagline": "Your cosmic journey begins here. Ancient wisdom meets modern technology.",
+  "footer.product": "Product",
+  "footer.features": "Features",
+  "footer.pricing": "Pricing",
+  "footer.faq": "FAQ",
+  "footer.about": "About",
+  "footer.support": "Support",
+  "footer.contact": "Contact",
+  "footer.privacyPolicy": "Privacy Policy",
+  "footer.termsService": "Terms of Service",
+  "footer.refundPolicy": "Refund Policy",
+  "footer.account": "Account",
+  "footer.login": "Login",
+  "footer.register": "Register",
+  "footer.copyright": "� {year} Soma & Surya. All rights reserved."
 }

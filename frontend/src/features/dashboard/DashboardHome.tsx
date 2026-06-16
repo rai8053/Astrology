@@ -224,7 +224,7 @@ export function DashboardHome() {
             {displayName ? `${t('dashboard.namaste')}, ${displayName.split(' ')[0]}` : t(greeting.key)}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t('dashboard.subtitle') || 'Your cosmic forecast for today'}
+            {t('dashboard.subtitle')}
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span>{snapshot.moonRashi || '—'} &middot; {snapshot.nakshatra || '—'}</span>
@@ -240,11 +240,11 @@ export function DashboardHome() {
 
       {/* Cosmic Snapshot */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center gap-2">
-        <span className="text-[11px] font-medium tracking-[0.04em] uppercase text-muted-foreground mr-1">{t('dashboard.cosmicSnapshot') || 'Your Cosmos'}</span>
+        <span className="text-[11px] font-medium tracking-[0.04em] uppercase text-muted-foreground mr-1">{t('dashboard.cosmicSnapshot')}</span>
         {[
-          { label: t('kundli.moonRashi') || 'Moon', value: snapshot.moonRashi || '—', glyph: '☽' },
-          { label: t('kundli.ascendantLabel') || 'Rising', value: snapshot.ascendant || '—', glyph: '↑' },
-          { label: t('kundli.nakshatraLabel') || 'Nakshatra', value: snapshot.nakshatra || '—', glyph: '✦' },
+          { label: t('kundli.moonRashi'), value: snapshot.moonRashi || '—', glyph: '☽' },
+          { label: t('kundli.ascendantLabel'), value: snapshot.ascendant || '—', glyph: '↑' },
+          { label: t('kundli.nakshatraLabel'), value: snapshot.nakshatra || '—', glyph: '✦' },
         ].map((item, i) => (
           <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/15 text-[11px] font-medium text-foreground bg-primary/[0.04]">
             <span className="text-primary-light">{item.glyph}</span>
@@ -261,7 +261,7 @@ export function DashboardHome() {
             { icon: '☽', label: t('kundli.moonRashi'), value: snapshot.moonRashi || '—', sub: snapshot.nakshatra || '' },
             { icon: '☉', label: t('kundli.ascendantLabel'), value: snapshot.ascendant || '—', sub: snapshot.lagnaLord || '' },
             { icon: '✦', label: t('dashboard.birthStar'), value: snapshot.nakshatra || '—', sub: snapshot.nakshatraLord || '' },
-            { icon: '🔥', label: t('kundli.elementLabel') || 'Element', value: snapshot.element || '—', sub: snapshot.doshaDominance || '' },
+            { icon: '🔥', label: t('kundli.elementLabel'), value: snapshot.element || '—', sub: snapshot.doshaDominance || '' },
           ].map((stat, i) => (
             <motion.div key={i} variants={itemAnim}>
               <div className="sacred-border rounded-xl p-4 bg-card/50">
@@ -287,7 +287,7 @@ export function DashboardHome() {
       {/* Section 2: Today's Cosmic Weather */}
       <motion.div variants={stagger} initial="initial" animate="animate" className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-3">
-          <SectionHeader icon={Sparkles} title={t('dashboard.todaysHoroscope') || 'Today\'s Cosmic Weather'} />
+          <SectionHeader icon={Sparkles} title={t('dashboard.todaysHoroscope')} />
           <div className="rounded-2xl border border-border bg-card p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -307,10 +307,10 @@ export function DashboardHome() {
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {[
-                { label: t('horoscope.scoreLove') || 'Love', value: horoscope.love, color: 'bg-rose-500/20' },
-                { label: t('horoscope.scoreCareer') || 'Career', value: horoscope.career, color: 'bg-blue-500/20' },
-                { label: t('horoscope.scoreHealth') || 'Health', value: horoscope.health, color: 'bg-emerald-500/20' },
-                { label: t('horoscope.scoreWealth') || 'Finance', value: horoscope.finance, color: 'bg-amber-500/20' },
+                { label: t('horoscope.scoreLove'), value: horoscope.love, color: 'bg-rose-500/20' },
+                { label: t('horoscope.scoreCareer'), value: horoscope.career, color: 'bg-blue-500/20' },
+                { label: t('horoscope.scoreHealth'), value: horoscope.health, color: 'bg-emerald-500/20' },
+                { label: t('horoscope.scoreWealth'), value: horoscope.finance, color: 'bg-amber-500/20' },
               ].filter(s => s.value != null).map((s, i) => (
                 <span key={i} className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium ${s.color} text-foreground`}>
                   {s.label} {s.value}%
@@ -323,7 +323,7 @@ export function DashboardHome() {
               </p>
             )}
             <Link to="/dashboard/horoscope" className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-primary-light hover:underline">
-              {t('dashboard.readFullHoroscope') || 'Read Full Horoscope'} <ArrowRight className="w-3 h-3" />
+              {t('dashboard.readFullHoroscope')} <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
         </div>
@@ -348,11 +348,11 @@ export function DashboardHome() {
             </PremiumCard>
           </div>
           <div>
-            <SectionHeader icon={Gem} title={t('dashboard.luckyInsights') || 'Daily Insights'} />
+            <SectionHeader icon={Gem} title={t('dashboard.luckyInsights')} />
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: t('dashboard.luckyNumber') || 'Number', value: horoscope.luckyNumber != null ? `${horoscope.luckyNumber}` : '—' },
-                { label: t('dashboard.luckyColor') || 'Color', value: horoscope.luckyColor || '—' },
+                { label: t('dashboard.luckyNumber'), value: horoscope.luckyNumber != null ? `${horoscope.luckyNumber}` : '—' },
+                { label: t('dashboard.luckyColor'), value: horoscope.luckyColor || '—' },
               ].map((item, i) => (
                 <PremiumCard key={i} glass className="text-center py-3 px-2">
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{item.label}</p>

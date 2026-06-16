@@ -10,6 +10,7 @@ import { BirthPlaceInput } from '@/components/ui/BirthPlaceInput';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { useTranslation } from '@/lib/i18n';
 import { useI18nStore } from '@/lib/i18n';
+import { useAstrology } from '@/hooks/useAstrology';
 import { cn } from '@/lib/utils';
 import { NavamsaChart } from './NavamsaChart';
 import type { BirthDetails, VedicProfile, AstroInsight, Remedy, TransitEvent } from '@shared/types/api';
@@ -134,7 +135,7 @@ function NorthIndianChart({ placements, lagna, rashi }: { placements: VedicProfi
                 />
               )}
               <circle cx={CX} cy={CY} r={40} fill="none" stroke="rgba(201,148,58,0.25)" strokeWidth={0.8} />
-              <text x={CX} y={CY + 1.5} textAnchor="middle" fontSize="9" fill="rgba(201,148,58,0.5)" fontFamily="var(--font-sans)">{t('kundli.ascendantAbbrev') || 'As'}</text>
+              <text x={CX} y={CY + 1.5} textAnchor="middle" fontSize="9" fill="rgba(201,148,58,0.5)" fontFamily="var(--font-sans)">{t('kundli.ascendantAbbrev')}</text>
               <text x={labelX} y={labelY} textAnchor="middle" fontSize="8" fill="rgba(156,163,175,0.5)" fontFamily="var(--font-sans)" fontWeight="bold">{h.label}</text>
             </g>
           );
@@ -207,6 +208,7 @@ function RemedyCard({ remedy }: { remedy: Remedy }) {
 }
 
 function TransitCard({ event }: { event: TransitEvent }) {
+  const { getImpactLabel } = useAstrology();
   const dotColor = event.impact === 'positive' ? 'bg-emerald-500' : event.impact === 'challenging' ? 'bg-red-400' : 'bg-amber-400';
   return (
     <motion.div variants={itemVariants}>
@@ -225,7 +227,7 @@ function TransitCard({ event }: { event: TransitEvent }) {
             event.impact === 'positive' ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/20' :
             event.impact === 'challenging' ? 'text-red-500 bg-red-50 dark:text-red-400 dark:bg-red-900/20' :
             'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/20'
-          }`}>{event.impact}</span>
+          }`}>{getImpactLabel(event.impact.charAt(0).toUpperCase() + event.impact.slice(1))}</span>
         </div>
       </PremiumCard>
     </motion.div>
@@ -267,6 +269,7 @@ function ViewToggle({ view, onChange }: { view: 'summary' | 'detailed'; onChange
 export function KundliPage() {
   const { t } = useTranslation();
   const language = useI18nStore((s) => s.language);
+  const { getPlanetName, getZodiacName, getNakshatra, getElementName, getDoshaName } = useAstrology();
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
   const [formData, setFormData] = useState<BirthDetails>({
     name: '', birthDate: '', birthTime: '', birthPlace: '',
@@ -391,9 +394,9 @@ export function KundliPage() {
             {/* Step Progress */}
             <div className="flex items-center justify-between mb-6 px-1">
               {[
-                { label: t('kundli.birthDetails') || 'Birth Details', icon: Star },
-                { label: t('kundli.location') || 'Location', icon: Compass },
-                { label: t('kundli.generate') || 'Generate', icon: Sparkles },
+                { label: t('kundli.birthDetails'), icon: Star },
+                { label: t('kundli.location'), icon: Compass },
+                { label: t('kundli.generate'), icon: Sparkles },
               ].map((step, i) => {
                 const done = profile && i < 2;
                 const active = !profile && i === 0;
@@ -428,14 +431,14 @@ export function KundliPage() {
               </div>
               <BirthPlaceInput id="k_place" label={t('kundli.place')} value={formData.birthPlace} onChange={(v) => { setFormData({ ...formData, birthPlace: v }); setErrors({ ...errors, birthPlace: '' }); }} required placeholder={t('kundli.placePlaceholder')} error={errors.birthPlace} state={birthState} onStateChange={setBirthState} country={birthCountry} onCountryChange={setBirthCountry} />
               <PremiumButton type="submit" loading={mutation.isPending} className="w-full gold-gradient text-primary-foreground font-medium rounded-xl py-3">
-                {mutation.isPending ? t('kundli.loading') || 'Generating...' : <>✦ {profile ? t('kundli.regenerate') || 'Regenerate Kundli' : t('kundli.generate') || 'Reveal My Kundli'}</>}
+                {mutation.isPending ? t('kundli.loading') : <>✦ {profile ? t('kundli.regenerate') : t('kundli.generate')}</>}
               </PremiumButton>
               {mutation.isError && (
                 <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {t('kundli.generateError')}</p>
               )}
               <p className="text-[10px] text-muted-foreground text-center pt-1">
                 <Shield className="w-3 h-3 inline-block mr-1" />
-                {t('kundli.privacyNotice') || 'Your data stays private — never stored'}
+                {t('kundli.privacyNotice')}
               </p>
             </form>
 
@@ -492,7 +495,7 @@ export function KundliPage() {
                       </div>
                       <div className="text-center px-4 py-2.5 gold-border rounded-lg bg-gold/5 min-w-[100px]">
                         <span className="text-[8px] uppercase font-sans font-bold text-gold block tracking-wider">{t('kundli.nakshatraLordLabel')}</span>
-                        <span className="font-serif font-semibold text-gold text-sm">{profile.rashiLord}</span>
+                        <span className="font-serif font-semibold text-gold text-sm">{getPlanetName(profile.rashiLord)}</span>
                       </div>
                     </div>
                     <div
@@ -523,17 +526,17 @@ export function KundliPage() {
                     </div>
                     <div className="text-center px-4 py-2.5 gold-border rounded-lg bg-gold/5 min-w-[100px]">
                       <span className="text-[8px] uppercase font-sans font-bold text-gold block tracking-wider">{t('kundli.nakshatraLordLabel')}</span>
-                      <span className="font-serif font-semibold text-gold text-sm">{profile.rashiLord}</span>
+                      <span className="font-serif font-semibold text-gold text-sm">{getPlanetName(profile.rashiLord)}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
-                    {[
-                      { label: t('kundli.moonRashi'), value: profile.rashi, icon: Moon },
-                      { label: t('kundli.ascendantLabel'), value: profile.lagna, icon: Sun },
-                      { label: t('kundli.nakshatraLabel'), value: profile.nakshatra, icon: Star },
-                      { label: t('kundli.nakshatraLordLabel'), value: profile.nakshatraLord, icon: Shield },
-                    ].map((item, i) => {
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+                      {[
+                        { label: t('kundli.moonRashi'), value: getZodiacName(profile.rashi), icon: Moon },
+                        { label: t('kundli.ascendantLabel'), value: getZodiacName(profile.lagna), icon: Sun },
+                        { label: t('kundli.nakshatraLabel'), value: getNakshatra(profile.nakshatra), icon: Star },
+                        { label: t('kundli.nakshatraLordLabel'), value: getPlanetName(profile.nakshatraLord), icon: Shield },
+                      ].map((item, i) => {
                       const Icon = item.icon;
                       return (
                         <motion.div
@@ -566,8 +569,8 @@ export function KundliPage() {
                       <p className="text-sm text-ink/70 dark:text-parchment/70 leading-relaxed">{profile.generalReading}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {[
-                          { label: t('kundli.elementLabel'), value: profile.element, color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-                          { label: t('kundli.dosha'), value: profile.doshaDominance, color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+                          { label: t('kundli.elementLabel'), value: getElementName(profile.element), color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+                          { label: t('kundli.dosha'), value: getDoshaName(profile.doshaDominance), color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
                           { label: `${profile.luckyNumber}`, value: t('kundli.luckyNum'), color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
                         ].map((tag, i) => (
                           <span key={i} className={`px-2.5 py-1 rounded-full text-[9px] font-sans font-bold uppercase tracking-wider ${tag.color}`}>
@@ -617,9 +620,9 @@ export function KundliPage() {
                               <span className="w-5 h-5 rounded-full inline-flex items-center justify-center text-[7px] font-bold" style={{ backgroundColor: `${PLANET_SYMBOLS[p.planet]?.color || '#999'}20`, color: PLANET_SYMBOLS[p.planet]?.color || '#999' }}>
                                 {PLANET_SYMBOLS[p.planet]?.symbol || '?'}
                               </span>
-                              {p.planet}
+                              {getPlanetName(p.planet.split(' ')[0])}
                             </td>
-                            <td className="py-3 text-ink/60 dark:text-parchment/60">{p.sign}</td>
+                            <td className="py-3 text-ink/60 dark:text-parchment/60">{getZodiacName(p.sign)}</td>
                             <td className="py-3">
                               <span className="px-2 py-0.5 bg-gold/10 text-gold rounded text-[10px] font-mono font-bold">{p.house}</span>
                             </td>

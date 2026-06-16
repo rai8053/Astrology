@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { List, RowComponentProps } from 'react-window';
 import type { ListImperativeAPI } from 'react-window';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n/translations';
 
 interface Place {
   v: string;
@@ -259,10 +260,10 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
             className="z-[9999] rounded-xl bg-white dark:bg-cosmic-deeper border border-ink/10 dark:border-parchment/10 shadow-lg shadow-black/5"
           >
             {loading && results.length === 0 && (
-              <div className="px-4 py-3 text-sm text-ink/40 dark:text-parchment/40">Loading places database...</div>
+              <div className="px-4 py-3 text-sm text-ink/40 dark:text-parchment/40">{t('ui.loadingPlaces')}</div>
             )}
             {noResults && (
-              <div className="px-4 py-3 text-sm text-ink/40 dark:text-parchment/40">No results found</div>
+              <div className="px-4 py-3 text-sm text-ink/40 dark:text-parchment/40">{t('ui.noResults')}</div>
             )}
             {results.length > 0 && (
               <List<MyRowProps>

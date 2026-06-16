@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
+import { useI18nStore } from '@/lib/i18n/store';
+import { getAstrologyLabel } from '@/lib/astrologyLocales';
 
 const planetColors: Record<string, string> = {
   Sun: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20',
@@ -21,9 +23,11 @@ interface Props {
 
 export function PlanetBadge({ name, children, className }: Props) {
   const colorClass = planetColors[name] || 'bg-primary/10 text-primary-light border-primary/20';
+  const lang = useI18nStore.getState().language;
+  const label = getAstrologyLabel('planets', name, lang);
   return (
     <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border', colorClass, className)}>
-      {children || name}
+      {children || label}
     </span>
   );
 }

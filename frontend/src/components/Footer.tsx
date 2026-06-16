@@ -14,7 +14,7 @@ export function Footer() {
                 <Sparkles className="w-3.5 h-3.5 text-accent" />
               </div>
               <span className="text-sm font-semibold tracking-tight">
-                Soma<span className="text-text-tertiary dark:text-dark-text-tertiary font-normal">&</span>Surya
+                Soma <span className="text-text-tertiary dark:text-dark-text-tertiary font-normal">&</span> Surya
               </span>
             </Link>
             <p className="text-xs text-text-tertiary dark:text-dark-text-tertiary leading-relaxed max-w-xs">
@@ -65,10 +65,10 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-4">
             <span className="text-[10px] text-text-tertiary/60 dark:text-dark-text-tertiary/60 font-mono">
-              Build: v{__BUILD_HASH__}
+              {t('ui.buildVersion', { build: __BUILD_HASH__ })}
             </span>
             <span className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">
-              hello@somaandsurya.com
+              {t('ui.email')}
             </span>
           </div>
         </div>

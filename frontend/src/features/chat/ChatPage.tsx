@@ -149,7 +149,7 @@ export function ChatPage() {
       }
 
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Request failed');
+      if (!data.success) throw new Error(data.error || t('ui.requestFailed'));
       return data.data;
     },
     onSuccess: (data: any) => {
@@ -179,7 +179,7 @@ export function ChatPage() {
 
   const consumeStream = useCallback(async (response: Response): Promise<{ reply: string; sessionId: string; dailyUsed: number }> => {
     const reader = response.body?.getReader();
-    if (!reader) throw new Error('Stream not available');
+    if (!reader) throw new Error(t('ui.streamNotAvailable'));
 
     const decoder = new TextDecoder();
     let result = { reply: '', sessionId: '', dailyUsed: 0 };
@@ -283,7 +283,7 @@ export function ChatPage() {
 
       if (contentType.includes('text/event-stream')) {
         const reader = res.body?.getReader();
-        if (!reader) throw new Error('Stream not available');
+        if (!reader) throw new Error(t('ui.streamNotAvailable'));
         const decoder = new TextDecoder();
         let reply = '';
         let sid = sessionId;
@@ -331,7 +331,7 @@ export function ChatPage() {
         setError(null);
       } else {
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Request failed');
+        if (!data.success) throw new Error(data.error || t('ui.requestFailed'));
         setMessages((prev) => [...prev, {
           id: `msg-${Date.now()}`,
           sessionId: data.data.sessionId || sessionId || '',
@@ -458,7 +458,7 @@ export function ChatPage() {
                     onClick={loadMoreMessages}
                     className="text-[11px] text-gold/60 hover:text-gold transition-colors font-medium"
                   >
-                    ↑ {t('chat.loadMore') || 'Load earlier messages'}
+                    ↑ {t('chat.loadMore')}
                   </button>
                 </div>
               )}

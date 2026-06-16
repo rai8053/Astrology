@@ -31,7 +31,7 @@ export function ContactPage() {
       setName(''); setEmail(''); setSubject(''); setMessage('');
       setTimeout(() => { setSent(false); }, 3000);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to send message';
+      const msg = err instanceof Error ? err.message : t('ui.contactFailed');
       setError(msg);
       toast.error(msg);
     } finally {
