@@ -46,7 +46,7 @@ const PORT = isNaN(rawPort) || rawPort < 1 ? 4000 : rawPort;
 
 const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim());
 const isDev = process.env.NODE_ENV === 'development';
-const corsOrigin = isDev ? true : corsOrigins;
+const corsOrigin = isDev ? ['http://localhost:5173', 'http://localhost:4000', 'http://127.0.0.1:5173', 'http://127.0.0.1:4000'] : corsOrigins;
 
 app.use(helmet({
   strictTransportSecurity: { maxAge: 31536000, includeSubDomains: true, preload: true },

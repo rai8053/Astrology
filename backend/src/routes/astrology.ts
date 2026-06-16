@@ -648,7 +648,7 @@ const NAKSHATRA_NAMES = [
 astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchema), asyncHandler(async (req, res) => {
   const { partnerA, partnerB } = req.body as z.infer<typeof compatibilitySchema>;
   const compatKey = `compat:${partnerA.name}|${partnerA.birthDate}|${partnerA.birthTime}|${partnerA.birthPlace}|${partnerB.name}|${partnerB.birthDate}|${partnerB.birthTime}|${partnerB.birthPlace}`;
-  const compatHash = crypto.createHash('md5').update(compatKey).digest('hex');
+  const compatHash = crypto.createHash('sha256').update(compatKey).digest('hex');
   const cached = await cacheGet<CompatibilityResult>(compatHash);
   if (cached) {
     res.json({ success: true, data: cached });
