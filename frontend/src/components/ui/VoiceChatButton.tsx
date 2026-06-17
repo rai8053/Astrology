@@ -24,7 +24,7 @@ export function VoiceChatButton({ onTranscript, onError, disabled }: VoiceChatBu
   });
 
   useEffect(() => {
-    api.get<{ available: boolean }>('/voice/config')
+      api.get<{ available: boolean }>('/api/voice/config')
       .then(resp => setVoiceAvailable(resp.data.available))
       .catch(() => setVoiceAvailable(false));
   }, []);

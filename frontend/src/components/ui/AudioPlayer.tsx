@@ -29,7 +29,7 @@ export function AudioPlayer({ text, autoPlay = false, onError }: AudioPlayerProp
     setError(null);
 
     try {
-      const resp = await api.post<{ audio: string; audioType: string }>('/voice/tts', {
+      const resp = await api.post<{ audio: string; audioType: string }>('/api/voice/tts', {
         text: text.slice(0, 2000),
       });
 

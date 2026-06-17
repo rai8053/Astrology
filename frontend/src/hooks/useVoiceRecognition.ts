@@ -162,7 +162,7 @@ export function useVoiceRecognition(
           await new Promise<void>((r) => { reader.onload = () => r(); });
           const base64 = (reader.result as string).split(',')[1];
 
-          const resp = await api.post<{ text: string }>('/voice/asr', {
+          const resp = await api.post<{ text: string }>('/api/voice/asr', {
             audio: base64,
             language: options.language || 'en_us',
           });
