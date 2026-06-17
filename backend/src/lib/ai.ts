@@ -16,7 +16,7 @@ interface ProviderClient {
   }): Promise<{ text: string; model: string; usage?: AIUsage }>;
 }
 
-const MAX_FREE_MODELS = 10;
+const MAX_FREE_MODELS = 25;
 
 const DEFAULT_FALLBACK_MODELS = [
   'deepseek/deepseek-chat',
@@ -25,32 +25,41 @@ const DEFAULT_FALLBACK_MODELS = [
 ];
 
 const FREE_MODELS = [
-  'qwen/qwen3-coder:free',
-  'meta-llama/llama-3.3-70b-instruct:free',
-  'google/gemma-4-31b-it:free',
-  'openai/gpt-oss-120b:free',
-  'nvidia/nemotron-3-super-120b-a12b:free',
-  'openai/gpt-oss-20b:free',
-  'z-ai/glm-4.5-air:free',
-  'nvidia/nemotron-3-nano-30b-a3b:free',
-  'qwen/qwen3-next-80b-a3b-instruct:free',
-  'nvidia/nemotron-nano-9b-v2:free',
-  'meta-llama/llama-3.2-3b-instruct:free',
-  'google/gemma-4-26b-a4b-it:free',
-  'moonshotai/kimi-k2.6:free',
-  'nousresearch/hermes-3-llama-3.1-405b:free',
-  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-  'nvidia/nemotron-nano-12b-v2-vl:free',
-  'poolside/laguna-xs.2:free',
-  'poolside/laguna-m.1:free',
-  'google/gemini-2.0-flash-exp:free',
   'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
-  'minimax/minimax-m2.5:free',
-  'liquid/lfm-2.5-1.2b-thinking:free',
+  'deepseek/deepseek-r1:free',
+  'deepseek/deepseek-v3:free',
+  'google/gemini-2.0-flash-exp:free',
+  'google/gemma-3-12b-it:free',
+  'google/gemma-4-26b-a4b-it:free',
+  'google/gemma-4-31b-it:free',
   'liquid/lfm-2.5-1.2b-instruct:free',
-  'mistralai/mistral-7b-instruct:free',
+  'liquid/lfm-2.5-1.2b-thinking:free',
+  'meta-llama/llama-3.1-8b-instruct:free',
+  'meta-llama/llama-3.2-3b-instruct:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'meta-llama/llama-4-scout:free',
   'microsoft/phi-3-mini-4k-instruct:free',
+  'minimax/minimax-m2.5:free',
+  'mistralai/mistral-7b-instruct:free',
+  'mistralai/mistral-small-24b-instruct-2501:free',
+  'moonshotai/kimi-k2.6:free',
+  'nex-agi/nex-n2-pro:free',
+  'nousresearch/hermes-3-llama-3.1-405b:free',
+  'nvidia/nemotron-3-nano-30b-a3b:free',
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'nvidia/nemotron-nano-12b-v2-vl:free',
+  'nvidia/nemotron-nano-9b-v2:free',
+  'openai/gpt-oss-20b:free',
+  'openai/gpt-oss-120b:free',
   'openrouter/free',
+  'poolside/laguna-m.1:free',
+  'poolside/laguna-xs.2:free',
+  'qwen/qwen-2.5-7b-instruct:free',
+  'qwen/qwen3-coder:free',
+  'qwen/qwen3-next-80b-a3b-instruct:free',
+  'z-ai/glm-4.5-air:free',
 ];
 
 function calculateMaxTokens(contentLength: number): number {
@@ -101,7 +110,7 @@ class OpenRouterService implements ProviderClient {
     const maxTokens = params.config?.max_tokens
       ? (params.config.max_tokens as number)
       : calculateMaxTokens(params.contents.length);
-    const perModelTimeout = (params.config?.requestTimeout as number) || 25000;
+    const perModelTimeout = (params.config?.requestTimeout as number) || 10000;
     let lastError: Error | null = null;
     let hadCreditError = false;
 
@@ -206,7 +215,7 @@ class OpenRouterService implements ProviderClient {
         logger.info({ model }, 'streamContent attempting model');
         const stream = await this.client.chat.completions.create(
           { model, messages, stream: true, temperature: 0.7, max_tokens: maxTokens },
-          { signal: params.signal, timeout: 10000 },
+          { signal: params.signal, timeout: 15000 },
         );
 
         for await (const chunk of stream) {
@@ -292,7 +301,7 @@ export async function generateAIResponse(prompt: string, systemInstruction?: str
   if (systemInstruction) config.systemInstruction = systemInstruction;
   config.max_tokens = maxTokens;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), 60000);
   try {
     const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
     logger.info({ model: response.model, textLength: response.text.length, maxTokens }, 'generateAIResponse succeeded');
