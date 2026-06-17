@@ -119,7 +119,7 @@ export function LanguageSelector() {
     );
   }, [search]);
 
-  const current = LANGUAGES.find(l => l.code === language) ?? LANGUAGES[0];
+  const current = LANGUAGES.find(l => l.code === language) ?? LANGUAGES[0]!;
 
   useEffect(() => {
     if (open && searchRef.current) {

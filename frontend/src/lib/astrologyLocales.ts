@@ -155,7 +155,7 @@ export function getAstrologyLabel(category: keyof typeof DICTIONARIES, key: stri
   }
 }
 
-export function getNakshatraName(sanskritKey: string, language?: string): string {
+export function getNakshatraName(sanskritKey: string, language: string = 'en'): string {
   return lookup(NAKSHATRAS, sanskritKey, language);
 }
 

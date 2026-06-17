@@ -620,7 +620,7 @@ export function KundliPage() {
                               <span className="w-5 h-5 rounded-full inline-flex items-center justify-center text-[7px] font-bold" style={{ backgroundColor: `${PLANET_SYMBOLS[p.planet]?.color || '#999'}20`, color: PLANET_SYMBOLS[p.planet]?.color || '#999' }}>
                                 {PLANET_SYMBOLS[p.planet]?.symbol || '?'}
                               </span>
-                              {getPlanetName(p.planet.split(' ')[0])}
+                              {getPlanetName(p.planet?.split(' ')[0] || 'Sun')}
                             </td>
                             <td className="py-3 text-ink/60 dark:text-parchment/60">{getZodiacName(p.sign)}</td>
                             <td className="py-3">

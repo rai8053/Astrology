@@ -7,6 +7,7 @@ import { CardSkeleton } from '@/components/Skeleton';
 import { cn, RASHIS } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useAstrology } from '@/hooks/useAstrology';
+import { getAstrologyLabel } from '@/lib/astrologyLocales';
 import type { DailyHoroscope } from '@shared/types/api';
 
 const PLANET_RULERS: Record<string, string> = {
@@ -20,7 +21,7 @@ const staggerItem = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 
 
 export function HoroscopePage() {
   const { t } = useTranslation();
-  const { getZodiacName, getPlanetName, language } = useAstrology();
+  const { getZodiacName, getPlanetName } = useAstrology();
   const [selectedRashi, setSelectedRashi] = useState('Mesh');
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
 
@@ -57,7 +58,7 @@ export function HoroscopePage() {
               )}
             >
               <span className="text-2xl block">{r.symbol}</span>
-              <span className="text-[10px] font-sans font-bold uppercase block truncate tracking-wider mt-1">{getZodiacName(r.key, language)}</span>
+              <span className="text-[10px] font-sans font-bold uppercase block truncate tracking-wider mt-1">{getZodiacName(r.key)}</span>
               <span className={cn('inline-block w-1.5 h-1.5 rounded-full mt-1', elDot[r.element] || 'bg-primary/30')} />
             </motion.button>
           );
@@ -107,10 +108,10 @@ export function HoroscopePage() {
                 <div className="flex items-center gap-4 mb-4">
                   <span className="text-5xl">{RASHIS.find(r => r.key === selectedRashi)?.symbol || '✦'}</span>
                   <div>
-                    <h2 className="text-3xl font-display tracking-tight text-foreground">{getZodiacName(selectedRashi, language)}</h2>
+                    <h2 className="text-3xl font-display tracking-tight text-foreground">{getZodiacName(selectedRashi)}</h2>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">{getZodiacName(selectedRashi, 'en')}</span>
-                      <span className="badge-primary">{getPlanetName(PLANET_RULERS[selectedRashi] || '', language)}</span>
+                      <span className="text-xs text-muted-foreground">{getAstrologyLabel('zodiac', selectedRashi, 'en')}</span>
+                      <span className="badge-primary">{getPlanetName(PLANET_RULERS[selectedRashi] || '')}</span>
                     </div>
                   </div>
                 </div>

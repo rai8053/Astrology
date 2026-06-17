@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { List, RowComponentProps } from 'react-window';
 import type { ListImperativeAPI } from 'react-window';
 import { cn } from '@/lib/utils';
-import { t } from '@/lib/i18n/translations';
+import { useTranslation } from '@/lib/i18n';
 
 interface Place {
   v: string;
@@ -107,6 +107,7 @@ export function BirthPlaceInput({ label, id, value, onChange, required, placehol
   const listRef = useRef<ListImperativeAPI | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const searchIdRef = useRef(0);
+  const { t } = useTranslation();
 
   const doSearch = async (q: string, id: number) => {
     const nq = q.trim();

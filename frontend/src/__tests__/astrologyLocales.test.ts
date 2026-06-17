@@ -105,7 +105,7 @@ describe('astrologyLocales', () => {
       const keys = ['Mesh', 'Vrishabh', 'Mithun', 'Kark', 'Simha', 'Kanya', 'Tula', 'Vrishchik', 'Dhanu', 'Makar', 'Kumbha', 'Meen'];
       for (const lang of langs) {
         for (const key of keys) {
-          expect(ZODIAC[lang][key]).toBeTruthy();
+          expect(ZODIAC[lang]![key]).toBeTruthy();
         }
       }
     });
@@ -115,7 +115,7 @@ describe('astrologyLocales', () => {
       const keys = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
       for (const lang of langs) {
         for (const key of keys) {
-          expect(PLANETS[lang][key]).toBeTruthy();
+          expect(PLANETS[lang]![key]).toBeTruthy();
         }
       }
     });
@@ -125,7 +125,7 @@ describe('astrologyLocales', () => {
       const keys = ['Fire', 'Earth', 'Air', 'Water'];
       for (const lang of langs) {
         for (const key of keys) {
-          expect(ELEMENTS[lang][key]).toBeTruthy();
+          expect(ELEMENTS[lang]![key]).toBeTruthy();
         }
       }
     });
