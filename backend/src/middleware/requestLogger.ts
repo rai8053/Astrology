@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../lib/logger.js';
 
-function sanitizeUrl(url: string): string {
-  return url.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 2000);
+function sanitizeField(value: string, maxLen = 2000): string {
+  return value.replace(/[\x00-\x1f\x7f]/g, '').slice(0, maxLen);
 }
 
 export function requestLogger(req: Request, res: Response, next: NextFunction) {
@@ -11,10 +11,10 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
     const duration = Date.now() - start;
     logger.info({
       method: req.method,
-      url: sanitizeUrl(req.originalUrl),
+      url: sanitizeField(req.originalUrl),
       status: res.statusCode,
       duration: `${duration}ms`,
-      ip: req.ip,
+      ip: sanitizeField(req.ip || '', 100),
     });
   });
   next();

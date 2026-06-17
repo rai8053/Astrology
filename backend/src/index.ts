@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit';
-import crypto from 'crypto';
+import { logger } from './lib/logger.js';
 import { authRouter } from './routes/auth.js';
 
 if (process.env.SENTRY_DSN) {
@@ -22,10 +22,12 @@ if (!process.env.NODE_ENV) {
 }
 
 process.on('uncaughtException', (err) => {
-  console.error('[FATAL] Uncaught exception:', err);
+  logger.fatal({ err }, 'Uncaught exception');
+  process.exit(1);
 });
 process.on('unhandledRejection', (err) => {
-  console.error('[FATAL] Unhandled rejection:', err);
+  logger.fatal({ err }, 'Unhandled rejection');
+  process.exit(1);
 });
 import { astrologyRouter } from './routes/astrology.js';
 import { chatRouter } from './routes/chat.js';
@@ -40,7 +42,6 @@ import { translateRouter } from './routes/translate.js';
 import { voiceRouter } from './routes/voice.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
-import { logger } from './lib/logger.js';
 import { prisma } from './lib/prisma.js';
 
 const app = express();
@@ -50,6 +51,16 @@ const PORT = isNaN(rawPort) || rawPort < 1 ? 4000 : rawPort;
 const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim()).filter(Boolean);
 const isDev = process.env.NODE_ENV === 'development';
 const corsOrigin = isDev ? ['http://localhost:5173', 'http://localhost:4000', 'http://127.0.0.1:5173', 'http://127.0.0.1:4000'] : corsOrigins;
+
+function isValidOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  try {
+    const parsed = new URL(origin);
+    return corsOrigin.includes(origin) || corsOrigin.includes(`${parsed.protocol}//${parsed.host}`);
+  } catch {
+    return false;
+  }
+}
 
 app.use(helmet({
   strictTransportSecurity: { maxAge: 31536000, includeSubDomains: true, preload: true },
@@ -61,11 +72,12 @@ app.use(helmet({
       styleSrc: ["'self'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'blob:'],
-      connectSrc: isDev ? ["'self'", '*'] : ["'self'", ...corsOrigins],
+      connectSrc: ["'self'", ...corsOrigins],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       formAction: ["'self'"],
       baseUri: ["'self'"],
+      ...(isDev ? {} : { upgradeInsecureRequests: [] }),
     },
   },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
@@ -81,7 +93,7 @@ app.use(cookieParser());
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || corsOrigin.includes(origin)) {
+    if (isValidOrigin(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -89,7 +101,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Requested-With'],
   maxAge: 86400,
 }));
 
@@ -141,12 +153,12 @@ function gracefulShutdown(signal: string) {
       logger.info('Server and DB connections closed gracefully');
       process.exit(0);
     }).catch((err: unknown) => {
-      console.error('Error disconnecting Prisma:', err);
+      logger.error({ err }, 'Error disconnecting Prisma');
       process.exit(1);
     });
   });
   setTimeout(() => {
-    console.error('Forced shutdown after timeout');
+    logger.error('Forced shutdown after timeout');
     process.exit(1);
   }, 30000);
 }

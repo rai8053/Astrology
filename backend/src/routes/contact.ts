@@ -30,7 +30,10 @@ contactRouter.post('/', validate(contactSchema), asyncHandler(async (req, res) =
     data: { name, email, subject, message },
   });
 
-  logger.info({ email: email.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 254), subject: subject.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200) }, 'Contact message received');
+  const sanitizedEmail = email.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 254);
+  const sanitizedSubject = subject.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200);
+
+  logger.info({ email: sanitizedEmail, subject: sanitizedSubject }, 'Contact message received');
 
   if (process.env.RESEND_API_KEY) {
     try {
@@ -39,12 +42,12 @@ contactRouter.post('/', validate(contactSchema), asyncHandler(async (req, res) =
       await resend.emails.send({
         from: process.env.FROM_EMAIL || 'noreply@somasurya.com',
         to: process.env.CONTACT_EMAIL || 'hello@somaandsurya.com',
-        subject: `Contact: ${subject}`,
-        html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Subject:</strong> ${subject}</p><p><strong>Message:</strong></p><p>${message}</p>`,
+        subject: `Contact: ${sanitizedSubject}`,
+        html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${sanitizedEmail}</p><p><strong>Subject:</strong> ${sanitizedSubject}</p><p><strong>Message:</strong></p><p>${message}</p>`,
       });
-      logger.info({ email, subject }, 'Contact email forwarded via Resend');
+      logger.info({ email: sanitizedEmail, subject: sanitizedSubject }, 'Contact email forwarded via Resend');
     } catch (err) {
-      logger.error({ err, email }, 'Failed to forward contact email via Resend');
+      logger.error({ err, email: sanitizedEmail }, 'Failed to forward contact email via Resend');
     }
   }
 

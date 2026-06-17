@@ -1,49 +1,50 @@
 import { chromium } from 'playwright';
 import type { VedicProfile } from '../../../shared/types/api';
 import { buildReportHtml } from './pdfTemplate.js';
+import { logger } from '../lib/logger.js';
 
-function sanitizeLog(msg: unknown): string {
-  if (typeof msg === 'string') return msg.replace(/[\n\r\t\0]/g, '_').slice(0, 500);
-  if (msg instanceof Error) return sanitizeLog(msg.message);
-  return sanitizeLog(String(msg));
+function sanitizeErr(msg: unknown): string {
+  if (typeof msg === 'string') return msg.replace(/[\x00-\x1f\x7f]/g, '_').slice(0, 500);
+  if (msg instanceof Error) return sanitizeErr(msg.message);
+  return sanitizeErr(String(msg));
 }
 
 export async function generatePdf(profile: VedicProfile): Promise<Buffer> {
-  console.log('[PDF] 1/6 Building HTML template...');
+  logger.info({ step: '1/6' }, 'Building HTML template...');
   const html = buildReportHtml(profile);
-  console.log(`[PDF] 1/6 HTML built (${sanitizeLog(`${html.length}`)} chars)`);
+  logger.info({ step: '1/6', htmlLength: html.length }, 'HTML built');
 
-  console.log('[PDF] 2/6 Launching Chromium...');
+  logger.info({ step: '2/6' }, 'Launching Chromium...');
   let browser;
   try {
     browser = await chromium.launch({ headless: true });
-    console.log('[PDF] 2/6 Chromium launched successfully');
+    logger.info({ step: '2/6' }, 'Chromium launched');
   } catch (launchErr: unknown) {
-    console.error('[PDF] 2/6 FAILED to launch Chromium:', sanitizeLog(launchErr));
-    throw new Error(`Chromium launch failed: ${sanitizeLog(launchErr)}`);
+    logger.error({ step: '2/6', err: sanitizeErr(launchErr) }, 'Failed to launch Chromium');
+    throw new Error(`Chromium launch failed: ${sanitizeErr(launchErr)}`);
   }
 
   try {
-    console.log('[PDF] 3/6 Creating new page...');
+    logger.info({ step: '3/6' }, 'Creating new page...');
     let page;
     try {
       page = await browser.newPage();
-      console.log('[PDF] 3/6 Page created');
+      logger.info({ step: '3/6' }, 'Page created');
     } catch (pageErr: unknown) {
-      console.error('[PDF] 3/6 FAILED to create page:', sanitizeLog(pageErr));
-      throw new Error(`Page creation failed: ${sanitizeLog(pageErr)}`);
+      logger.error({ step: '3/6', err: sanitizeErr(pageErr) }, 'Failed to create page');
+      throw new Error(`Page creation failed: ${sanitizeErr(pageErr)}`);
     }
 
-    console.log('[PDF] 4/6 Setting page content (waiting for networkidle, 30s timeout)...');
+    logger.info({ step: '4/6' }, 'Setting page content...');
     try {
       await page.setContent(html, { waitUntil: 'networkidle', timeout: 30000 });
-      console.log('[PDF] 4/6 Page content set, network idle');
+      logger.info({ step: '4/6' }, 'Page content set, network idle');
     } catch (contentErr: unknown) {
-      console.error('[PDF] 4/6 FAILED to set content:', sanitizeLog(contentErr));
-      throw new Error(`Page setContent failed: ${sanitizeLog(contentErr)}`);
+      logger.error({ step: '4/6', err: sanitizeErr(contentErr) }, 'Failed to set content');
+      throw new Error(`Page setContent failed: ${sanitizeErr(contentErr)}`);
     }
 
-    console.log('[PDF] 5/6 Generating PDF...');
+    logger.info({ step: '5/6' }, 'Generating PDF...');
     let pdfBuffer;
     try {
       pdfBuffer = await page.pdf({
@@ -53,23 +54,19 @@ export async function generatePdf(profile: VedicProfile): Promise<Buffer> {
         displayHeaderFooter: false,
         preferCSSPageSize: true,
       });
-      const pdfLen = sanitizeLog(`${pdfBuffer.length}`);
-      console.log(`[PDF] 5/6 PDF generated (${pdfLen} bytes)`);
+      logger.info({ step: '5/6', pdfSize: pdfBuffer.length }, 'PDF generated');
     } catch (pdfErr: unknown) {
-      console.error('[PDF] 5/6 FAILED to generate PDF:', sanitizeLog(pdfErr));
-      throw new Error(`PDF generation failed: ${sanitizeLog(pdfErr)}`);
+      logger.error({ step: '5/6', err: sanitizeErr(pdfErr) }, 'Failed to generate PDF');
+      throw new Error(`PDF generation failed: ${sanitizeErr(pdfErr)}`);
     }
 
-    console.log('[PDF] 6/6 Converting to Buffer...');
-    const buf = Buffer.from(pdfBuffer);
-    const bufLen = sanitizeLog(`${buf.length}`);
-    console.log(`[PDF] 6/6 Done (${bufLen} bytes)`);
-    return buf;
+    logger.info({ step: '6/6', bufferSize: pdfBuffer.length }, 'Done');
+    return Buffer.from(pdfBuffer);
   } finally {
     if (browser) {
-      console.log('[PDF] Closing browser...');
-      await browser.close().catch((e: unknown) => console.error('[PDF] Error closing browser:', sanitizeLog(e)));
-      console.log('[PDF] Browser closed');
+      logger.info('Closing browser...');
+      await browser.close().catch((e: unknown) => logger.error({ err: sanitizeErr(e) }, 'Error closing browser'));
+      logger.info('Browser closed');
     }
   }
 }

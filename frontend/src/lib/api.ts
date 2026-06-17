@@ -41,14 +41,23 @@ class ApiClient {
     return headers;
   }
 
+  private getCookie(name: string): string | undefined {
+    const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+    if (match && match[2]) return decodeURIComponent(match[2]);
+    return undefined;
+  }
+
   private async attemptRefresh(): Promise<boolean> {
     if (this.refreshPromise) return this.refreshPromise;
     this.refreshPromise = (async () => {
       try {
+        const csrfToken = this.getCookie('csrf-token');
+        const headers: { [key: string]: string } = { 'Content-Type': 'application/json' };
+        if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
         const res = await fetch(`${this.baseUrl}/api/auth/refresh`, {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
         });
         if (!res.ok) return false;
         const data = await res.json();

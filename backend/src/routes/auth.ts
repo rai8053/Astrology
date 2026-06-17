@@ -12,6 +12,7 @@ import { asyncHandler } from '../lib/asyncHandler.js';
 import { AppError, ValidationError, UnauthorizedError, ConflictError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
 import { sendWelcomeEmail } from '../lib/email.js';
+import { generateCsrfToken, csrfProtection } from '../middleware/csrf.js';
 
 export const authRouter = Router();
 
@@ -126,6 +127,7 @@ authRouter.post('/google', authLimiter, asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
   });
+  generateCsrfToken(res);
 
   res.json({
     success: true,
@@ -217,6 +219,7 @@ authRouter.post('/register', authLimiter, validate(registerSchema), asyncHandler
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
   });
+  generateCsrfToken(res);
 
   // Fetch astrology profile for response
   const astrologyProfile = await prisma.astrologyProfile.findUnique({ where: { userId: user.id } });
@@ -267,6 +270,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), asyncHandler(async
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
   });
+  generateCsrfToken(res);
 
   res.json({
     success: true,
@@ -274,7 +278,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), asyncHandler(async
   });
 }));
 
-authRouter.post('/refresh', authLimiter, asyncHandler(async (req, res) => {
+authRouter.post('/refresh', authLimiter, csrfProtection, asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken || req.body?.refreshToken;
   if (!token) throw new UnauthorizedError('No refresh token provided');
 
@@ -299,6 +303,7 @@ authRouter.post('/refresh', authLimiter, asyncHandler(async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth',
     });
+    generateCsrfToken(res);
 
     res.json({ success: true, data: { accessToken: tokens.accessToken } });
   } catch {

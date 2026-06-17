@@ -1,14 +1,15 @@
 import 'dotenv/config';
 import { seedKnowledgeBase } from '../services/rag/seed.js';
+import { logger } from '../lib/logger.js';
 
 async function main() {
-  console.log('Starting RAG knowledge base seeding...');
+  logger.info('Starting RAG knowledge base seeding...');
   const result = await seedKnowledgeBase();
-  console.log(`Done: ${result.created} created, ${result.skipped} skipped`);
+  logger.info({ created: result.created, skipped: result.skipped }, 'RAG seeding done');
   process.exit(0);
 }
 
 main().catch((err) => {
-  console.error('Seeding failed:', err);
+  logger.error({ err }, 'RAG seeding failed');
   process.exit(1);
 });
