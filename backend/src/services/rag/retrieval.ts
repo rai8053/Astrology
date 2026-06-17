@@ -1,11 +1,9 @@
 import { prisma } from '../../lib/prisma.js';
 import { logger } from '../../lib/logger.js';
-import { embeddingService } from './embedding.js';
 import type { KnowledgeCategory, RetrievalResult } from '@shared/types/rag';
 
 const DEFAULT_TOP_K = 5;
 const MAX_TOP_K = 20;
-const MIN_SCORE_THRESHOLD = 0.3;
 
 interface RetrieveOptions {
   k?: number;
@@ -29,7 +27,6 @@ interface ArticleWithEmbedding {
   source: string | null;
   createdat: Date;
   updatedat: Date;
-  embedding: number[] | null;
 }
 
 export class RetrievalService {
@@ -39,34 +36,21 @@ export class RetrievalService {
   ): Promise<{ results: RetrievalResult[]; metrics: RetrievalMetrics }> {
     const startTime = Date.now();
     const k = Math.min(options.k || DEFAULT_TOP_K, MAX_TOP_K);
-    const minScore = options.minScore ?? MIN_SCORE_THRESHOLD;
 
-    const queryVector = await embeddingService.generateEmbedding(query);
+    const articles = await this.searchArticles(query, options, k);
 
-    const articles = await this.getArticlesWithEmbeddings(options);
-
-    const articlesWithScores = articles
-      .filter(a => Array.isArray(a.embedding) && a.embedding!.length > 0)
-      .map(a => {
-        const score = embeddingService.computeCosineSimilarity(queryVector, a.embedding!);
-        return { article: a, score };
-      })
-      .filter(r => r.score >= minScore)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, k);
-
-    const results: RetrievalResult[] = articlesWithScores.map(r => ({
+    const results: RetrievalResult[] = articles.map((a, i) => ({
       article: {
-        id: r.article.id,
-        title: r.article.title,
-        content: r.article.content,
-        category: r.article.category as KnowledgeCategory,
-        tags: r.article.tags,
-        source: r.article.source,
-        createdAt: r.article.createdat.toISOString(),
-        updatedAt: r.article.updatedat.toISOString(),
+        id: a.id,
+        title: a.title,
+        content: a.content,
+        category: a.category as KnowledgeCategory,
+        tags: a.tags,
+        source: a.source,
+        createdAt: a.createdat.toISOString(),
+        updatedAt: a.updatedat.toISOString(),
       },
-      score: r.score,
+      score: 1 - (i / articles.length),
     }));
 
     const elapsed = Date.now() - startTime;
@@ -76,9 +60,7 @@ export class RetrievalService {
       query: query.slice(0, 100),
       k,
       resultsCount: results.length,
-      totalCandidates: articles.length,
       latencyMs: elapsed,
-      minScore,
     }, 'RAG retrieval completed');
 
     return {
@@ -87,29 +69,38 @@ export class RetrievalService {
     };
   }
 
-  private async getArticlesWithEmbeddings(options: RetrieveOptions): Promise<ArticleWithEmbedding[]> {
-    let sql = `SELECT id, title, content, category, tags, source, "createdAt" as createdat, "updatedAt" as updatedat, embedding FROM "KnowledgeArticle" WHERE 1=1`;
-    const params: unknown[] = [];
+  private async searchArticles(query: string, options: RetrieveOptions, k: number): Promise<ArticleWithEmbedding[]> {
+    const terms = query.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean).slice(0, 10);
+    if (terms.length === 0) return [];
+
+    const tsQuery = terms.map(t => `${t}:*`).join(' & ');
+    const textSearch = `to_tsvector('english', content || ' ' || title) @@ to_tsquery('english', $1)`;
+    const rankExpr = `ts_rank(to_tsvector('english', content || ' ' || title), to_tsquery('english', $1))`;
+    let sql = `SELECT id, title, content, category, tags, source, "createdAt" as createdat, "updatedAt" as updatedat FROM "KnowledgeArticle" WHERE ${textSearch}`;
+    const params: unknown[] = [tsQuery];
+    let paramIdx = 2;
 
     if (options.category) {
       if (Array.isArray(options.category)) {
-        sql += ` AND category = ANY($${params.length + 1}::text[])`;
+        sql += ` AND category = ANY($${paramIdx}::text[])`;
         params.push(options.category);
       } else {
-        sql += ` AND category = $${params.length + 1}`;
+        sql += ` AND category = $${paramIdx}`;
         params.push(options.category);
       }
+      paramIdx++;
     }
 
     if (options.tags && options.tags.length > 0) {
-      sql += ` AND tags && $${params.length + 1}::text[]`;
+      sql += ` AND tags && $${paramIdx}::text[]`;
       params.push(options.tags);
+      paramIdx++;
     }
 
-    sql += ' ORDER BY title ASC';
+    sql += ` ORDER BY ${rankExpr} DESC LIMIT $${paramIdx}`;
+    params.push(k);
 
-    const rows = await prisma.$queryRawUnsafe(sql, ...params) as ArticleWithEmbedding[];
-    return rows;
+    return await prisma.$queryRawUnsafe(sql, ...params) as ArticleWithEmbedding[];
   }
 
   async logMetrics(
@@ -139,33 +130,27 @@ export class RetrievalService {
   }
 
   async findSimilar(query: string, excludeIds: string[], k: number = 3): Promise<RetrievalResult[]> {
-    const queryVector = await embeddingService.generateEmbedding(query);
+    const terms = query.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean).slice(0, 5);
+    if (terms.length === 0) return [];
 
-    const sql = `SELECT id, title, content, category, tags, source, "createdAt" as createdat, "updatedAt" as updatedat, embedding FROM "KnowledgeArticle" WHERE id != ALL($1::text[]) AND embedding IS NOT NULL ORDER BY title ASC`;
-    const articles = await prisma.$queryRawUnsafe(sql, excludeIds) as ArticleWithEmbedding[];
+    const tsQuery = terms.map(t => `${t}:*`).join(' & ');
+    const textSearch = `to_tsvector('english', content || ' ' || title) @@ to_tsquery('english', $2)`;
+    const rankExpr = `ts_rank(to_tsvector('english', content || ' ' || title), to_tsquery('english', $2))`;
+    const sql = `SELECT id, title, content, category, tags, source, "createdAt" as createdat, "updatedAt" as updatedat FROM "KnowledgeArticle" WHERE id != ALL($1::text[]) AND ${textSearch} ORDER BY ${rankExpr} DESC LIMIT $3`;
+    const articles = await prisma.$queryRawUnsafe(sql, excludeIds, tsQuery, k) as ArticleWithEmbedding[];
 
-    const scored = articles
-      .filter((a: ArticleWithEmbedding) => Array.isArray(a.embedding) && a.embedding!.length > 0)
-      .map((a: ArticleWithEmbedding) => ({
-        article: a,
-        score: embeddingService.computeCosineSimilarity(queryVector, a.embedding!),
-      }))
-      .filter((r: { score: number }) => r.score >= MIN_SCORE_THRESHOLD)
-      .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
-      .slice(0, k);
-
-    return scored.map((r: { article: ArticleWithEmbedding; score: number }) => ({
+    return articles.map((a, i) => ({
       article: {
-        id: r.article.id,
-        title: r.article.title,
-        content: r.article.content,
-        category: r.article.category as KnowledgeCategory,
-        tags: r.article.tags,
-        source: r.article.source,
-        createdAt: r.article.createdat.toISOString(),
-        updatedAt: r.article.updatedat.toISOString(),
+        id: a.id,
+        title: a.title,
+        content: a.content,
+        category: a.category as KnowledgeCategory,
+        tags: a.tags,
+        source: a.source,
+        createdAt: a.createdat.toISOString(),
+        updatedAt: a.updatedat.toISOString(),
       },
-      score: r.score,
+      score: 1 - (i / articles.length),
     }));
   }
 }

@@ -257,9 +257,17 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
   const birthData = await buildPersonalizedPrompt(userId);
   const systemInstruction = buildSystemInstruction(birthData, language);
 
-  const { knowledgeContext, retrievalSources, historyFormatted } = await buildRAGContext(
-    message, session.id, userId,
-  );
+  let knowledgeContext = '';
+  let retrievalSources: string[] = [];
+  let historyFormatted = '';
+  try {
+    const rag = await buildRAGContext(message, session.id, userId);
+    knowledgeContext = rag.knowledgeContext;
+    retrievalSources = rag.retrievalSources;
+    historyFormatted = rag.historyFormatted;
+  } catch (ragErr) {
+    logger.warn({ err: ragErr instanceof Error ? ragErr.message : String(ragErr) }, 'RAG retrieval failed, continuing without context');
+  }
 
   const prompt = formatPrompt(message, historyFormatted, knowledgeContext, '');
 
