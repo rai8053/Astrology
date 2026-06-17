@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WebSocket, { type Data } from 'ws';
 import { logger } from '../../lib/logger.js';
 import { generateAuthUrl } from './auth.js';
 import type { IFlyTekConfig, TTSResponse, IFlyTekMessage } from './types.js';
@@ -76,7 +76,7 @@ export async function textToSpeech(
       ws.send(JSON.stringify(frame));
     });
 
-    ws.on('message', (raw) => {
+    ws.on('message', (raw: Data) => {
       try {
         const msg = JSON.parse(raw.toString());
         if (msg.code !== 0) {
@@ -107,13 +107,13 @@ export async function textToSpeech(
       }
     });
 
-    ws.on('error', (err) => {
+    ws.on('error', (err: Error) => {
       hasError = true;
       clearTimeout(timeout);
       reject(new Error(`iFLYTEK TTS WebSocket error: ${err.message}`));
     });
 
-    ws.on('close', (code, reason) => {
+    ws.on('close', (code: number, reason: Buffer) => {
       if (!hasError && audioChunks.length > 0) {
         clearTimeout(timeout);
         const fullAudio = Buffer.concat(audioChunks);

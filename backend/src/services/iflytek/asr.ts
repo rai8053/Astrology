@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WebSocket, { type Data } from 'ws';
 import { logger } from '../../lib/logger.js';
 import { generateAuthUrl } from './auth.js';
 import type { IFlyTekConfig, ASRResponse, IFlyTekMessage } from './types.js';
@@ -79,7 +79,7 @@ export async function speechToText(
       ws.send(JSON.stringify(endFrame));
     });
 
-    ws.on('message', (raw) => {
+    ws.on('message', (raw: Data) => {
       try {
         const msg = JSON.parse(raw.toString());
         if (msg.code !== 0) {
@@ -111,13 +111,13 @@ export async function speechToText(
       }
     });
 
-    ws.on('error', (err) => {
+    ws.on('error', (err: Error) => {
       hasError = true;
       clearTimeout(timeout);
       reject(new Error(`iFLYTEK ASR WebSocket error: ${err.message}`));
     });
 
-    ws.on('close', (code, reason) => {
+    ws.on('close', (code: number, reason: Buffer) => {
       if (!hasError) {
         clearTimeout(timeout);
         if (finalText) {

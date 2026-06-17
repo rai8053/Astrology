@@ -12,10 +12,6 @@ function toRFC1123(date: Date): string {
   return `${d}, ${day} ${m} ${date.getUTCFullYear()} ${hh}:${mm}:${ss} GMT`;
 }
 
-function encodeURIComponentRFC3986(str: string): string {
-  return encodeURIComponent(str).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
-}
-
 export interface AuthParams {
   host: string;
   path: string;
@@ -31,11 +27,14 @@ export interface AuthResult {
 export function generateAuthUrl(params: AuthParams): AuthResult {
   const { host, path, apiKey, apiSecret } = params;
   const date = toRFC1123(new Date());
+
   const signatureOrigin = `host: ${host}\ndate: ${date}\nGET ${path} HTTP/1.1`;
   const signatureDigest = crypto.createHmac('sha256', apiSecret).update(signatureOrigin, 'utf-8').digest('base64');
-  const signature = encodeURIComponentRFC3986(signatureDigest);
-  const authorizationOrigin = `api_key="${apiKey}", algorithm="hmac-sha256", headers="host date request-line", signature="${signature}"`;
-  const authorization = encodeURIComponentRFC3986(authorizationOrigin);
-  const url = `wss://${host}${path}?authorization=${authorization}&date=${encodeURIComponentRFC3986(date)}&host=${encodeURIComponentRFC3986(host)}`;
+
+  const authorizationOrigin = `api_key="${apiKey}", algorithm="hmac-sha256", headers="host date request-line", signature="${signatureDigest}"`;
+  const authorization = Buffer.from(authorizationOrigin, 'utf-8').toString('base64');
+
+  const url = `wss://${host}${path}?authorization=${encodeURIComponent(authorization)}&date=${encodeURIComponent(date)}&host=${encodeURIComponent(host)}`;
+
   return { url, date };
 }

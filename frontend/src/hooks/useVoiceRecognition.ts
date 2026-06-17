@@ -30,48 +30,81 @@ export function useVoiceRecognition(
   options: VoiceRecognitionOptions = {},
 ): [VoiceRecognitionState, VoiceRecognitionActions] {
   const [state, setState] = useState<VoiceRecognitionState>({
-    isRecording: false,
-    isProcessing: false,
-    transcript: '',
-    error: null,
-    durationMs: 0,
-    volume: 0,
+    isRecording: false, isProcessing: false, transcript: '', error: null, durationMs: 0, volume: 0,
   });
+
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const volumeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const durationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const processingRef = useRef(false);
+  const stopPromiseRef = useRef<{ resolve: () => void } | null>(null);
 
   const isSupported = typeof window !== 'undefined' &&
     typeof navigator.mediaDevices?.getUserMedia === 'function' &&
     typeof MediaRecorder !== 'undefined';
 
-  const updateVolume = useCallback(() => {
-    const analyser = analyserRef.current;
-    if (!analyser) return;
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(data);
-    const avg = data.reduce((a, b) => a + b, 0) / data.length;
-    setState(prev => ({ ...prev, volume: Math.min(1, avg / 128) }));
+  const clearTimers = useCallback(() => {
+    if (volumeTimerRef.current !== null) { clearInterval(volumeTimerRef.current); volumeTimerRef.current = null; }
+    if (durationTimerRef.current !== null) { clearInterval(durationTimerRef.current); durationTimerRef.current = null; }
   }, []);
+
+  const cleanupMedia = useCallback(() => {
+    if (audioContextRef.current) { audioContextRef.current.close(); audioContextRef.current = null; }
+    analyserRef.current = null;
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+  }, []);
+
+  const stopRecording = useCallback(async () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive' || processingRef.current) return;
+
+    clearTimers();
+    processingRef.current = true;
+
+    recorder.stop();
+
+    return new Promise<void>((resolve) => {
+      stopPromiseRef.current = { resolve };
+    });
+  }, [clearTimers]);
+
+  const cancelRecording = useCallback(() => {
+    clearTimers();
+    processingRef.current = false;
+    cleanupMedia();
+
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.stream.getTracks().forEach(t => t.stop());
+      recorder.stop();
+    }
+
+    chunksRef.current = [];
+    setState(prev => ({
+      ...prev, isRecording: false, isProcessing: false, transcript: '', error: null, durationMs: 0, volume: 0,
+    }));
+  }, [clearTimers, cleanupMedia]);
 
   const startRecording = useCallback(async () => {
     try {
+      processingRef.current = false;
       setState(prev => ({
         ...prev, isRecording: true, error: null, transcript: '', durationMs: 0, volume: 0,
       }));
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          sampleRate: SAMPLE_RATE,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
+        audio: { sampleRate: SAMPLE_RATE, channelCount: 1, echoCancellation: true, noiseSuppression: true },
       });
       streamRef.current = stream;
 
@@ -84,8 +117,7 @@ export function useVoiceRecognition(
       analyserRef.current = analyser;
 
       const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm';
+        ? 'audio/webm;codecs=opus' : 'audio/webm';
 
       const recorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = recorder;
@@ -95,66 +127,22 @@ export function useVoiceRecognition(
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
 
-      recorder.onerror = () => {
-        stopRecording();
-        setState(prev => ({ ...prev, error: 'Recording failed', isRecording: false }));
-      };
+      recorder.onstop = async () => {
+        cleanupMedia();
 
-      recorder.start(100);
-      startTimeRef.current = Date.now();
-
-      const volumeInterval = setInterval(updateVolume, 100);
-      timerRef.current = volumeInterval;
-
-      const durationInterval = setInterval(() => {
-        const elapsed = Date.now() - startTimeRef.current;
-        setState(prev => ({ ...prev, durationMs: elapsed }));
-        if (elapsed >= MAX_RECORDING_MS) {
-          stopRecording();
-        }
-      }, 200);
-      (durationInterval as any).__isDuration = true;
-      timerRef.current = volumeInterval;
-      (timerRef as any).durationTimer = durationInterval;
-
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setState(prev => ({ ...prev, isRecording: false, error: msg }));
-      if (options.onError) options.onError(msg);
-    }
-  }, [updateVolume, options]);
-
-  const stopRecording = useCallback(async () => {
-    const recorder = mediaRecorderRef.current;
-    if (!recorder || recorder.state === 'inactive') return;
-
-    return new Promise<void>((resolve) => {
-      recorder.addEventListener('stop', async () => {
-        setState(prev => ({ ...prev, isProcessing: true }));
-
-        if (timerRef.current) clearInterval(timerRef.current);
-        if ((timerRef as any).durationTimer) clearInterval((timerRef as any).durationTimer);
-
-        if (audioContextRef.current) {
-          audioContextRef.current.close();
-          audioContextRef.current = null;
-        }
-        analyserRef.current = null;
-
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(t => t.stop());
-          streamRef.current = null;
-        }
-
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
         chunksRef.current = [];
 
         if (blob.size < 100) {
-          setState(prev => ({ ...prev, isProcessing: false, isRecording: false, error: 'No audio detected' }));
-          if (options.onError) options.onError('No audio detected');
-          resolve();
+          setState(prev => ({ ...prev, isRecording: false, isProcessing: false, error: 'No audio detected', volume: 0 }));
+          processingRef.current = false;
+          const { onError } = optionsRef.current;
+          if (onError) onError('No audio detected');
+          stopPromiseRef.current?.resolve();
           return;
         }
+
+        setState(prev => ({ ...prev, isRecording: false, isProcessing: true }));
 
         try {
           const reader = new FileReader();
@@ -164,55 +152,64 @@ export function useVoiceRecognition(
 
           const resp = await api.post<{ text: string }>('/api/voice/asr', {
             audio: base64,
-            language: options.language || 'en_us',
+            language: optionsRef.current.language || 'en_us',
           });
 
           const text = resp.data.text;
           setState(prev => ({
-            ...prev, isProcessing: false, isRecording: false, transcript: text, error: null,
+            ...prev, isProcessing: false, transcript: text, error: null, volume: 0,
           }));
 
-          if (text && options.onTranscript) options.onTranscript(text);
+          const { onTranscript } = optionsRef.current;
+          if (text && onTranscript) onTranscript(text);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           setState(prev => ({
-            ...prev, isProcessing: false, isRecording: false, error: msg,
+            ...prev, isProcessing: false, error: msg, volume: 0,
           }));
-          if (options.onError) options.onError(msg);
+          const { onError } = optionsRef.current;
+          if (onError) onError(msg);
         }
-        resolve();
-      });
+        processingRef.current = false;
+        stopPromiseRef.current?.resolve();
+      };
 
-      recorder.stop();
-    });
-  }, [options]);
+      recorder.onerror = () => {
+        clearTimers();
+        cleanupMedia();
+        chunksRef.current = [];
+        setState(prev => ({ ...prev, isRecording: false, isProcessing: false, error: 'Recording failed' }));
+        processingRef.current = false;
+        stopPromiseRef.current?.resolve();
+      };
 
-  const cancelRecording = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if ((timerRef as any).durationTimer) clearInterval((timerRef as any).durationTimer);
+      recorder.start(100);
+      startTimeRef.current = Date.now();
 
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
+      volumeTimerRef.current = setInterval(() => {
+        const analyser = analyserRef.current;
+        if (!analyser) return;
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(data);
+        const avg = data.reduce((a, b) => a + b, 0) / data.length;
+        setState(prev => ({ ...prev, volume: Math.min(1, avg / 128) }));
+      }, 100);
+
+      durationTimerRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTimeRef.current;
+        setState(prev => ({ ...prev, durationMs: elapsed }));
+        if (elapsed >= MAX_RECORDING_MS) {
+          stopRecording();
+        }
+      }, 200);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      cleanupMedia();
+      setState(prev => ({ ...prev, isRecording: false, error: msg }));
+      const { onError } = optionsRef.current;
+      if (onError) onError(msg);
     }
-    analyserRef.current = null;
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-
-    const recorder = mediaRecorderRef.current;
-    if (recorder && recorder.state !== 'inactive') {
-      recorder.stream.getTracks().forEach(t => t.stop());
-      recorder.stop();
-    }
-
-    chunksRef.current = [];
-    setState(prev => ({
-      ...prev, isRecording: false, isProcessing: false, transcript: '', error: null, durationMs: 0, volume: 0,
-    }));
-  }, []);
+  }, [cleanupMedia]);
 
   return [
     state,

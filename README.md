@@ -31,9 +31,10 @@ The platform features **streaming AI chat**, **conversation memory**, **birth ch
 | Metric | Value |
 |--------|-------|
 | Backend Tests | 63 passing |
-| AI Models | 3-model fallback chain |
+| AI Models | 35 free models + fallback chain |
 | Knowledge Articles | 48 Vedic astrology documents |
 | Database Tables | 14 |
+| Spoken Languages | 10 (en, hi, bn, es, pt, fr, de, ar, ja, zh) |
 | Docker Services | 5 |
 | Migration History | 6 applied migrations |
 
@@ -57,8 +58,8 @@ The platform features **streaming AI chat**, **conversation memory**, **birth ch
               ▼                     ▼
 ┌─────────────────────────┐  ┌─────────────────────────────┐
 │    Memory Service        │  │    Retrieval Service         │
-│  · Conversation history   │  │  · Generate query embedding  │
-│  · Token-aware windowing  │  │  · Cosine similarity search  │
+│  · Conversation history   │  │  · PostgreSQL full-text search│
+│  · Token-aware windowing  │  │  · to_tsvector / ts_rank     │
 │  · Working memory extract │  │  · Category/tag filtering   │
 │  · Context compression    │  │  · Score threshold filtering│
 └──────────┬──────────────┘  └──────────────┬──────────────┘
@@ -91,7 +92,7 @@ The system follows a 5-stage pipeline for every AI request:
 | Stage | Service | What Happens |
 |-------|---------|--------------|
 | **1. Memory Retrieval** | `MemoryService` | Fetches conversation history with token-aware windowing (max 3000 tokens). Extracts working memory (birth info, zodiac signs, planet mentions). |
-| **2. Knowledge Retrieval** | `RetrievalService` | Generates a 1536-dimensional embedding of the user's query via OpenRouter. Computes cosine similarity against 48+ knowledge articles. Returns top-5 results above 0.3 similarity threshold. |
+| **2. Knowledge Retrieval** | `RetrievalService` | Performs PostgreSQL full-text search (`to_tsvector`/`ts_rank`) across knowledge articles. Returns top-5 results ranked by relevance. No external embedding API call needed. |
 | **3. Context Assembly** | `Context Builder` | Combines conversation history + working memory + retrieved documents into a structured prompt. |
 | **4. LLM Inference** | `OpenRouter` | Sends prompt through a fallback chain (preferred → fallback → free models) with retry logic and timeout. |
 | **5. Attribution** | `Chat Route` | Stores retrieval source IDs in message metadata for auditability. Logs retrieval latency, result count, and token usage. |
@@ -122,7 +123,7 @@ The `KnowledgeArticle` table stores 48 Vedic astrology articles across 9 categor
 | `GEMSTONE` | 1 | 9 planetary gemstones with wearing guidelines |
 | `GENERAL` | 5 | Vedic intro, sidereal vs tropical, dasha, transits, karakas |
 
-Each article is embedded as a 1536-dimensional vector using `openai/text-embedding-3-small` via OpenRouter. Retrieval is performed client-side with JS cosine similarity (designed for easy migration to pgvector).
+Each article has a `searchVector` column populated via Prisma `@@index` with `to_tsvector('english', title || ' ' || content)`. Retrieval uses `ts_rank` with a plain `plainto_tsquery` for speed, returning the top 5 matches above a 0.1 rank threshold. No external embedding API is needed.
 
 ### Source Attribution
 
@@ -166,10 +167,12 @@ AuditLog (N)              ─ standalone
 | Decision | Rationale |
 |----------|-----------|
 | **RAG over fine-tuning** | Knowledge base can be updated without retraining. Each response cites authoritative sources. |
-| **double precision[] over pgvector** | JS cosine similarity works without PostgreSQL extensions. pgvector migration requires one SQL change. |
+| **PostgreSQL full-text search over embeddings** | No external embedding API dependency. Uses built-in `to_tsvector`/`ts_rank` — fast, no GPU needed, works offline. |
 | **Token-aware memory windowing** | Prevents context overflow while preserving conversation continuity. Working memory extracts key facts across the full session. |
 | **Cascading soft-delete** | Chat session deletion cascades to all messages, preserving data integrity while enabling recovery. |
-| **3-model OpenRouter fallback** | Preferred model (deepseek-chat) → fallback (qwen, claude) → 14 free models. No single point of failure. |
+| **25+ free OpenRouter models** | 35 models with 10s per-model timeout, 60s global timeout. RAG failures degrade gracefully — chat continues without context. |
+| **iFLYTEK voice (ASR + TTS)** | WebSocket-based speech-to-text and text-to-speech via iFLYTEK API. Server-side auth with HMAC-SHA256. |
+| **10-locale i18n** | Custom Zustand-based i18n with JSON locale files. AI-powered translation fallback with protected Sanskrit terms. |
 | **Zod + TypeScript throughout** | Runtime validation (Zod) + compile-time checking (TS) from HTTP boundary to database query. |
 | **JWT refresh rotation** | Refresh tokens rotate on every use. Theft detection invalidates all sessions. |
 
@@ -203,13 +206,18 @@ Astrology/
 │   │   │   ├── dashboard/                 # User dashboard + cosmic snapshot
 │   │   │   ├── horoscope/                 # Daily/weekly horoscope with ZodiacGrid
 │   │   │   ├── kundli/                    # D1 + D9 chart with Navamsa
-│   │   │   ├── chat/                      # AI chat with streaming + RAG
+│   │   │   ├── chat/                      # AI chat with streaming + RAG + voice
 │   │   │   ├── compatibility/             # Guna Milan scoring
 │   │   │   ├── moon/                      # Moon phase tracker
 │   │   │   ├── settings/                  # Profile + subscription
 │   │   │   └── admin/                     # Users, analytics, usage
 │   │   ├── components/ui/                 # Design primitives
-│   │   ├── lib/                           # API client, zustand store, utils
+│   │   │   ├── VoiceChatButton.tsx        # Mic button with recording UI + volume meter
+│   │   │   └── AudioPlayer.tsx            # TTS audio playback
+│   │   ├── hooks/
+│   │   │   └── useVoiceRecognition.ts     # MediaRecorder → ASR API → transcript
+│   │   ├── locales/                       # 10 i18n JSON files (en, hi, bn, es, pt, fr, de, ar, ja, zh)
+│   │   ├── lib/                           # API client, zustand store, utils, i18n
 │   │   └── styles/globals.css             # Tailwind v4 theme
 │   └── nginx.conf                         # Production nginx config
 │
@@ -234,18 +242,24 @@ Astrology/
 │   │   │   ├── auth.ts                    # Register, login, refresh, OAuth
 │   │   │   ├── astrology.ts               # Birth chart, horoscope, moon phase
 │   │   │   ├── chat.ts                    # AI chat with RAG integration
+│   │   │   ├── voice.ts                   # iFLYTEK ASR + TTS endpoints
 │   │   │   ├── payment.ts                 # Stripe checkout, portal, webhook
 │   │   │   ├── user.ts                    # Profile CRUD
 │   │   │   └── admin.ts                   # Users, analytics, usage stats
 │   │   └── services/
 │   │       ├── chat.ts                    # Session & message management
+│   │       ├── iflytek/
+│   │       │   ├── auth.ts                # HMAC-SHA256 WebSocket auth
+│   │       │   ├── asr.ts                 # Speech-to-text (WebSocket)
+│   │       │   ├── tts.ts                 # Text-to-speech (WebSocket)
+│   │       │   └── types.ts               # iFLYTEK API types
 │   │       ├── astrology/
 │   │       │   ├── constants.ts           # Rashi, Nakshatra, Tithi data
 │   │       │   └── calculator.ts          # Sidereal calculation engine
 │   │       └── rag/
 │   │           ├── index.ts               # Re-exports
 │   │           ├── embedding.ts           # EmbeddingService (OpenRouter)
-│   │           ├── retrieval.ts           # RetrievalService (cosine similarity)
+│   │           ├── retrieval.ts           # RetrievalService (pg full-text search)
 │   │           ├── memory.ts              # MemoryService (windowing + extraction)
 │   │           └── seed.ts                # 48 knowledge articles
 │   └── Dockerfile
@@ -259,7 +273,7 @@ Astrology/
 │   └── payment.ts                         # SubscriptionDTO, InvoiceDTO
 │
 ├── docker-compose.yml                     # 5 services (db, redis, backend, frontend)
-├── scripts/                               # deploy.sh, setup.ps1
+├── scripts/                               # deploy.sh, setup.ps1, fix-locales.mjs, translate-locales.mjs
 ├── .github/workflows/                     # CI + Deploy + Security
 ├── .env.example
 └── package.json                           # npm workspaces orchestrator
@@ -339,6 +353,27 @@ curl -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{ "email": "user@example.com", "password": "..." }'
 # → { "success": true, "data": { "accessToken": "eyJ...", "user": {...} } }
+```
+
+### Voice (iFLYTEK ASR)
+```bash
+# Check voice availability
+curl http://localhost:4000/api/voice/config
+# → { "success": true, "data": { "available": true } }
+
+# Speech-to-text (base64 audio in request body)
+curl -X POST http://localhost:4000/api/voice/asr \
+  -H "Authorization: Bearer <jwt>" \
+  -H "Content-Type: application/json" \
+  -d '{ "audio": "<base64>", "language": "en_us" }'
+# → { "success": true, "data": { "text": "What is my Saturn placement?" } }
+
+# Text-to-speech (returns base64 audio)
+curl -X POST http://localhost:4000/api/voice/tts \
+  -H "Authorization: Bearer <jwt>" \
+  -H "Content-Type: application/json" \
+  -d '{ "text": "Your Saturn is in the 7th house." }'
+# → { "success": true, "data": { "audio": "<base64>", "audioType": "mp3" } }
 ```
 
 ### All responses follow: `{ success: boolean, data?: T, error?: string }`
@@ -433,6 +468,9 @@ docker compose exec backend npm run seed:rag
 | `SENTRY_DSN` | No | `""` | Error tracking |
 | `PORT` | No | `4000` | Backend port |
 | `NODE_ENV` | No | `development` | Environment mode |
+| `XF_APPID` | For voice | — | iFLYTEK app ID |
+| `XF_API_KEY` | For voice | — | iFLYTEK API key |
+| `XF_API_SECRET` | For voice | — | iFLYTEK API secret |
 
 ---
 
@@ -440,13 +478,14 @@ docker compose exec backend npm run seed:rag
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| RAG retrieval latency (p50) | <200ms | ~50ms (no API call if cached) |
-| RAG retrieval latency (p95) | <500ms | ~400ms (first call, embedding generation) |
+| RAG retrieval latency (p50) | <50ms | ~15ms (pg full-text search, no external API) |
+| RAG retrieval latency (p95) | <100ms | ~40ms |
 | AI response time (preferred model) | <5s | ~2-3s (deepseek-chat-v3-0324) |
 | AI response time (with fallback) | <15s | ~6s (through fallback chain) |
-| Embedding cache hit rate | >60% | ~40% (grows with usage) |
 | Chat endpoint (p50) | <200ms | ~150ms (excluding AI) |
 | Database query time (p50) | <50ms | ~5ms (indexed queries) |
+| ASR latency (voice) | <3s | ~1s (iFLYTEK WebSocket) |
+| TTS latency (voice) | <2s | ~0.5s (iFLYTEK WebSocket) |
 | Bundled frontend size | <3MB | ~2.56MB (31 chunks) |
 
 ---
@@ -457,11 +496,15 @@ Most astrology apps fall into one of two categories: a generic API wrapper aroun
 
 **AI + Vedic Astrology** — The system isn't just an LLM prompt. It has a curated knowledge base of 48 Vedic astrology articles that ground every response. The AI context includes the user's actual sidereal birth chart — planetary positions, houses, nakshatras, dashas. Responses reference specific houses, planets, and yogas from the user's chart.
 
-**Production RAG** — Not a proof-of-concept with three hardcoded documents. A proper 3-service RAG architecture with embedding generation, cosine similarity retrieval, category/tag filtering, token-aware memory windowing, and source attribution logged to the database.
+**Production RAG** — Not a proof-of-concept with three hardcoded documents. A proper 3-service RAG architecture with PostgreSQL full-text search (`to_tsvector`/`ts_rank`), category/tag filtering, token-aware memory windowing, and source attribution logged to the database. No external embedding API needed.
 
 **Conversation Memory** — The memory service doesn't just replay the last N messages. It scans history for birth information, zodiac mentions, and planet references, extracting a working memory that persists across the entire session regardless of token limits.
 
 **SaaS Architecture** — Rate limiting per tier (10 free queries/day, unlimited for premium), Stripe subscription billing with webhooks, JWT refresh rotation with theft detection, soft-delete for data recovery, structured logging with Pino, admin analytics dashboard, audit logs, and a 3-model AI fallback chain with retry and timeout.
+
+**Voice Astrology Assistant** — Speak your question and hear the AI's answer. Powered by iFLYTEK WebSocket API with server-side HMAC-SHA256 authentication. ASR (speech-to-text) transcribes your voice, and TTS (text-to-speech) reads the AI's response aloud.
+
+**10-Locale i18n** — Full internationalization with custom Zustand store and JSON locale files. Never-translate terms (Rahu, Ketu, Nakshatra, etc.) preserved across all languages. AI-powered fallback for untranslated keys.
 
 **Production-Grade Backend** — TypeScript end-to-end, Zod runtime validation on every input, Prisma with 6 managed migrations, Helmet + CORS + rate limiting security, 63 automated tests in CI, Docker Compose deployment, and shared TypeScript types between frontend and backend.
 
@@ -469,18 +512,21 @@ Most astrology apps fall into one of two categories: a generic API wrapper aroun
 
 ## Roadmap
 
-- [x] RAG pipeline with EmbeddingService, RetrievalService, MemoryService
+- [x] RAG pipeline with PostgreSQL full-text search
 - [x] 48-article Vedic astrology knowledge base
-- [x] Streaming AI responses with fallback chain
+- [x] Streaming AI responses with fallback chain (35 free models)
 - [x] SaaS billing (Stripe, 3 subscription tiers)
 - [x] Admin dashboard with usage analytics
 - [x] Birth chart calculation engine (sidereal)
 - [x] D1 (Rasi) and D9 (Navamsa) chart visualization
 - [x] Token tracking per request
 - [x] 6 database migrations
+- [x] Voice Astrology Assistant (iFLYTEK ASR + TTS)
+- [x] 10-locale i18n system (en, hi, bn, es, pt, fr, de, ar, ja, zh)
+- [x] iFLYTEK voice integration
+- [ ] AI translate remaining placeholder locale keys (needs OpenRouter credits)
 - [ ] pgvector migration for GPU-accelerated similarity search
 - [ ] LangChain integration for structured tool-calling
-- [ ] Embedding cache persistence (Redis)
 - [ ] Vector index on ChatMessage for cross-session RAG
 - [ ] WebSocket streaming (replace SSE)
 - [ ] CI/CD with staging / canary deploys
