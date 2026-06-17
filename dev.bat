@@ -8,18 +8,22 @@ echo ============================================
 echo.
 
 REM ---- STEP 1: Dependencies ----
-echo [1/4] Checking dependencies...
-if not exist "%~dp0node_modules" (
-    echo   node_modules not found. Running npm install...
-    call npm install
-    if errorlevel 1 (
-        echo   ERROR: npm install failed.
-        pause
-        exit /b 1
-    )
-) else (
-    echo   node_modules found
+echo [1/4] Installing dependencies...
+cd /d "%~dp0"
+if not exist "%~dp0node_modules" call npm install --silent
+
+cd /d "%~dp0backend"
+if not exist "%~dp0backend\node_modules" (
+    echo   Installing backend dependencies...
+    call npm install --silent
 )
+
+cd /d "%~dp0frontend"
+if not exist "%~dp0frontend\node_modules" (
+    echo   Installing frontend dependencies...
+    call npm install --silent
+)
+cd /d "%~dp0"
 echo   OK
 echo.
 
@@ -49,12 +53,12 @@ cd /d "%~dp0"
 echo.
 
 echo === Backend (port 4000) ===
-start "Soma-Surya-Backend" /D "%~dp0backend" cmd /k "npx tsx src/index.ts || pause"
+start "Soma-Surya-Backend" /D "%~dp0backend" cmd /k "title Backend && npx tsx src/index.ts || pause"
 
 ping -n 4 127.0.0.1 >nul
 
 echo === Frontend (port 5173) ===
-start "Soma-Surya-Frontend" /D "%~dp0frontend" cmd /k "npx vite --host || pause"
+start "Soma-Surya-Frontend" /D "%~dp0frontend" cmd /k "title Frontend && npx vite --host || pause"
 
 echo.
 echo Backend: http://localhost:4000/api/health
