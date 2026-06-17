@@ -19,6 +19,11 @@
     "test": "cd backend && npm run test && cd ../frontend && npm run test",
     "clean": "rm -rf dist node_modules"
   },
+  "overrides": {
+    "concurrently": {
+      "shell-quote": ">=1.8.4"
+    }
+  },
   "devDependencies": {
     "concurrently": "^9.1.2",
     "shell-quote": "^1.8.4",
