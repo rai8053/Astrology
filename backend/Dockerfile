@@ -3,7 +3,8 @@ WORKDIR /app
 COPY backend/package*.json ./backend/
 RUN cd backend && npm ci
 COPY . .
-ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/soma_surya?schema=public"
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/soma_surya?schema=public}
 
 RUN cd backend && npx prisma generate && npm run build
 

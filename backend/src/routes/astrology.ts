@@ -261,7 +261,7 @@ const detailedReportSchema = z.object({
 });
 
 function hashKey(name: string, date: string, time: string, place: string): string {
-  return crypto.createHash('md5').update(`${name}|${date}|${time}|${place}`).digest('hex');
+  return crypto.createHash('sha256').update(`${name}|${date}|${time}|${place}`).digest('hex');
 }
 
 astrologyRouter.post('/vedic-profile/detailed', optionalAuth, validate(detailedReportSchema), asyncHandler(async (req, res) => {

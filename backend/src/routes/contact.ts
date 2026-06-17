@@ -30,7 +30,7 @@ contactRouter.post('/', validate(contactSchema), asyncHandler(async (req, res) =
     data: { name, email, subject, message },
   });
 
-  logger.info({ email, subject }, 'Contact message received');
+  logger.info({ email: email.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 254), subject: subject.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200) }, 'Contact message received');
 
   if (process.env.RESEND_API_KEY) {
     try {

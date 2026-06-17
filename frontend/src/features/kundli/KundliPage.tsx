@@ -1,4 +1,5 @@
 import { useState, FormEvent, useRef, useCallback, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useMutation } from '@tanstack/react-query';
 import { Sparkles, Shield, Heart, RefreshCw, Download, AlertCircle, Star, Sun, Moon, Gem, Brain, Briefcase, HeartHandshake, Wallet, Leaf, Compass, CalendarDays, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -310,13 +311,13 @@ export function KundliPage() {
         language,
       }).then((res) => {
         if (res.success && res.data) {
-          setDetailedReport(res.data.detailedReport);
+          setDetailedReport(DOMPurify.sanitize(res.data.detailedReport, { ALLOWED_TAGS: ['h3', 'h4', 'p', 'ul', 'li', 'strong', 'em', 'br', 'div', 'span'], ALLOWED_ATTR: ['class'] }));
           const key = res.data.requestKey;
           if (key) {
             const poll = setInterval(() => {
               api.get<{ done: boolean; detailedReport?: string }>(`/api/astrology/vedic-profile/detailed/status/${key}`).then((pr) => {
                 if (pr.success && pr.data?.done && pr.data.detailedReport) {
-                  setDetailedReport(pr.data.detailedReport);
+                  setDetailedReport(DOMPurify.sanitize(pr.data.detailedReport, { ALLOWED_TAGS: ['h3', 'h4', 'p', 'ul', 'li', 'strong', 'em', 'br', 'div', 'span'], ALLOWED_ATTR: ['class'] }));
                   clearInterval(poll);
                 }
               }).catch(() => { clearInterval(poll); });

@@ -28,7 +28,7 @@ reportRouter.post('/generate-pdf', authenticate, validate(pdfSchema), asyncHandl
 
   res.set({
     'Content-Type': 'application/pdf',
-    'Content-Disposition': `attachment; filename="Premium-Kundli-${profile.name.replace(/\s+/g, '-')}.pdf"`,
+    'Content-Disposition': `attachment; filename="premium-kundli-${profile.name.replace(/[^a-zA-Z0-9_-]/g, '').replace(/\s+/g, '-').slice(0, 50)}.pdf"`,
     'Content-Length': pdfBuffer.length.toString(),
   });
   res.send(pdfBuffer);

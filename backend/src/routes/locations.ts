@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { z } from 'zod';
+import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
 
 export const locationsRouter = Router();
@@ -46,8 +48,13 @@ const CITIES: { city: string; country: string; countryCode: string; timezone: st
   { city: 'Nairobi', country: 'Kenya', countryCode: 'KE', timezone: 'Africa/Nairobi' },
 ];
 
-locationsRouter.get('/cities', asyncHandler(async (req, res) => {
-  const q = (req.query.q as string || '').toLowerCase().trim();
+const citiesQuerySchema = z.object({
+  q: z.string().min(2).max(100),
+});
+
+locationsRouter.get('/cities', validate(citiesQuerySchema, 'query'), asyncHandler(async (req, res) => {
+  const { q: rawQ } = req.query as unknown as z.infer<typeof citiesQuerySchema>;
+  const q = rawQ.toLowerCase().trim();
   if (q.length < 2) {
     res.json({ success: true, data: [] });
     return;

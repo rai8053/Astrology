@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import crypto from 'crypto';
+import crypto, { timingSafeEqual } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../lib/prisma.js';
@@ -29,17 +29,13 @@ const authLimiter = rateLimit({
 
 const JWT_SECRET = (() => {
   if (!process.env.JWT_SECRET) {
-    if (process.env.NODE_ENV === 'production') throw new Error('JWT_SECRET is required in production');
-    logger.warn('JWT_SECRET not set — using weak dev default. Set a strong JWT_SECRET in production.');
-    return 'dev-secret-change-in-production';
+    throw new Error('JWT_SECRET environment variable is required');
   }
   return process.env.JWT_SECRET;
 })();
 const JWT_REFRESH_SECRET = (() => {
   if (!process.env.JWT_REFRESH_SECRET) {
-    if (process.env.NODE_ENV === 'production') throw new Error('JWT_REFRESH_SECRET is required in production');
-    logger.warn('JWT_REFRESH_SECRET not set — using weak dev default. Set a strong JWT_REFRESH_SECRET in production.');
-    return 'dev-refresh-secret-change-in-production';
+    throw new Error('JWT_REFRESH_SECRET environment variable is required');
   }
   return process.env.JWT_REFRESH_SECRET;
 })();
@@ -285,7 +281,13 @@ authRouter.post('/refresh', authLimiter, asyncHandler(async (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as { userId: string; role: string };
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-    if (!user || user.refreshToken !== hashToken(token)) throw new UnauthorizedError('Invalid refresh token');
+    if (!user || !user.refreshToken) throw new UnauthorizedError('Invalid refresh token');
+    const hashedInput = hashToken(token);
+    const hashedStored = Buffer.from(user.refreshToken, 'utf-8');
+    const hashedInputBuf = Buffer.from(hashedInput, 'utf-8');
+    if (hashedStored.length !== hashedInputBuf.length || !timingSafeEqual(hashedStored, hashedInputBuf)) {
+      throw new UnauthorizedError('Invalid refresh token');
+    }
 
     const tokens = generateTokens({ userId: user.id, role: user.role });
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });

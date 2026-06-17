@@ -17,12 +17,17 @@
     "db:studio": "cd backend && npx prisma studio",
     "lint": "cd backend && npm run lint && cd ../frontend && npm run lint",
     "test": "cd backend && npm run test && cd ../frontend && npm run test",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf dist node_modules",
+    "security:audit": "cd backend && npm audit && cd ../frontend && npm audit",
+    "security:outdated": "cd backend && npm outdated && cd ../frontend && npm outdated"
   },
   "overrides": {
     "concurrently": {
       "shell-quote": ">=1.8.4"
-    }
+    },
+    "**/esbuild": "0.25.2",
+    "**/cross-spawn": ">=7.0.6",
+    "**/path-to-regexp": ">=8.2.0"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
