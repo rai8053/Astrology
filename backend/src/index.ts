@@ -36,6 +36,7 @@ import { healthRouter } from './routes/health.js';
 import { reportRouter } from './routes/report.js';
 import { contactRouter } from './routes/contact.js';
 import { translateRouter } from './routes/translate.js';
+import { voiceRouter } from './routes/voice.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { logger } from './lib/logger.js';
@@ -103,6 +104,7 @@ app.use('/api/user', userRouter);
 app.use('/api/translate', translateRouter);
 app.use('/api/report', reportRouter);
 app.use('/api/contact', contactRouter);
+app.use('/api/voice', voiceRouter);
 
 app.use(errorHandler);
 

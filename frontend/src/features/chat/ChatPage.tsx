@@ -7,6 +7,8 @@ import remarkGfm from 'remark-gfm';
 import { api } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
+import { VoiceChatButton } from '@/components/ui/VoiceChatButton';
+import { AudioPlayer } from '@/components/ui/AudioPlayer';
 import { useTranslation } from '@/lib/i18n';
 import type { ChatMessageDTO, ChatSessionDTO, PaginatedMessages, PaginatedSessions } from '@shared/types/chat';
 
@@ -69,7 +71,12 @@ function ChatBubble({ message, index }: { message: ChatMessageDTO; index: number
         {isUser ? (
           <p className="font-medium">{message.content}</p>
         ) : (
-          <MarkdownContent content={message.content} />
+          <>
+            <MarkdownContent content={message.content} />
+            <div className="mt-2 flex justify-end">
+              <AudioPlayer text={message.content} />
+            </div>
+          </>
         )}
       </div>
       {isUser && (
@@ -547,6 +554,10 @@ export function ChatPage() {
                   placeholder={t('chat.placeholder')}
                   disabled={streaming}
                   className="flex-1 bg-transparent border border-ink/10 dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-sans placeholder:text-ink/30 dark:placeholder:text-parchment/30 transition-colors focus:border-gold/40 focus:outline-none disabled:opacity-50"
+                />
+                <VoiceChatButton
+                  onTranscript={(text) => setInput(text)}
+                  disabled={streaming}
                 />
                 <PremiumButton
                   size="sm"
