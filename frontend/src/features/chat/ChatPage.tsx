@@ -214,7 +214,11 @@ export function ChatPage() {
               result.reply = data.text || '';
               return { reply: result.reply, sessionId: result.sessionId, dailyUsed: result.dailyUsed };
             }
-            if (data.text) {
+            if (data.delta) {
+              result.reply += data.delta;
+              setStreamText(result.reply);
+            }
+            if (data.text && !data.delta) {
               result.reply = data.text;
               setStreamText(data.text);
             }
@@ -314,7 +318,11 @@ export function ChatPage() {
                 reply = data.text || '';
                 break;
               }
-              if (data.text) {
+              if (data.delta) {
+                reply += data.delta;
+                setStreamText(reply);
+              }
+              if (data.text && !data.delta) {
                 reply = data.text;
                 setStreamText(data.text);
               }

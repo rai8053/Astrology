@@ -87,23 +87,28 @@ export function getCurrentDasha(dashas: DashaPeriod[], now: Date = new Date()): 
   return { dasha: current, antardasha: current };
 }
 
-export function calculateRashiIndex(dateStr: string, timeStr: string): number {
-  const eph = calculateEphemeris(dateStr, timeStr);
+function getUtcDate(dateStr: string, timeStr: string, timezoneOffsetMinutes = 0): Date {
+  const local = new Date(`${dateStr}T${timeStr}:00`);
+  return new Date(local.getTime() - timezoneOffsetMinutes * 60 * 1000);
+}
+
+export function calculateRashiIndex(dateStr: string, timeStr: string, timezoneOffsetMinutes = 0): number {
+  const eph = calculateEphemeris(dateStr, timeStr, 19.0760, 72.8777, timezoneOffsetMinutes);
   return eph.moon.signIndex;
 }
 
-export function calculateNakshatraIndex(dateStr: string, timeStr: string): number {
-  const eph = calculateEphemeris(dateStr, timeStr);
+export function calculateNakshatraIndex(dateStr: string, timeStr: string, timezoneOffsetMinutes = 0): number {
+  const eph = calculateEphemeris(dateStr, timeStr, 19.0760, 72.8777, timezoneOffsetMinutes);
   return eph.moon.nakshatraIndex;
 }
 
-export function calculateLagnaIndex(dateStr: string, timeStr: string): number {
-  const eph = calculateEphemeris(dateStr, timeStr);
+export function calculateLagnaIndex(dateStr: string, timeStr: string, timezoneOffsetMinutes = 0): number {
+  const eph = calculateEphemeris(dateStr, timeStr, 19.0760, 72.8777, timezoneOffsetMinutes);
   return eph.ascendant.signIndex;
 }
 
-export function calculateBirthDetails(dateStr: string, timeStr: string) {
-  const eph = calculateEphemeris(dateStr, timeStr);
+export function calculateBirthDetails(dateStr: string, timeStr: string, timezoneOffsetMinutes = 0, lat = 19.0760, lon = 72.8777) {
+  const eph = calculateEphemeris(dateStr, timeStr, lat, lon, timezoneOffsetMinutes);
   const rashiIndex = eph.moon.signIndex;
   const nakshatraIndex = eph.moon.nakshatraIndex;
   const lagnaIndex = eph.ascendant.signIndex;
@@ -111,7 +116,7 @@ export function calculateBirthDetails(dateStr: string, timeStr: string) {
   const rashiKey = getRashiKey(rashiIndex);
   const lagnaKey = getRashiKey(lagnaIndex);
 
-  const birthDate = new Date(`${dateStr}T${timeStr}:00`);
+  const birthDate = getUtcDate(dateStr, timeStr, timezoneOffsetMinutes);
   const dashas = calculateVimshottariDasha(nakshatraIndex, eph.moon.longitude, birthDate);
   const currentDasha = getCurrentDasha(dashas);
 
@@ -146,7 +151,7 @@ export function calculateBirthDetails(dateStr: string, timeStr: string) {
 export function getMoonPhase(targetDate: Date) {
   const dateStr = targetDate.toISOString().split('T')[0];
   const timeStr = '12:00';
-  const eph = calculateEphemeris(dateStr, timeStr);
+  const eph = calculateEphemeris(dateStr, timeStr, 19.0760, 72.8777, 0);
   const age = eph.tithi.index * 0.965; // approximate days into lunar cycle
   const illumination = 50 * (1 - Math.cos(2 * Math.PI * (eph.tithi.index / 30)));
 

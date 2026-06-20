@@ -385,7 +385,7 @@ chatRouter.post('/stream', authenticate, streamLimiter, validate(chatSchema), as
     const stream = streamAIResponse(prompt, systemInstruction, controller.signal);
     for await (const chunk of stream) {
       fullText += chunk;
-      res.write(`data: ${JSON.stringify({ text: fullText })}\n\n`);
+      res.write(`data: ${JSON.stringify({ delta: chunk })}\n\n`);
     }
 
     await addMessages(session.id, [

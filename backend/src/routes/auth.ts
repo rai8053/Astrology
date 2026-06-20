@@ -40,8 +40,16 @@ const JWT_REFRESH_SECRET = (() => {
   }
   return process.env.JWT_REFRESH_SECRET;
 })();
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '5m';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+const googleCredentialSchema = z.object({
+  credential: z.string().min(1, 'Google credential is required'),
+});
+
+const refreshTokenSchema = z.object({
+  refreshToken: z.string().optional(),
+});
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const HAS_GOOGLE_AUTH = GOOGLE_CLIENT_ID.length > 20;
 
@@ -57,16 +65,12 @@ function generateTokens(payload: { userId: string; role: string }) {
   return { accessToken, refreshToken };
 }
 
-authRouter.post('/google', authLimiter, asyncHandler(async (req, res) => {
+authRouter.post('/google', authLimiter, validate(googleCredentialSchema), asyncHandler(async (req, res) => {
   if (!googleClient) {
     res.status(503).json({ success: false, error: 'Google authentication is not configured', code: 'SERVICE_UNAVAILABLE' });
     return;
   }
-  const { credential } = req.body;
-  if (!credential) {
-    res.status(400).json({ success: false, error: 'Google credential is required', code: 'VALIDATION_ERROR' });
-    return;
-  }
+  const { credential } = req.body as z.infer<typeof googleCredentialSchema>;
 
   const ticket = await googleClient.verifyIdToken({
     idToken: credential,
@@ -278,7 +282,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), asyncHandler(async
   });
 }));
 
-authRouter.post('/refresh', authLimiter, csrfProtection, asyncHandler(async (req, res) => {
+authRouter.post('/refresh', authLimiter, csrfProtection, validate(refreshTokenSchema), asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken || req.body?.refreshToken;
   if (!token) throw new UnauthorizedError('No refresh token provided');
 

@@ -1,9 +1,12 @@
 // Pure JavaScript Vedic Ephemeris Engine
 // All calculations are deterministic — same input always produces identical results
 // Based on astronomical algorithms (Jean Meeus, VSOP87 simplified)
-// Lahiri ayanamsa = 24.133° (approx for 2000-2025 epoch, precesses ~0.0139°/yr)
+// Lahiri ayanamsa calculated per date: ~20.5° + 0.0139° * (JD - 2451545.0) / 365.25
 
-const LAHIRI_AYANAMSA = 24.133;
+function calculateAyanamsa(jd: number): number {
+  const T = (jd - 2451545.0) / 36525;
+  return 23.856 + 0.01397 * T * 100;
+}
 
 export interface PlanetaryPosition {
   longitude: number;
@@ -246,7 +249,7 @@ function calculateAscendant(jd: number, latitude: number, longitude: number): nu
   const lst = normalizeAngle(280.46061837 + 360.985647366 * (jd - 2451545.0) + longitude);
   const obliquity = normalizeAngle(23.439291 - 0.0130042 * T);
   const ramc = lst;
-  const latRad = latitude * Math.PI / 180;
+  const latRad = Math.min(Math.max(latitude * Math.PI / 180, -1.15), 1.15); // clamp to ~66° for polar stability
   const oblRad = obliquity * Math.PI / 180;
   const ramcRad = ramc * Math.PI / 180;
 
@@ -279,8 +282,8 @@ function calculateKarana(sunLon: number, moonLon: number): { index: number; name
 }
 
 // Apply Lahiri ayanamsa to convert tropical → sidereal
-function toSidereal(tropicalLon: number): number {
-  return normalizeAngle(tropicalLon - LAHIRI_AYANAMSA);
+function toSidereal(tropicalLon: number, jd: number): number {
+  return normalizeAngle(tropicalLon - calculateAyanamsa(jd));
 }
 
 // Calculate Rahu (Mean North Lunar Node) longitude — simplified formula
@@ -307,9 +310,11 @@ function calculateNavamsaSignIndex(signIndex: number, degInSign: number): { nava
   return { navamsaSignIndex, navamsaPada: pada };
 }
 
-export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.0760, lon = 72.8777): EphemerisResult {
-  const dateObj = new Date(`${dateStr}T${timeStr}:00`);
-  const jd = toJD(dateObj);
+export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.0760, lon = 72.8777, timezoneOffsetMinutes = 0): EphemerisResult {
+  // Convert local time to UTC by subtracting timezone offset
+  const localDate = new Date(`${dateStr}T${timeStr}:00`);
+  const utcDate = new Date(localDate.getTime() - timezoneOffsetMinutes * 60 * 1000);
+  const jd = toJD(utcDate);
 
   // Calculate tropical longitudes
   const sunLonT = sunLongitude(jd);
@@ -323,15 +328,16 @@ export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.07
   const ketuLonT = ketuLongitude(jd);
 
   // Apply ayanamsa to get sidereal (Vedic) longitudes
-  const sunLon = toSidereal(sunLonT);
-  const moonLon = toSidereal(moonLonT);
-  const mercLon = toSidereal(mercLonT);
-  const venLon = toSidereal(venLonT);
-  const marsLon = toSidereal(marsLonT);
-  const jupLon = toSidereal(jupLonT);
-  const satLon = toSidereal(satLonT);
-  const rahuLon = toSidereal(rahuLonT);
-  const ketuLon = toSidereal(ketuLonT);
+  const ayanamsa = calculateAyanamsa(jd);
+  const sunLon = toSidereal(sunLonT, jd);
+  const moonLon = toSidereal(moonLonT, jd);
+  const mercLon = toSidereal(mercLonT, jd);
+  const venLon = toSidereal(venLonT, jd);
+  const marsLon = toSidereal(marsLonT, jd);
+  const jupLon = toSidereal(jupLonT, jd);
+  const satLon = toSidereal(satLonT, jd);
+  const rahuLon = toSidereal(rahuLonT, jd);
+  const ketuLon = toSidereal(ketuLonT, jd);
 
   // Ascendant is calculated from local sidereal time (already sidereal)
   const ascLon = calculateAscendant(jd, lat, lon);

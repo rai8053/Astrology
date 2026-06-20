@@ -152,8 +152,8 @@ function buildTransitTimeline(rashiKey: string, nakshatra: string): TransitEvent
   ];
 }
 
-function buildFallbackProfile(name: string, birthDate: string, birthTime: string, birthPlace: string): VedicProfile {
-  const details = calculateBirthDetails(birthDate, birthTime);
+function buildFallbackProfile(name: string, birthDate: string, birthTime: string, birthPlace: string, timezoneOffsetMinutes = 0): VedicProfile {
+  const details = calculateBirthDetails(birthDate, birthTime, timezoneOffsetMinutes);
   const { rashiIndex, rashiKey, nakshatraIndex, nakshatraName, lagnaKey, ascendant, sun, moon, mercury, venus, mars, jupiter, saturn, rahu, ketu } = details;
   const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
   const ld = RASHI_DATA[lagnaKey] || RASHI_DATA.Mesh;
@@ -223,6 +223,11 @@ function buildFallbackProfile(name: string, birthDate: string, birthTime: string
   };
 }
 
+const timeStr = z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format').refine((t) => {
+  const [h, m] = t.split(':').map(Number);
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+}, 'Invalid time: hours must be 0-23, minutes 0-59');
+
 const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD format').refine((d) => {
   const date = new Date(d);
   const min = new Date('1900-01-01');
@@ -233,14 +238,15 @@ const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD format')
 const birthChartSchema = z.object({
   name: z.string().min(1).max(100),
   birthDate: dateStr,
-  birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'),
+  birthTime: timeStr,
   birthPlace: z.string().min(1).max(200),
   language: z.string().min(2).max(10).optional().default('en'),
+  timezoneOffsetMinutes: z.number().int().min(-720).max(840).optional().default(0),
 });
 
 astrologyRouter.post('/vedic-profile', optionalAuth, validate(birthChartSchema), asyncHandler(async (req, res) => {
-  const { name, birthDate, birthTime, birthPlace } = req.body as z.infer<typeof birthChartSchema>;
-  const fallback = buildFallbackProfile(name, birthDate, birthTime, birthPlace);
+  const { name, birthDate, birthTime, birthPlace, timezoneOffsetMinutes } = req.body as z.infer<typeof birthChartSchema>;
+  const fallback = buildFallbackProfile(name, birthDate, birthTime, birthPlace, timezoneOffsetMinutes);
 
   if (req.user) {
     prisma.astrologyReport.create({
@@ -255,9 +261,10 @@ const aiDetailedCache = new Map<string, { done: boolean; html?: string }>();
 const detailedReportSchema = z.object({
   name: z.string().min(1).max(100),
   birthDate: dateStr,
-  birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'),
+  birthTime: timeStr,
   birthPlace: z.string().min(1).max(200),
   language: z.string().min(2).max(10).optional().default('en'),
+  timezoneOffsetMinutes: z.number().int().min(-720).max(840).optional().default(0),
 });
 
 function hashKey(name: string, date: string, time: string, place: string): string {
@@ -265,7 +272,7 @@ function hashKey(name: string, date: string, time: string, place: string): strin
 }
 
 astrologyRouter.post('/vedic-profile/detailed', optionalAuth, validate(detailedReportSchema), asyncHandler(async (req, res) => {
-  const { name, birthDate, birthTime, birthPlace, language } = req.body as z.infer<typeof detailedReportSchema>;
+  const { name, birthDate, birthTime, birthPlace, language, timezoneOffsetMinutes } = req.body as z.infer<typeof detailedReportSchema>;
   const key = hashKey(name, birthDate, birthTime, birthPlace);
 
   const cached = aiDetailedCache.get(key);
@@ -274,7 +281,7 @@ astrologyRouter.post('/vedic-profile/detailed', optionalAuth, validate(detailedR
     return;
   }
 
-  const { rashiKey, nakshatraIndex, nakshatraName, lagnaKey } = calculateBirthDetails(birthDate, birthTime);
+  const { rashiKey, nakshatraIndex, nakshatraName, lagnaKey } = calculateBirthDetails(birthDate, birthTime, timezoneOffsetMinutes);
   const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
   const ld = RASHI_DATA[lagnaKey] || RASHI_DATA.Mesh;
   const nakshatraLord = NAKSHATRA_LORDS[nakshatraIndex % 9];
@@ -445,7 +452,7 @@ Write in the language corresponding to code: "${language}". For "hi" write in Hi
   });
 }));
 
-astrologyRouter.get('/vedic-profile/detailed/status/:key', (req, res) => {
+astrologyRouter.get('/vedic-profile/detailed/status/:key', authenticate, (req, res) => {
   const entry = aiDetailedCache.get(req.params.key);
   if (!entry) return res.json({ success: true, data: { done: false } });
   if (entry.done) return res.json({ success: true, data: { done: true, detailedReport: entry.html } });
@@ -496,8 +503,8 @@ astrologyRouter.post('/daily-horoscope', optionalAuth, validate(horoscopeSchema)
 }));
 
 const compatibilitySchema = z.object({
-  partnerA: z.object({ name: z.string().min(1), birthDate: dateStr, birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'), birthPlace: z.string().min(1).max(200) }),
-  partnerB: z.object({ name: z.string().min(1), birthDate: dateStr, birthTime: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'), birthPlace: z.string().min(1).max(200) }),
+  partnerA: z.object({ name: z.string().min(1), birthDate: dateStr, birthTime: timeStr, birthPlace: z.string().min(1).max(200), timezoneOffsetMinutes: z.number().int().min(-720).max(840).optional().default(0) }),
+  partnerB: z.object({ name: z.string().min(1), birthDate: dateStr, birthTime: timeStr, birthPlace: z.string().min(1).max(200), timezoneOffsetMinutes: z.number().int().min(-720).max(840).optional().default(0) }),
 });
 
 // ─── Real Ashta Koota (Gun Milan) Calculation ──────────────────────────────
@@ -654,8 +661,8 @@ astrologyRouter.post('/compatibility', optionalAuth, validate(compatibilitySchem
     res.json({ success: true, data: cached });
     return;
   }
-  const detA = calculateBirthDetails(partnerA.birthDate, partnerA.birthTime);
-  const detB = calculateBirthDetails(partnerB.birthDate, partnerB.birthTime);
+  const detA = calculateBirthDetails(partnerA.birthDate, partnerA.birthTime, partnerA.timezoneOffsetMinutes);
+  const detB = calculateBirthDetails(partnerB.birthDate, partnerB.birthTime, partnerB.timezoneOffsetMinutes);
   const { rashiKey: rashiA, nakshatraName: nakshatraA, nakshatraIndex: nakIdxA } = detA;
   const { rashiKey: rashiB, nakshatraName: nakshatraB, nakshatraIndex: nakIdxB } = detB;
 
@@ -856,13 +863,15 @@ astrologyRouter.get('/personal-dashboard', authenticate, validate(dashboardPerio
   const { period } = req.query as unknown as z.infer<typeof dashboardPeriodSchema>;
   const user = await prisma.user.findUnique({
     where: { id: req.user!.userId },
-    select: { birthDate: true, birthTime: true, birthPlace: true },
+    select: { birthDate: true, birthTime: true, birthPlace: true, timezone: true },
   });
   if (!user?.birthDate || !user?.birthTime) {
     res.status(400).json({ success: false, error: 'Birth details required. Please update your profile settings.' });
     return;
   }
-  const details = calculateBirthDetails(user.birthDate, user.birthTime);
+  const tzParts = user.timezone ? user.timezone.match(/UTC([+-]\d{1,2}):?(\d{2})?/) : null;
+  const tzOffsetMinutes = tzParts ? parseInt(tzParts[1]) * 60 + (tzParts[2] ? parseInt(tzParts[2]) : 0) : 0;
+  const details = calculateBirthDetails(user.birthDate, user.birthTime, tzOffsetMinutes);
   const { rashiKey, nakshatraName, nakshatraIndex, lagnaKey, rashiIndex } = details;
   const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
   const ld = RASHI_DATA[lagnaKey] || RASHI_DATA.Mesh;

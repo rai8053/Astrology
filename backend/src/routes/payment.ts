@@ -1,13 +1,20 @@
 import { Router } from 'express';
 import Stripe from 'stripe';
+import { z } from 'zod';
 import { authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
+import { validate } from '../middleware/validate.js';
 import { getPricing, getCountryCode, REGIONAL_PRICING } from '../../../shared/config/pricing.js';
 
 export const paymentRouter = Router();
+
+const checkoutSchema = z.object({
+  plan: z.enum(['PRO', 'PREMIUM', 'ENTERPRISE']),
+  currency: z.string().optional(),
+});
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-04-15' as Stripe.LatestApiVersion })
@@ -43,12 +50,10 @@ paymentRouter.get('/subscription', authenticate, asyncHandler(async (req, res) =
   res.json({ success: true, data: sub });
 }));
 
-paymentRouter.post('/create-checkout', authenticate, asyncHandler(async (req, res) => {
+paymentRouter.post('/create-checkout', authenticate, validate(checkoutSchema), asyncHandler(async (req, res) => {
   if (!stripe) throw new AppError(503, 'Payment system is not configured');
 
-  const { plan, currency: reqCurrency } = req.body;
-  const validPlans = ['PRO', 'PREMIUM', 'ENTERPRISE'];
-  if (!validPlans.includes(plan)) throw new AppError(400, 'Invalid plan selected');
+  const { plan, currency: reqCurrency } = req.body as z.infer<typeof checkoutSchema>;
 
   const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
   if (!user) throw new AppError(404, 'User not found');
@@ -95,17 +100,27 @@ paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
   if (!stripe) return res.status(503).json({ success: false, error: 'Stripe not configured' });
 
   const sig = req.headers['stripe-signature'] as string;
-  const rawBody = req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body));
-  if (!rawBody || rawBody.length === 0) return res.status(400).json({ success: false, error: 'Raw body required for webhook verification' });
+  if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+    return res.status(400).json({ success: false, error: 'Raw body required for webhook verification' });
+  }
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET || '');
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET || '');
   } catch {
     return res.status(400).json({ success: false, error: 'Invalid webhook signature' });
   }
 
   try {
+    const existing = await prisma.stripeEvent.findUnique({ where: { id: event.id } });
+    if (existing) {
+      logger.info({ eventId: event.id, type: event.type }, 'Webhook already processed, skipping');
+      res.json({ received: true });
+      return;
+    }
+
+    await prisma.stripeEvent.create({ data: { id: event.id, type: event.type } });
+
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
@@ -127,6 +142,38 @@ paymentRouter.post('/webhook', asyncHandler(async (req, res) => {
           });
           const roleMap: Record<string, 'USER' | 'PREMIUM'> = { PRO: 'USER', PREMIUM: 'PREMIUM', ENTERPRISE: 'PREMIUM' };
           await prisma.user.update({ where: { id: userId }, data: { role: roleMap[validatedPlan] || 'PREMIUM' } });
+        }
+        break;
+      }
+      case 'invoice.paid': {
+        const invoice = event.data.object as Stripe.Invoice;
+        if (invoice.subscription && invoice.customer_email) {
+          const sub = await prisma.subscription.findFirst({ where: { stripeSubscriptionId: invoice.subscription as string } });
+          if (sub) {
+            await prisma.invoice.create({
+              data: {
+                userId: sub.userId,
+                stripeInvoiceId: invoice.id,
+                amount: invoice.amount_paid / 100,
+                currency: invoice.currency,
+                status: invoice.status || 'paid',
+                plan: sub.plan,
+                paidAt: new Date((invoice.status_transitions?.paid_at || Math.floor(Date.now() / 1000)) * 1000),
+                periodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : null,
+                periodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : null,
+              },
+            });
+          }
+        }
+        break;
+      }
+      case 'invoice.payment_failed': {
+        const failedInvoice = event.data.object as Stripe.Invoice;
+        if (failedInvoice.subscription) {
+          const sub = await prisma.subscription.findFirst({ where: { stripeSubscriptionId: failedInvoice.subscription as string } });
+          if (sub) {
+            await prisma.subscription.update({ where: { id: sub.id }, data: { status: 'PAST_DUE' } });
+          }
         }
         break;
       }

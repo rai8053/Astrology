@@ -63,9 +63,9 @@ const FREE_MODELS = [
 ];
 
 function calculateMaxTokens(contentLength: number): number {
-  const base = 128;
-  const perChar = Math.ceil(contentLength / 3);
-  return Math.min(512, base + perChar);
+  const base = 512;
+  const perChar = Math.ceil(contentLength / 2);
+  return Math.min(4096, base + perChar);
 }
 
 class OpenRouterService implements ProviderClient {
@@ -142,12 +142,25 @@ class OpenRouterService implements ProviderClient {
       return { text, model, usage };
     }
 
+    const globalDeadline = Date.now() + 30000;
+    let freeModelsTried = 0;
+    const MAX_FREE_ATTEMPTS = 5;
+
     for (const model of modelsToTry) {
-      if (hadCreditError && !model.includes(':free')) continue;
       if (params.signal?.aborted) {
         lastError = new Error('Request aborted');
         break;
       }
+      if (Date.now() > globalDeadline) {
+        lastError = new Error('Global timeout exceeded after 30s');
+        break;
+      }
+      if (model.includes(':free') || model === 'openrouter/free') {
+        if (freeModelsTried >= MAX_FREE_ATTEMPTS) continue;
+        freeModelsTried++;
+      }
+      if (hadCreditError && !model.includes(':free')) continue;
+
       for (let attempt = 0; attempt < this.maxRetries; attempt++) {
         try {
           return await callWithTimeout(model);
