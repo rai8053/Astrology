@@ -68,13 +68,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   loginWithGoogle: async (credential: string) => {
-    const res = await api.post<{ user: User; accessToken: string }>('/api/auth/google', { credential });
+    const res = await api.post<{ user: User }>('/api/auth/google', { credential });
     const { user } = res.data;
     if (user.name) localStorage.setItem('googleName', user.name);
-    try {
-      const payload = JSON.parse(atob(credential.split('.')[1]!));
-      if (payload.name) localStorage.setItem('googleName', payload.name);
-    } catch { /* ignore */ }
     set({ user, isAuthenticated: true, isLoading: false });
   },
 

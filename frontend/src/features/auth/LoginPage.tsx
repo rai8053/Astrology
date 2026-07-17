@@ -96,7 +96,10 @@ export function LoginPage() {
                     try {
                       await loginWithGoogle(credentialResponse.credential);
                       navigate('/dashboard');
-                    } catch { toast.error(t('auth.googleSignInFailed')); }
+                    } catch (e) {
+                      console.error('Google login failed', e);
+                      toast.error(e instanceof Error ? e.message : t('auth.googleSignInFailed'));
+                    }
                   }
                 }}
                 onError={() => toast.error(t('auth.googleSignInFailed'))}
