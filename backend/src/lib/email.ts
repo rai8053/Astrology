@@ -1,5 +1,9 @@
 import { logger } from './logger.js';
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@somasurya.com';
 
@@ -26,7 +30,7 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<void> 
       to,
       subject: 'Welcome to Soma & Surya — Your Cosmic Journey Begins',
       html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-        <h1 style="color:#d4af37;margin:0 0 8px">Welcome, ${name}!</h1>
+        <h1 style="color:#d4af37;margin:0 0 8px">Welcome, ${escapeHtml(name)}!</h1>
         <p style="color:#333;line-height:1.6">Thank you for joining Soma & Surya. Your personalized Vedic astrology journey begins now.</p>
         <p style="color:#333;line-height:1.6">Explore your birth chart, daily horoscope, compatibility matches, and chat with our AI astrologer.</p>
         <a href="https://somasurya.com/dashboard" style="display:inline-block;background:#d4af37;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;margin-top:16px">Go to Dashboard</a>
@@ -53,7 +57,7 @@ export async function sendPasswordResetEmail(to: string, resetLink: string): Pro
       html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
         <h1 style="color:#d4af37;margin:0 0 8px">Password Reset</h1>
         <p style="color:#333;line-height:1.6">Click the link below to reset your password. This link expires in 1 hour.</p>
-        <a href="${resetLink}" style="display:inline-block;background:#d4af37;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;margin-top:16px">Reset Password</a>
+        <a href="${escapeHtml(resetLink)}" style="display:inline-block;background:#d4af37;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;margin-top:16px">Reset Password</a>
         <p style="color:#888;font-size:12px;margin-top:24px">If you did not request this, please ignore this email.</p>
       </div>`,
     });

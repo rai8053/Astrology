@@ -139,7 +139,7 @@ function moonLongitude(jd: number): number {
   const A2 = normalizeAngle(53.09 + 479264.29 * T);
   const A3 = normalizeAngle(313.45 + 481266.484 * T);
 
-  let lon = Lp
+  const lon = Lp
     + 6.2887 * Math.sin(Mp * Math.PI / 180)
     + 1.2740 * Math.sin((2 * D - Mp) * Math.PI / 180)
     + 0.6583 * Math.sin(2 * D * Math.PI / 180)
@@ -328,7 +328,6 @@ export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.07
   const ketuLonT = ketuLongitude(jd);
 
   // Apply ayanamsa to get sidereal (Vedic) longitudes
-  const ayanamsa = calculateAyanamsa(jd);
   const sunLon = toSidereal(sunLonT, jd);
   const moonLon = toSidereal(moonLonT, jd);
   const mercLon = toSidereal(mercLonT, jd);
@@ -341,7 +340,6 @@ export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.07
 
   // Ascendant is calculated from local sidereal time (already sidereal)
   const ascLon = calculateAscendant(jd, lat, lon);
-  const ascSignIdx = toRashiIndex(ascLon);
   function getHouse(planetLon: number): number {
     const diff = normalizeAngle(planetLon - ascLon);
     return Math.floor(diff / 30) + 1;
@@ -358,7 +356,6 @@ export function calculateEphemeris(dateStr: string, timeStr: string, lat = 19.07
   const rahuPos = toPlanetaryPosition(rahuLon, getHouse(rahuLon));
   const ketuPos = toPlanetaryPosition(ketuLon, getHouse(ketuLon));
 
-  const moonRashiKey = RASHI_KEYS[moonPos.signIndex];
   const lagnaKey = RASHI_KEYS[ascPos.signIndex];
 
   const tithi = calculateTithi(sunLon, moonLon);

@@ -117,7 +117,7 @@ export async function speechToText(
       reject(new Error(`iFLYTEK ASR WebSocket error: ${err.message}`));
     });
 
-    ws.on('close', (code: number, reason: Buffer) => {
+    ws.on('close', (_code: number, _reason: Buffer) => {
       if (!hasError) {
         clearTimeout(timeout);
         if (finalText) {

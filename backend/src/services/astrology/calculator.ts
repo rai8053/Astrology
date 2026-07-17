@@ -167,7 +167,6 @@ export function getMoonPhase(targetDate: Date) {
   else phaseName = 'Waning Crescent';
 
   const tithiNum = eph.tithi.index;
-  const SYNODIC_MONTH = 29.53058867;
   const daysToPurnima = (15 - tithiNum) * 0.965;
   const daysToAmavasya = tithiNum <= 15
     ? (30 - tithiNum) * 0.965

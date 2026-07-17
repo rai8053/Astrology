@@ -19,7 +19,9 @@ function setCache(lang: string, key: string, value: string): void {
     const cache = getCache(lang);
     cache[key] = value;
     localStorage.setItem(CACHE_PREFIX + lang, JSON.stringify(cache));
-  } catch {}
+  } catch (e) {
+    console.warn('Translation cache error', e);
+  }
 }
 
 function setCacheBatch(lang: string, entries: [string, string][]): void {
@@ -27,7 +29,9 @@ function setCacheBatch(lang: string, entries: [string, string][]): void {
     const cache = getCache(lang);
     for (const [k, v] of entries) cache[k] = v;
     localStorage.setItem(CACHE_PREFIX + lang, JSON.stringify(cache));
-  } catch {}
+  } catch (e) {
+    console.warn('Translation cache batch error', e);
+  }
 }
 
 const HI_MAP: Record<string, string> = {

@@ -178,7 +178,9 @@ class OpenRouterService implements ProviderClient {
           }
           if (params.signal?.aborted) break;
           if (attempt < this.maxRetries - 1) {
-            await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
+            const baseDelay = Math.pow(2, attempt) * 1000;
+            const jitter = Math.random() * 1000;
+            await new Promise(r => setTimeout(r, baseDelay + jitter));
           }
         }
       }
@@ -295,7 +297,7 @@ function resolveProvider(): OpenRouterService {
   return new OpenRouterService(apiKey);
 }
 
-export async function generateAIResponse(prompt: string, systemInstruction?: string): Promise<{ text: string; provider: string; model: string }> {
+export async function generateAIResponse(prompt: string, systemInstruction?: string): Promise<{ text: string; provider: string; model: string; usage?: AIUsage }> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   const modelName = process.env.OPENROUTER_MODEL || DEFAULT_FALLBACK_MODELS[0];
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
@@ -317,8 +319,8 @@ export async function generateAIResponse(prompt: string, systemInstruction?: str
   const timeout = setTimeout(() => controller.abort(), 60000);
   try {
     const response = await provider.generateContent({ model: undefined, contents: prompt, config, signal: controller.signal });
-    logger.info({ model: response.model, textLength: response.text.length, maxTokens }, 'generateAIResponse succeeded');
-    return { text: response.text, provider: 'openrouter', model: response.model };
+    logger.info({ model: response.model, textLength: response.text.length, maxTokens, usage: response.usage }, 'generateAIResponse succeeded');
+    return { text: response.text, provider: 'openrouter', model: response.model, usage: response.usage };
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
     const errStack = error instanceof Error ? error.stack : '';

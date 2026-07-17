@@ -1,13 +1,9 @@
 import type { VedicProfile } from '@shared/types/api';
 
 export async function generatePremiumReport(profile: VedicProfile): Promise<void> {
-  const token = localStorage.getItem('accessToken');
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-
   const res = await fetch('/api/report/generate-pdf', {
     method: 'POST',
-    headers,
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(profile),
     credentials: 'include',
   });

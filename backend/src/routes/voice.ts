@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { speechToText } from '../services/iflytek/asr.js';
 import { textToSpeech } from '../services/iflytek/tts.js';
-import { logger } from '../lib/logger.js';
 import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../lib/asyncHandler.js';

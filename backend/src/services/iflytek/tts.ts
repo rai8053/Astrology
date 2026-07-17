@@ -113,7 +113,7 @@ export async function textToSpeech(
       reject(new Error(`iFLYTEK TTS WebSocket error: ${err.message}`));
     });
 
-    ws.on('close', (code: number, reason: Buffer) => {
+    ws.on('close', (_code: number, _reason: Buffer) => {
       if (!hasError && audioChunks.length > 0) {
         clearTimeout(timeout);
         const fullAudio = Buffer.concat(audioChunks);

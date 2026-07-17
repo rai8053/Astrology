@@ -7,6 +7,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit';
 import { logger } from './lib/logger.js';
+import { prisma } from './lib/prisma.js';
 import { authRouter } from './routes/auth.js';
 
 if (process.env.SENTRY_DSN) {
@@ -14,6 +15,7 @@ if (process.env.SENTRY_DSN) {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || 'development',
     tracesSampleRate: parseFloat(process.env.SENTRY_SAMPLE_RATE || '0.1'),
+    integrations: [Sentry.prismaIntegration()],
   });
 }
 
@@ -42,7 +44,6 @@ import { translateRouter } from './routes/translate.js';
 import { voiceRouter } from './routes/voice.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
-import { prisma } from './lib/prisma.js';
 
 const app = express();
 const rawPort = parseInt(process.env.PORT || '4000', 10);

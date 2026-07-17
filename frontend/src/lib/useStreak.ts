@@ -12,7 +12,9 @@ function getStreakData(): StreakData {
   try {
     const raw = localStorage.getItem(STREAK_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch (e) {
+    console.warn('Failed to load streak data', e);
+  }
   return { currentStreak: 0, longestStreak: 0, lastVisitDate: '' };
 }
 

@@ -132,14 +132,10 @@ export function ChatPage() {
       const payload: Record<string, unknown> = { message, language };
       if (sessionId) payload.sessionId = sessionId;
 
-      const token = localStorage.getItem('accessToken');
       const baseUrl = '';
       const res = await fetch(`${baseUrl}/api/chat/stream`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         credentials: 'include',
       });
@@ -189,7 +185,7 @@ export function ChatPage() {
     if (!reader) throw new Error(t('ui.streamNotAvailable'));
 
     const decoder = new TextDecoder();
-    let result = { reply: '', sessionId: '', dailyUsed: 0 };
+    const result = { reply: '', sessionId: '', dailyUsed: 0 };
 
     setStreaming(true);
 
@@ -277,13 +273,9 @@ export function ChatPage() {
       const payload: Record<string, unknown> = { message: text, language };
       if (sessionId) payload.sessionId = sessionId;
 
-      const token = localStorage.getItem('accessToken');
       const res = await fetch('/api/chat/stream', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         credentials: 'include',
       });

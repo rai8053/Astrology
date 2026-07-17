@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { validate } from '../middleware/validate.js';
 import { optionalAuth, authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
+import { sanitizePrompt } from '../lib/sanitize.js';
 import { RASHI_DATA, RASHI_KEYS, NAKSHATRA_LORDS } from '../services/astrology/constants.js';
 import { calculateBirthDetails, getMoonPhase } from '../services/astrology/calculator.js';
 import { generateStructuredJSON } from '../lib/ai.js';
@@ -102,14 +103,7 @@ function getNakshatraInfo(name: string) {
   return NAKSHATRA_MEANINGS[name] || { deity: 'Unknown', symbol: 'Mystical', meaning: 'Deep spiritual significance.' };
 }
 
-const INSIGHT_PERSONALITY_TEMPLATES: Record<string, string> = {
-  Fire: 'You are a natural-born leader with an indomitable spirit. Your fire element gives you courage, charisma, and the ability to inspire others. You thrive on challenges and transform obstacles into opportunities.',
-  Earth: 'Your earthy nature makes you the pillar of stability for everyone around you. Practical, reliable, and deeply patient, you build success methodically and create lasting value.',
-  Air: 'Your intellect is your superpower. You think quickly, communicate brilliantly, and adapt to any situation. Your ideas have the power to shape the world around you.',
-  Water: 'Your emotional depth and intuition are extraordinary gifts. You feel everything profoundly and your compassion heals those around you. Your creativity flows endlessly.'
-};
-
-function buildInsights(rashiKey: string, element: string, nakshatra: string, nakshatraLord: string): AstroInsight[] {
+function buildInsights(rashiKey: string, element: string, nakshatra: string, _nakshatraLord: string): AstroInsight[] {
   const et = ELEMENT_TRAITS[element] || ELEMENT_TRAITS.Fire;
   const ni = getNakshatraInfo(nakshatra);
   return [
@@ -140,7 +134,7 @@ function buildRemedies(element: string, rashiLord: string, rashiKey: string): Re
   ];
 }
 
-function buildTransitTimeline(rashiKey: string, nakshatra: string): TransitEvent[] {
+function buildTransitTimeline(rashiKey: string, _nakshatra: string): TransitEvent[] {
   const now = new Date();
   const days = (n: number) => new Date(now.getTime() + n * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   return [
@@ -154,7 +148,7 @@ function buildTransitTimeline(rashiKey: string, nakshatra: string): TransitEvent
 
 function buildFallbackProfile(name: string, birthDate: string, birthTime: string, birthPlace: string, timezoneOffsetMinutes = 0): VedicProfile {
   const details = calculateBirthDetails(birthDate, birthTime, timezoneOffsetMinutes);
-  const { rashiIndex, rashiKey, nakshatraIndex, nakshatraName, lagnaKey, ascendant, sun, moon, mercury, venus, mars, jupiter, saturn, rahu, ketu } = details;
+  const { rashiKey, nakshatraIndex, nakshatraName, lagnaKey, ascendant, sun, moon, mercury, venus, mars, jupiter, saturn, rahu, ketu } = details;
   const rd = RASHI_DATA[rashiKey] || RASHI_DATA.Mesh;
   const ld = RASHI_DATA[lagnaKey] || RASHI_DATA.Mesh;
   const ni = getNakshatraInfo(nakshatraName);
@@ -166,16 +160,12 @@ function buildFallbackProfile(name: string, birthDate: string, birthTime: string
   const marsKey = RASHI_KEYS[mars.signIndex];
   const jupKey = RASHI_KEYS[jupiter.signIndex];
   const satKey = RASHI_KEYS[saturn.signIndex];
-  const rahuKey = RASHI_KEYS[rahu.signIndex];
-  const ketuKey = RASHI_KEYS[ketu.signIndex];
   const sunLd = RASHI_DATA[sunKey]?.lord || 'Sun';
   const mercLd = RASHI_DATA[mercKey]?.lord || 'Mercury';
   const venLd = RASHI_DATA[venKey]?.lord || 'Venus';
   const marsLd = RASHI_DATA[marsKey]?.lord || 'Mars';
   const jupLd = RASHI_DATA[jupKey]?.lord || 'Jupiter';
   const satLd = RASHI_DATA[satKey]?.lord || 'Saturn';
-  const rahuLd = RASHI_DATA[rahuKey]?.lord || 'Rahu';
-  const ketuLd = RASHI_DATA[ketuKey]?.lord || 'Ketu';
   const sns = (p: { navamsaSignIndex: number }) => RASHI_KEYS[p.navamsaSignIndex] || 'Unknown';
   function calcNavamsaHouse(ascNav: number, planetNav: number): number {
     const diff = (planetNav - ascNav + 12) % 12;
@@ -272,8 +262,10 @@ function hashKey(name: string, date: string, time: string, place: string): strin
 }
 
 astrologyRouter.post('/vedic-profile/detailed', optionalAuth, validate(detailedReportSchema), asyncHandler(async (req, res) => {
-  const { name, birthDate, birthTime, birthPlace, language, timezoneOffsetMinutes } = req.body as z.infer<typeof detailedReportSchema>;
-  const key = hashKey(name, birthDate, birthTime, birthPlace);
+  const { name: rawName, birthDate, birthTime, birthPlace: rawBirthPlace, language, timezoneOffsetMinutes } = req.body as z.infer<typeof detailedReportSchema>;
+  const name = sanitizePrompt(rawName);
+  const birthPlace = sanitizePrompt(rawBirthPlace);
+  const key = hashKey(rawName, birthDate, birthTime, rawBirthPlace);
 
   const cached = aiDetailedCache.get(key);
   if (cached?.done && cached.html) {
@@ -514,13 +506,6 @@ const NAKSHATRA_GANA: Record<string, number> = {
   Hasta: 0, Chitra: 1, Swati: 0, Vishakha: 2, Anuradha: 0, Jyeshtha: 2,
   Mula: 2, 'Purva Ashadha': 1, 'Uttara Ashadha': 1, Shravana: 0, Dhanishta: 2, Shatabhisha: 1,
   'Purva Bhadrapada': 1, 'Uttara Bhadrapada': 0, Revati: 0,
-};
-const NAKSHATRA_INDEX: Record<string, number> = {
-  Ashwini: 0, Bharani: 1, Krittika: 2, Rohini: 3, Mrigashira: 4, Ardra: 5,
-  Punarvasu: 6, Pushya: 7, Ashlesha: 8, Magha: 9, 'Purva Phalguni': 10, 'Uttara Phalguni': 11,
-  Hasta: 12, Chitra: 13, Swati: 14, Vishakha: 15, Anuradha: 16, Jyeshtha: 17,
-  Mula: 18, 'Purva Ashadha': 19, 'Uttara Ashadha': 20, Shravana: 21, Dhanishta: 22, Shatabhisha: 23,
-  'Purva Bhadrapada': 24, 'Uttara Bhadrapada': 25, Revati: 26,
 };
 const NAKSHATRA_YONI: Record<string, string> = {
   Ashwini: 'Horse', Bharani: 'Elephant', Krittika: 'Sheep', Rohini: 'Serpent', Mrigashira: 'Serpent', Ardra: 'Dog',
@@ -839,7 +824,7 @@ function formatDurationMs(ms: number): string {
   return `${days} day${days !== 1 ? 's' : ''}`;
 }
 
-function getDashboardMoonPhase(tithiIndex: number, tithiName: string, paksha: string): { phaseName: string; illumination: number; age: number } {
+function getDashboardMoonPhase(tithiIndex: number, _tithiName: string, _paksha: string): { phaseName: string; illumination: number; age: number } {
   const age = Math.round(tithiIndex * 0.965 * 10) / 10;
   const illumination = Math.round(50 * (1 - Math.cos(2 * Math.PI * (tithiIndex / 30))));
   const phaseValue = tithiIndex / 30;

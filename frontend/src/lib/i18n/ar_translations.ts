@@ -1,4 +1,4 @@
-const ar: Record<string, string> = {
+export const ar: Record<string, string> = {
   'nav.home': 'الرئيسية', 'nav.dashboard': 'لوحة التحكم', 'nav.horoscope': 'برجك',
   'nav.kundli': 'الكندلي', 'nav.compatibility': 'التوافق', 'nav.chat': 'الدردشة',
   'nav.moon': 'القمر', 'nav.settings': 'الإعدادات', 'nav.billing': 'الفواتير',

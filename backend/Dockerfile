@@ -2,7 +2,8 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 COPY backend/package*.json ./backend/
 RUN cd backend && npm ci
-COPY . .
+COPY shared/ ./shared/
+COPY backend/ ./backend/
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/soma_surya?schema=public}
 

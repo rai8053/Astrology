@@ -108,6 +108,7 @@ model Subscription {
   @@index([status])
   @@index([plan])
   @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
   @@index([currentPeriodEnd])
 }
 
@@ -151,6 +152,8 @@ model ChatSession {
   @@index([userId])
   @@index([updatedAt])
   @@index([deletedAt])
+  @@index([userId, deletedAt])
+  @@index([userId, updatedAt])
 }
 
 model ChatMessage {
@@ -169,6 +172,7 @@ model ChatMessage {
 
   @@index([sessionId])
   @@index([sessionId, createdAt])
+  @@index([sessionId, deletedAt])
   @@index([role])
   @@index([deletedAt])
 }
@@ -187,6 +191,9 @@ model UsageRecord {
   @@index([userId])
   @@index([feature])
   @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([userId, feature, createdAt])
+  @@index([feature, createdAt])
 }
 
 model PaymentMethod {
@@ -265,6 +272,7 @@ model ContactMessage {
 
   @@index([email])
   @@index([createdAt])
+  @@index([email, createdAt])
 }
 
 model AuditLog {

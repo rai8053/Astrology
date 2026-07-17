@@ -170,7 +170,8 @@ export function setManualCountryOverride(countryCode: string): void {
     ipDetectedCountry = null;
     ipDetectionPromise = null;
     detectionInitialized = false;
-  } catch {
+  } catch (e) {
+    console.warn('Failed to clear country override', e);
   }
 }
 
@@ -181,7 +182,8 @@ export function clearManualCountryOverride(): void {
     ipDetectedCountry = null;
     ipDetectionPromise = null;
     detectionInitialized = false;
-  } catch {
+  } catch (e) {
+    console.warn('Failed to clear manual country', e);
   }
 }
 

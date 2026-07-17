@@ -1,4 +1,3 @@
-import toast from 'react-hot-toast';
 import { translations } from './i18n/translations';
 
 type Language = 'en' | 'hi' | 'bn' | 'es' | 'pt' | 'fr' | 'de' | 'ar' | 'ja' | 'zh';
@@ -35,10 +34,7 @@ class ApiClient {
   }
 
   private getHeaders(): Record<string, string> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const token = localStorage.getItem('accessToken');
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    return headers;
+    return { 'Content-Type': 'application/json' };
   }
 
   private getCookie(name: string): string | undefined {
@@ -59,13 +55,7 @@ class ApiClient {
           credentials: 'include',
           headers,
         });
-        if (!res.ok) return false;
-        const data = await res.json();
-        if (data.success && data.data?.accessToken) {
-          localStorage.setItem('accessToken', data.data.accessToken);
-          return true;
-        }
-        return false;
+        return res.ok;
       } catch {
         return false;
       } finally {
@@ -108,13 +98,11 @@ class ApiClient {
             throw new Error(apiT('errors.tokenRefresh'));
           }
           if (!retryData.success) {
-            localStorage.removeItem('accessToken');
             window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
             throw new Error((retryData as ApiError).error || apiT('errors.sessionExpired'));
           }
           return retryData as ApiSuccess<T>;
         }
-        localStorage.removeItem('accessToken');
         window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
         throw new Error(apiT('errors.sessionExpired'));
       }
@@ -129,11 +117,7 @@ class ApiClient {
       return data as ApiSuccess<T>;
     };
 
-    try {
-      return await execute();
-    } catch (error) {
-      throw error;
-    }
+    return execute();
   }
 
   get<T>(url: string) { return this.request<T>('GET', url); }

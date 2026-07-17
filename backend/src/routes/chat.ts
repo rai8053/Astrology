@@ -7,6 +7,7 @@ import { asyncHandler } from '../lib/asyncHandler.js';
 import { generateAIResponse, streamAIResponse } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../lib/logger.js';
+import { sanitizePrompt } from '../lib/sanitize.js';
 import { calculateBirthDetails } from '../services/astrology/calculator.js';
 import { RASHI_DATA, RASHI_KEYS } from '../services/astrology/constants.js';
 import {
@@ -16,12 +17,9 @@ import {
   softDeleteSession,
   addMessages,
   getMessages,
-  buildContextString,
   checkDailyLimit,
-  DAILY_FREE_LIMIT,
   trackUsage,
   updateSessionTimestamp,
-  getMessageHistory,
 } from '../services/chat.js';
 import { retrievalService, memoryService } from '../services/rag/index.js';
 
@@ -228,7 +226,7 @@ function formatPrompt(
   if (historyFormatted) parts.push(historyFormatted);
   if (workingMemory) parts.push(`\nKey details from this conversation:\n${workingMemory}`);
   if (knowledgeContext) parts.push(knowledgeContext);
-  parts.push(`\n--- USER MESSAGE (begin) ---\n${message}\n--- USER MESSAGE (end) ---`);
+  parts.push(`\n--- USER MESSAGE (begin) ---\n${sanitizePrompt(message)}\n--- USER MESSAGE (end) ---`);
   return parts.join('\n');
 }
 
@@ -283,17 +281,19 @@ chatRouter.post('/', authenticate, validate(chatSchema), asyncHandler(async (req
 
     logger.info({ provider: aiResponse.provider, model: aiResponse.model, textLength: aiResponse.text.length }, 'Chat AI response succeeded');
 
+    const tokensIn = aiResponse.usage?.promptTokens ?? message.length;
+    const tokensOut = aiResponse.usage?.completionTokens ?? aiResponse.text.length;
     await addMessages(session.id, [
       {
-        role: 'user', content: message, tokenCount: message.length,
+        role: 'user', content: message, tokenCount: tokensIn,
         embeddingId: retrievalSources[0] || undefined,
         metadata: { retrievalSources, retrievalCount: retrievalSources.length },
       },
-      { role: 'assistant', content: aiResponse.text, model: aiResponse.model, tokenCount: aiResponse.text.length },
+      { role: 'assistant', content: aiResponse.text, model: aiResponse.model, tokenCount: tokensOut },
     ]);
 
     await updateSessionTimestamp(session.id);
-    await trackUsage(userId, 'chat', message.length, aiResponse.text.length);
+    await trackUsage(userId, 'chat', tokensIn, tokensOut);
 
     res.json({
       success: true,
@@ -388,17 +388,19 @@ chatRouter.post('/stream', authenticate, streamLimiter, validate(chatSchema), as
       res.write(`data: ${JSON.stringify({ delta: chunk })}\n\n`);
     }
 
+    const tokensInStream = Math.ceil(message.length / 2);
+    const tokensOutStream = Math.ceil(fullText.length / 2);
     await addMessages(session.id, [
       {
-        role: 'user', content: message,
+        role: 'user', content: message, tokenCount: tokensInStream,
         embeddingId: retrievalSources[0] || undefined,
         metadata: { retrievalSources, retrievalCount: retrievalSources.length },
       },
-      { role: 'assistant', content: fullText },
+      { role: 'assistant', content: fullText, tokenCount: tokensOutStream },
     ]);
 
     await updateSessionTimestamp(session.id);
-    await trackUsage(userId, 'chat', message.length, fullText.length);
+    await trackUsage(userId, 'chat', tokensInStream, tokensOutStream);
 
     res.write(`data: ${JSON.stringify({ done: true, sessionId: session.id, dailyUsed: limit.used + 1, dailyLimit: limit.limit })}\n\n`);
     res.end();

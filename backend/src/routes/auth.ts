@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import type { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
@@ -9,7 +10,7 @@ import { prisma } from '../lib/prisma.js';
 import { validate } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/asyncHandler.js';
-import { AppError, ValidationError, UnauthorizedError, ConflictError } from '../lib/errors.js';
+import { UnauthorizedError, ConflictError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
 import { sendWelcomeEmail } from '../lib/email.js';
 import { generateCsrfToken, csrfProtection } from '../middleware/csrf.js';
@@ -63,6 +64,23 @@ function generateTokens(payload: { userId: string; role: string }) {
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
   const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions);
   return { accessToken, refreshToken };
+}
+
+function setTokenCookies(res: Response, accessToken: string, refreshToken: string) {
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 5 * 60 * 1000,
+    path: '/',
+  });
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/api/auth',
+  });
 }
 
 authRouter.post('/google', authLimiter, validate(googleCredentialSchema), asyncHandler(async (req, res) => {
@@ -124,13 +142,7 @@ authRouter.post('/google', authLimiter, validate(googleCredentialSchema), asyncH
   const tokens = generateTokens({ userId: user.id, role: user.role });
   await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
-  res.cookie('refreshToken', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: '/api/auth',
-  });
+  setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
   generateCsrfToken(res);
 
   res.json({
@@ -216,13 +228,7 @@ authRouter.post('/register', authLimiter, validate(registerSchema), asyncHandler
   const tokens = generateTokens({ userId: user.id, role: user.role });
   await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
-  res.cookie('refreshToken', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: '/api/auth',
-  });
+  setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
   generateCsrfToken(res);
 
   // Fetch astrology profile for response
@@ -267,13 +273,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), asyncHandler(async
   const tokens = generateTokens({ userId: user.id, role: user.role });
   await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
-  res.cookie('refreshToken', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: '/api/auth',
-  });
+  setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
   generateCsrfToken(res);
 
   res.json({
@@ -287,7 +287,7 @@ authRouter.post('/refresh', authLimiter, csrfProtection, validate(refreshTokenSc
   if (!token) throw new UnauthorizedError('No refresh token provided');
 
   try {
-    const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as { userId: string; role: string };
+    const decoded = jwt.verify(token, JWT_REFRESH_SECRET, { algorithms: ['HS256'] }) as { userId: string; role: string };
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
     if (!user || !user.refreshToken) throw new UnauthorizedError('Invalid refresh token');
     const hashedInput = hashToken(token);
@@ -300,13 +300,7 @@ authRouter.post('/refresh', authLimiter, csrfProtection, validate(refreshTokenSc
     const tokens = generateTokens({ userId: user.id, role: user.role });
     await prisma.user.update({ where: { id: user.id }, data: { refreshToken: hashToken(tokens.refreshToken) } });
 
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/auth',
-    });
+    setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
     generateCsrfToken(res);
 
     res.json({ success: true, data: { accessToken: tokens.accessToken } });
@@ -320,6 +314,7 @@ authRouter.post('/logout', authenticate, asyncHandler(async (req, res) => {
     where: { id: req.user!.userId },
     data: { refreshToken: null },
   });
+  res.clearCookie('accessToken', { path: '/' });
   res.clearCookie('refreshToken', { path: '/api/auth' });
   res.json({ success: true, message: 'Logged out successfully' });
 }));

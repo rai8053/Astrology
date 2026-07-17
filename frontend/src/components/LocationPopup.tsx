@@ -56,7 +56,8 @@ export function LocationPopup() {
         window.location.reload();
         return;
       }
-    } catch {
+    } catch (e) {
+      console.warn('Geolocation permission check failed', e);
     }
     localStorage.setItem(LOCATION_GRANTED_KEY, 'false');
     setVisible(false);

@@ -58,7 +58,7 @@ paymentRouter.post('/create-checkout', authenticate, validate(checkoutSchema), a
   const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
   if (!user) throw new AppError(404, 'User not found');
 
-  let sub = await prisma.subscription.findUnique({ where: { userId: user.id } });
+  const sub = await prisma.subscription.findUnique({ where: { userId: user.id } });
   let stripeCustomerId = sub?.stripeCustomerId;
 
   if (!stripeCustomerId) {

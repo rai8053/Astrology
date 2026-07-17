@@ -206,7 +206,7 @@ export function DashboardHome() {
 
   if (!d) return <DashboardSkeleton />;
 
-  const { snapshot, horoscope, cosmicEnergy, planets, dasha, tithi, yoga, transitAlerts, moonPhase } = d;
+  const { snapshot, horoscope, cosmicEnergy, planets, dasha, transitAlerts, moonPhase } = d;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">

@@ -38,7 +38,6 @@ interface RegisterOptions {
 
 interface AuthState {
   user: User | null;
-  accessToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -51,48 +50,41 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  accessToken: null,
   isLoading: true,
   isAuthenticated: false,
 
   login: async (email, password) => {
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/login', { email, password });
-    const { user, accessToken } = res.data;
-    localStorage.setItem('accessToken', accessToken);
+    const { user } = res.data;
     if (user.name) localStorage.setItem('googleName', user.name);
-    set({ user, accessToken, isAuthenticated: true, isLoading: false });
+    set({ user, isAuthenticated: true, isLoading: false });
   },
 
   register: async (name, email, password, options = {}) => {
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/register', { name, email, password, ...options });
-    const { user, accessToken } = res.data;
-    localStorage.setItem('accessToken', accessToken);
+    const { user } = res.data;
     if (user.name) localStorage.setItem('googleName', user.name);
-    set({ user, accessToken, isAuthenticated: true, isLoading: false });
+    set({ user, isAuthenticated: true, isLoading: false });
   },
 
   loginWithGoogle: async (credential: string) => {
     const res = await api.post<{ user: User; accessToken: string }>('/api/auth/google', { credential });
-    const { user, accessToken } = res.data;
-    localStorage.setItem('accessToken', accessToken);
+    const { user } = res.data;
     if (user.name) localStorage.setItem('googleName', user.name);
     try {
       const payload = JSON.parse(atob(credential.split('.')[1]!));
       if (payload.name) localStorage.setItem('googleName', payload.name);
     } catch { /* ignore */ }
-    set({ user, accessToken, isAuthenticated: true, isLoading: false });
+    set({ user, isAuthenticated: true, isLoading: false });
   },
 
   logout: async () => {
     try { await api.post('/api/auth/logout'); } catch { /* ignore */ }
-    localStorage.removeItem('accessToken');
     localStorage.removeItem('googleName');
-    set({ user: null, accessToken: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false });
   },
 
   checkAuth: async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) { set({ isLoading: false }); return; }
     try {
       const res = await api.get<User>('/api/auth/me');
       const user = res.data;
@@ -102,9 +94,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         const googleName = localStorage.getItem('googleName');
         if (googleName) user.name = googleName;
       }
-      set({ user, accessToken: token, isAuthenticated: true, isLoading: false });
+      set({ user, isAuthenticated: true, isLoading: false });
     } catch {
-      localStorage.removeItem('accessToken');
       set({ isLoading: false });
     }
   },

@@ -18,15 +18,22 @@ const JWT_SECRET = (() => {
   return process.env.JWT_SECRET;
 })();
 
-export function authenticate(req: Request, _res: Response, next: NextFunction) {
+function extractToken(req: Request): string | null {
+  const cookie = req.cookies?.accessToken;
+  if (cookie && typeof cookie === 'string' && cookie.length > 0) return cookie;
   const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new UnauthorizedError('No token provided');
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.slice(7);
+    if (token) return token;
   }
-  const token = authHeader.slice(7);
+  return null;
+}
+
+export function authenticate(req: Request, _res: Response, next: NextFunction) {
+  const token = extractToken(req);
   if (!token) throw new UnauthorizedError('No token provided');
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as TokenPayload;
     req.user = decoded;
     next();
   } catch {
@@ -35,11 +42,10 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
 }
 
 export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.slice(7);
+  const token = extractToken(req);
+  if (token) {
     try {
-      req.user = jwt.verify(token, JWT_SECRET) as TokenPayload;
+      req.user = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as TokenPayload;
     } catch {
       // Ignore invalid tokens for optional auth
     }

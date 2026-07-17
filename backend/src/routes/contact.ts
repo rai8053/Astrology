@@ -5,6 +5,10 @@ import { asyncHandler } from '../lib/asyncHandler.js';
 import { logger } from '../lib/logger.js';
 import { prisma } from '../lib/prisma.js';
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 export const contactRouter = Router();
 
 const contactSchema = z.object({
@@ -43,7 +47,7 @@ contactRouter.post('/', validate(contactSchema), asyncHandler(async (req, res) =
         from: process.env.FROM_EMAIL || 'noreply@somasurya.com',
         to: process.env.CONTACT_EMAIL || 'hello@somaandsurya.com',
         subject: `Contact: ${sanitizedSubject}`,
-        html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${sanitizedEmail}</p><p><strong>Subject:</strong> ${sanitizedSubject}</p><p><strong>Message:</strong></p><p>${message}</p>`,
+        html: `<p><strong>Name:</strong> ${escapeHtml(name)}</p><p><strong>Email:</strong> ${escapeHtml(sanitizedEmail)}</p><p><strong>Subject:</strong> ${escapeHtml(sanitizedSubject)}</p><p><strong>Message:</strong></p><p>${escapeHtml(message)}</p>`,
       });
       logger.info({ email: sanitizedEmail, subject: sanitizedSubject }, 'Contact email forwarded via Resend');
     } catch (err) {

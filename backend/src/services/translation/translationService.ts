@@ -125,10 +125,12 @@ export async function translateText(
     };
   }
 
-  const prompt = buildTranslationPrompt(text, targetLanguage);
   const start = Date.now();
 
-  const result = await generateAIResponse(`Translate to ${targetLanguage}:\n\n${text}`, `You are an expert multilingual translator. Translate the following text into ${targetLanguage}. Preserve meaning, markdown, HTML, formatting, URLs, dates, numbers, emojis, and astrology terminology. Never translate: ${Array.from(NEVER_TRANSLATE).join(', ')}. Translate zodiac signs using local language equivalents. Return ONLY translated text. Do not explain.`);
+  const result = await generateAIResponse(
+    `Translate to ${targetLanguage}:\n\n${text}`,
+    `You are an expert multilingual translator. Preserve meaning, markdown, HTML, formatting, URLs, dates, numbers, emojis, and astrology terminology. Never translate: ${Array.from(NEVER_TRANSLATE).join(', ')}. Translate zodiac signs using local language equivalents. Return ONLY translated text. Do not explain.`,
+  );
 
   const latencyMs = Date.now() - start;
   const translatedText = result.text.trim();

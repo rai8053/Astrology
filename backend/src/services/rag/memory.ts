@@ -1,6 +1,4 @@
 import { prisma } from '../../lib/prisma.js';
-import { logger } from '../../lib/logger.js';
-import { embeddingService } from './embedding.js';
 
 const MAX_HISTORY_TOKENS = 3000;
 const MAX_HISTORY_MESSAGES = 20;
