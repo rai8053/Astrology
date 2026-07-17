@@ -98,12 +98,12 @@ class ApiClient {
             throw new Error(apiT('errors.tokenRefresh'));
           }
           if (!retryData.success) {
-            window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+            if (!url.includes('/auth/logout')) window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
             throw new Error((retryData as ApiError).error || apiT('errors.sessionExpired'));
           }
           return retryData as ApiSuccess<T>;
         }
-        window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+        if (!url.includes('/auth/logout')) window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
         throw new Error(apiT('errors.sessionExpired'));
       }
 

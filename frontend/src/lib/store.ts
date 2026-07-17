@@ -75,7 +75,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    try { await api.post('/api/auth/logout'); } catch { /* ignore */ }
+    try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch { /* ignore */ }
     localStorage.removeItem('googleName');
     set({ user: null, isAuthenticated: false });
   },

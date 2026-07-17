@@ -108,10 +108,11 @@ app.use(cors({
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 100,
+  max: isDev ? 500 : 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests. Please try again later.' },
+  skip: isDev ? (req) => req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1' : undefined,
 });
 app.use('/api/', apiLimiter);
 
