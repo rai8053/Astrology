@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { User, Sun, Moon, Globe, Save, ExternalLink, CreditCard, CheckCircle2, XCircle, Trash2, AlertTriangle, DollarSign, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,12 +37,12 @@ interface Subscription {
 }
 
 const FLAGS: Record<string, string> = {
-  en: '=��=��', hi: '=��=��', bn: '=��=��', es: '=��=��+', pt: '=��=��',
-  fr: '=��=��+', de: '=��=��', ar: '=��+=��', ja: '=��=��', zh: '=��=��',
+  en: '🇬🇧', hi: '🇮🇳', bn: '🇧🇩', es: '🇪🇸', pt: '🇵🇹',
+  fr: '🇫🇷', de: '🇩🇪', ar: '🇸🇦', ja: '🇯🇵', zh: '🇨🇳',
 };
 const LANG_NAMES: Record<string, string> = {
-  en: 'English', hi: 'a�a�+a�a��a�a��', bn: 'a��a�+a��a�a�+', es: 'Espa+�ol', pt: 'Portugu+�s',
-  fr: 'Fran+�ais', de: 'Deutsch', ar: '+�+�+�+�+�+�+�', ja: '��ѵ��F�P', zh: 'S+����',
+  en: 'English', hi: 'हिन्दी', bn: 'বাংলা', es: 'Español', pt: 'Português',
+  fr: 'Français', de: 'Deutsch', ar: 'العربية', ja: '日本語', zh: '中文',
 };
 const LANG_LIST = Object.entries(FLAGS).map(([code, flag]) => ({ code: code as Language, flag, label: LANG_NAMES[code] }));
 
@@ -299,16 +299,16 @@ export function SettingsPage() {
                 <>
                   <div className="space-y-1.5">
                     <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.dob')}</label>
-                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthDate') || 'G��'}</p>
+                    <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthDate') || '\u2014'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthTime')}</label>
-                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthTime') || 'G��'}</p>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthTime') || '\u2014'}</p>
                     </div>
                     <div className="space-y-1.5">
                       <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-text-secondary dark:text-dark-text-secondary">{t('onboarding.birthPlace')}</label>
-                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthPlace') || 'G��'}</p>
+                      <p className="input-glass py-2 px-3 text-sm text-text-primary dark:text-dark-text-primary">{getValues('birthPlace') || '\u2014'}</p>
                     </div>
                   </div>
                 </>
@@ -493,7 +493,7 @@ export function SettingsPage() {
               >
                 <span>{REGIONAL_PRICING[detectedCountry]?.flag}</span>
                 <span className="flex-1 text-left">
-                  {REGIONAL_PRICING[detectedCountry]?.currency.code} ({REGIONAL_PRICING[detectedCountry]?.currency.symbol}) G�� {REGIONAL_PRICING[detectedCountry]?.currency.locale}
+                  {REGIONAL_PRICING[detectedCountry]?.currency.code} ({REGIONAL_PRICING[detectedCountry]?.currency.symbol}) → {REGIONAL_PRICING[detectedCountry]?.currency.locale}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${currencyOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -511,7 +511,7 @@ export function SettingsPage() {
                       }`}
                     >
                       <span>{cfg.flag}</span>
-                      <span>{cfg.currency.code} ({cfg.currency.symbol}) G�� {cfg.currency.locale}</span>
+                      <span>{cfg.currency.code} ({cfg.currency.symbol}) → {cfg.currency.locale}</span>
                     </button>
                   ))}
                 </div>
