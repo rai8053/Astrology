@@ -283,7 +283,7 @@ Astrology/
 │   └── payment.ts                         # SubscriptionDTO, InvoiceDTO
 │
 ├── docker-compose.yml                     # 5 services (db, redis, backend, frontend)
-├── scripts/                               # deploy.sh, setup.ps1, fix-locales.mjs, translate-locales.mjs
+├── scripts/                               # deploy.sh, setup.ps1, archive/
 ├── .github/workflows/                     # CI + Deploy + Security
 ├── .env.example
 └── package.json                           # npm workspaces orchestrator
@@ -562,7 +562,6 @@ Most astrology apps fall into one of two categories: a generic API wrapper aroun
 - [x] Voice Astrology Assistant (iFLYTEK ASR + TTS)
 - [x] 10-locale i18n system (en, hi, bn, es, pt, fr, de, ar, ja, zh)
 - [x] iFLYTEK voice integration
-- [ ] AI translate remaining placeholder locale keys (needs OpenRouter credits)
 - [ ] pgvector migration for GPU-accelerated similarity search
 - [ ] LangChain integration for structured tool-calling
 - [ ] Vector index on ChatMessage for cross-session RAG
