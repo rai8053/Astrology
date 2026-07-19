@@ -17,12 +17,12 @@
 [![Sentry](https://img.shields.io/badge/Sentry-Wired_but_idle-362D59?logo=sentry&logoColor=white)](https://sentry.io/)
 [![PostHog](https://img.shields.io/badge/PostHog-Wired_but_idle-000?logo=posthog&logoColor=white)](https://posthog.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Live Site](https://img.shields.io/badge/Live-Soma_%26_Surya-8B5CF6?logo=render&logoColor=white)](https://astrology-frontend-2wkd.onrender.com)
+[![Live Site](https://img.shields.io/badge/Live-Soma_%26_Surya-8B5CF6?logo=render&logoColor=white)](https://astryn.hara-xy.com)
 [![API Health](https://img.shields.io/badge/API-Online-22c55e)](https://astrology-backend-rb79.onrender.com/api/health)
 
 **Ancient Vedic Wisdom · Modern AI · Production SaaS**
 
-**[🌐 Live Site](https://astrology-frontend-2wkd.onrender.com) · [⚡ API Health](https://astrology-backend-rb79.onrender.com/api/health)**
+**[🌐 Live Site](https://astryn.hara-xy.com) · [⚡ API Health](https://astrology-backend-rb79.onrender.com/api/health)**
 
 </div>
 
@@ -436,7 +436,7 @@ GitHub Actions:
 
 | Service | URL |
 |---------|-----|
-| **Frontend** | [https://astrology-frontend-2wkd.onrender.com](https://astrology-frontend-2wkd.onrender.com) |
+| **Frontend** | [https://astryn.hara-xy.com](https://astryn.hara-xy.com) (via Cloudflare) |
 | **Backend API** | [https://astrology-backend-rb79.onrender.com](https://astrology-backend-rb79.onrender.com/api/health) |
 
 ### Docker Compose (Self-Hosted)
