@@ -15,8 +15,12 @@
 [![Stripe](https://img.shields.io/badge/Stripe-Billing-008CDD?logo=stripe&logoColor=white)](https://stripe.com/)
 [![Tests](https://img.shields.io/badge/Tests-63_passing-22c55e)](https://github.com/rai8053/Astrology/actions)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Live Site](https://img.shields.io/badge/Live-Soma_%26_Surya-8B5CF6?logo=render&logoColor=white)](https://astrology-frontend-2wkd.onrender.com)
+[![API Health](https://img.shields.io/badge/API-Online-22c55e)](https://astrology-backend-rb79.onrender.com/api/health)
 
 **Ancient Vedic Wisdom · Modern AI · Production SaaS**
+
+**[🌐 Live Site](https://astrology-frontend-2wkd.onrender.com) · [⚡ API Health](https://astrology-backend-rb79.onrender.com/api/health)**
 
 </div>
 
@@ -420,7 +424,14 @@ GitHub Actions:
 
 ## Deployment
 
-### Docker Compose (Production)
+### Render (Live)
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | [https://astrology-frontend-2wkd.onrender.com](https://astrology-frontend-2wkd.onrender.com) |
+| **Backend API** | [https://astrology-backend-rb79.onrender.com](https://astrology-backend-rb79.onrender.com/api/health) |
+
+### Docker Compose (Self-Hosted)
 
 ```bash
 # 1. Clone & configure
