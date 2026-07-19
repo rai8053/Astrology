@@ -85,14 +85,14 @@ services:
           name: astrology-backend
           property: url
 
+  - type: redis
+    name: astrology-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
 databases:
   - name: astrology-db
     plan: basic-256mb
     databaseName: soma_surya
-    ipAllowList: []
-
-redis:
-  - name: astrology-redis
-    plan: starter
-    maxmemoryPolicy: allkeys-lru
     ipAllowList: []
