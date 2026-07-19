@@ -43,6 +43,26 @@ services:
           name: astrology-frontend
           property: url
 
+      # AI Provider — hcnsec.cn (set AI_API_KEY in Render dashboard)
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        value: https://api.hcnsec.cn/v1
+      - key: OPENROUTER_MODEL
+        value: DeepSeek-V4-Flash
+      - key: OPENROUTER_FALLBACK_MODELS
+        value: DeepSeek-V4-Pro,glm-5.2,step-3.7-flash
+
+      # Embeddings via OpenRouter (free tier)
+      - key: EMBEDDING_API_KEY
+        sync: false
+      - key: EMBEDDING_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: EMBEDDING_MODEL
+        value: openai/text-embedding-3-small
+      - key: EMBEDDING_DIMENSIONS
+        value: "1536"
+
   - type: web
     name: astrology-frontend
     runtime: static
