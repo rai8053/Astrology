@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-const itWithKey = process.env.OPENROUTER_API_KEY ? it : it.skip;
+const hasAIKey = !!(process.env.AI_API_KEY || process.env.OPENROUTER_API_KEY);
+const itWithKey = hasAIKey ? it : it.skip;
 
 describe('AI module', () => {
   itWithKey('generateAIResponse returns text', { timeout: 35000 }, async () => {

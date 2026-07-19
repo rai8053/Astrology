@@ -1,6 +1,8 @@
 import OpenAI from 'openai';
 import { logger } from '../../lib/logger.js';
 
+const EMBEDDING_API_KEY = process.env.EMBEDDING_API_KEY || process.env.AI_API_KEY || process.env.OPENROUTER_API_KEY || '';
+const EMBEDDING_BASE_URL = process.env.EMBEDDING_BASE_URL || process.env.AI_BASE_URL || 'https://openrouter.ai/api/v1';
 const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'openai/text-embedding-3-small';
 const EMBEDDING_DIMENSIONS = parseInt(process.env.EMBEDDING_DIMENSIONS || '1536', 10);
 const CACHE_TTL_MS = 10 * 60 * 1000;
@@ -19,10 +21,10 @@ export class EmbeddingService {
   private cacheMisses: number;
 
   constructor(apiKey?: string) {
-    const key = apiKey || process.env.OPENROUTER_API_KEY || '';
+    const key = apiKey || EMBEDDING_API_KEY;
     this.client = new OpenAI({
       apiKey: key,
-      baseURL: 'https://openrouter.ai/api/v1',
+      baseURL: EMBEDDING_BASE_URL,
     });
     this.cache = new Map();
     this.cacheHits = 0;

@@ -16,6 +16,7 @@ interface ProviderClient {
   }): Promise<{ text: string; model: string; usage?: AIUsage }>;
 }
 
+const AI_BASE_URL = process.env.AI_BASE_URL || 'https://openrouter.ai/api/v1';
 const MAX_FREE_MODELS = 25;
 
 const DEFAULT_FALLBACK_MODELS = [
@@ -75,13 +76,16 @@ class OpenRouterService implements ProviderClient {
   private maxRetries: number;
 
   constructor(apiKey: string) {
+    const isOpenRouter = AI_BASE_URL.includes('openrouter.ai');
     this.client = new OpenAI({
       apiKey,
-      baseURL: 'https://openrouter.ai/api/v1',
-      defaultHeaders: {
-        'HTTP-Referer': process.env.APP_URL || 'http://localhost:5173',
-        'X-Title': 'Soma & Surya - AI Vedic Astrology',
-      },
+      baseURL: AI_BASE_URL,
+      ...(isOpenRouter ? {
+        defaultHeaders: {
+          'HTTP-Referer': process.env.APP_URL || 'http://localhost:5173',
+          'X-Title': 'Soma & Surya - AI Vedic Astrology',
+        },
+      } : {}),
     });
     this.preferredModel = process.env.OPENROUTER_MODEL || DEFAULT_FALLBACK_MODELS[0];
     const envFallback = process.env.OPENROUTER_FALLBACK_MODELS;
@@ -95,7 +99,7 @@ class OpenRouterService implements ProviderClient {
       maxRetries: this.maxRetries,
       hasApiKey: true,
       appUrl: process.env.APP_URL || 'http://localhost:5173',
-      baseURL: 'https://openrouter.ai/api/v1',
+      baseURL: AI_BASE_URL,
     }, 'OpenRouterService initialized');
   }
 
@@ -110,7 +114,7 @@ class OpenRouterService implements ProviderClient {
     const maxTokens = params.config?.max_tokens
       ? (params.config.max_tokens as number)
       : calculateMaxTokens(params.contents.length);
-    const perModelTimeout = (params.config?.requestTimeout as number) || 10000;
+    const perModelTimeout = (params.config?.requestTimeout as number) || 20000;
     let lastError: Error | null = null;
     let hadCreditError = false;
 
@@ -289,16 +293,20 @@ class OpenRouterService implements ProviderClient {
   }
 }
 
+function aiApiKey(): string {
+  return process.env.AI_API_KEY || process.env.OPENROUTER_API_KEY || '';
+}
+
 function resolveProvider(): OpenRouterService {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = aiApiKey();
   if (!apiKey) {
-    throw new Error('OPENROUTER_API_KEY is not configured');
+    throw new Error('AI_API_KEY or OPENROUTER_API_KEY is not configured');
   }
   return new OpenRouterService(apiKey);
 }
 
 export async function generateAIResponse(prompt: string, systemInstruction?: string): Promise<{ text: string; provider: string; model: string; usage?: AIUsage }> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = aiApiKey();
   const modelName = process.env.OPENROUTER_MODEL || DEFAULT_FALLBACK_MODELS[0];
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
 
@@ -358,9 +366,9 @@ export async function generateStructuredJSON<T>(prompt: string, systemInstructio
 }
 
 export async function* streamAIResponse(prompt: string, systemInstruction?: string, signal?: AbortSignal): AsyncIterable<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = aiApiKey();
   if (!apiKey) {
-    yield 'OPENROUTER_API_KEY is not configured';
+    yield 'AI_API_KEY is not configured';
     return;
   }
   const service = new OpenRouterService(apiKey);

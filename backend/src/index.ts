@@ -142,8 +142,8 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   if (!process.env.JWT_SECRET) {
     logger.warn('⚠️  JWT_SECRET is not configured. Set a strong secret in production.');
   }
-  if (!process.env.OPENROUTER_API_KEY) {
-    logger.warn('⚠️  No OPENROUTER_API_KEY configured. Get one at https://openrouter.ai');
+  if (!process.env.OPENROUTER_API_KEY && !process.env.AI_API_KEY) {
+    logger.warn('⚠️  No AI_API_KEY configured. Set OPENROUTER_API_KEY or AI_API_KEY for AI features.');
   }
   logger.info(`Soma & Surya API running on port ${PORT}`);
 });
