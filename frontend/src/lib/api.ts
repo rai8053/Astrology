@@ -2,6 +2,9 @@ import { translations } from './i18n/translations';
 
 type Language = 'en' | 'hi' | 'bn' | 'es' | 'pt' | 'fr' | 'de' | 'ar' | 'ja' | 'zh';
 
+const API_BASE = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL || '';
+export { API_BASE };
+
 function apiT(key: string): string {
   let lang: Language = 'en';
   try { const raw = localStorage.getItem('lang'); if (raw) lang = JSON.parse(raw) as Language; } catch { /* fall back to en */ }
@@ -127,4 +130,4 @@ class ApiClient {
   delete<T>(url: string) { return this.request<T>('DELETE', url); }
 }
 
-export const api = new ApiClient();
+export const api = new ApiClient(API_BASE);

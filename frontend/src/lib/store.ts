@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from './api';
+import { api, API_BASE } from './api';
 
 export interface User {
   id: string;
@@ -75,7 +75,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch { /* ignore */ }
+    try { await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' }); } catch { /* ignore */ }
     localStorage.removeItem('googleName');
     set({ user: null, isAuthenticated: false });
   },
