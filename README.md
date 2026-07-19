@@ -285,7 +285,6 @@ Astrology/
 ├── docker-compose.yml                     # 5 services (db, redis, backend, frontend)
 ├── scripts/                               # deploy.sh, setup.ps1, archive/
 ├── .github/workflows/                     # CI + Deploy + Security
-├── .env.example
 └── package.json                           # npm workspaces orchestrator
 ```
 
