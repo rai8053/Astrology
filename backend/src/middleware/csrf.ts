@@ -3,13 +3,14 @@ import crypto from 'crypto';
 import { logger } from '../lib/logger.js';
 
 const CSRF_COOKIE = 'csrf-token';
+const SAME_SITE = process.env.CROSS_ORIGIN_DEPLOY === 'true' ? 'none' : 'lax' as 'none' | 'lax';
 
 export function generateCsrfToken(res: Response): string {
   const token = crypto.randomBytes(32).toString('hex');
   res.cookie(CSRF_COOKIE, token, {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: SAME_SITE,
     path: '/',
     maxAge: 24 * 60 * 60 * 1000,
   });

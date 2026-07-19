@@ -66,18 +66,21 @@ function generateTokens(payload: { userId: string; role: string }) {
   return { accessToken, refreshToken };
 }
 
+const HAS_CROSS_ORIGIN = process.env.CROSS_ORIGIN_DEPLOY === 'true';
+const SAME_SITE = HAS_CROSS_ORIGIN ? 'none' : 'lax' as 'none' | 'lax';
+
 function setTokenCookies(res: Response, accessToken: string, refreshToken: string) {
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: SAME_SITE,
     maxAge: 5 * 60 * 1000,
     path: '/',
   });
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: SAME_SITE,
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
   });

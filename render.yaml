@@ -34,6 +34,8 @@ services:
           type: web
           name: astrology-frontend
           property: url
+      - key: CROSS_ORIGIN_DEPLOY
+        value: "true"
       - key: FRONTEND_URL
         fromService:
           type: web
