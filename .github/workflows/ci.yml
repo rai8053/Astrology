@@ -70,11 +70,11 @@ jobs:
 
       - name: Audit Backend
         working-directory: backend
-        run: npm audit --audit-level=high || true
+        run: npm audit --audit-level=high
 
       - name: Audit Frontend
         working-directory: frontend
-        run: npm audit --audit-level=high || true
+        run: npm audit --audit-level=high
 
   test-backend:
     name: Test Backend

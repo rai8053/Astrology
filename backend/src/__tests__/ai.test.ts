@@ -1,10 +1,29 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const hasAIKey = !!(process.env.AI_API_KEY || process.env.OPENROUTER_API_KEY);
-const itWithKey = hasAIKey ? it : it.skip;
+const create = vi.fn();
+
+class OpenAIMock {
+  chat = { completions: { create } };
+
+  constructor(_options: unknown) {}
+}
+
+vi.mock('openai', () => ({
+  default: OpenAIMock,
+}));
 
 describe('AI module', () => {
-  itWithKey('generateAIResponse returns text', { timeout: 35000 }, async () => {
+  beforeEach(() => {
+    process.env.AI_API_KEY = 'test-api-key';
+    delete process.env.OPENROUTER_API_KEY;
+    create.mockReset();
+    create.mockResolvedValue({
+      choices: [{ message: { content: '{"test":"hello"}' } }],
+      usage: { prompt_tokens: 3, completion_tokens: 2, total_tokens: 5 },
+    });
+  });
+
+  it('generateAIResponse returns text', async () => {
     const { generateAIResponse } = await import('../lib/ai.js');
     const result = await generateAIResponse('Say hello in 3 words', 'Be concise.');
     expect(result).toHaveProperty('text');
@@ -13,12 +32,12 @@ describe('AI module', () => {
     expect(result.text.length).toBeGreaterThan(0);
   });
 
-  itWithKey('generateStructuredJSON returns parsed object', { timeout: 35000 }, async () => {
+  it('generateStructuredJSON returns parsed object', async () => {
     const { generateStructuredJSON } = await import('../lib/ai.js');
     const result = await generateStructuredJSON<{ test: string }>(
       'Return { "test": "hello" }',
       'Return JSON only',
     );
-    expect(result).toBeDefined();
+    expect(result).toEqual({ test: 'hello' });
   });
 });

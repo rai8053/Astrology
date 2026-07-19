@@ -397,7 +397,7 @@ curl -X POST http://localhost:4000/api/voice/tts \
 | EmbeddingService | 7 | Cosine similarity, batch scoring, cache tracking |
 | RetrievalService | 5 | Method existence, cosine similarity validation |
 | MemoryService | 5 | Birth/zodiac/planet detection, prompt formatting |
-| AI Service | 2 | Live AI calls (generate + structured JSON) |
+| AI Service | 2 | Mocked AI responses (generate + structured JSON) |
 | Auth / Errors | 12 | AppError hierarchy, asyncHandler, validation |
 | Routes | 11 | Auth, astrology, chat, payment, voice, user, admin, health |
 | RAG | 2 | Index builder, seed data |

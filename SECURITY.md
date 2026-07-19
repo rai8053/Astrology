@@ -1,21 +1,15 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Security fixes are provided for the latest commit on the `main` branch and the most recent release, when a release exists. Earlier versions are not supported.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
+Please do not report security vulnerabilities in public GitHub issues. Use [GitHub's private vulnerability reporting](https://github.com/rai8053/Astrology/security/advisories/new) and include a clear description, reproduction steps, affected components, and potential impact. If private reporting is unavailable, contact the maintainer through the email address listed on the repository profile.
 
-Use this section to tell people how to report a vulnerability.
+We aim to acknowledge reports within 72 hours and provide an initial assessment within 7 days. We will keep you informed of progress while a fix is developed.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+## Disclosure policy
+
+Please allow a reasonable time for a fix to be prepared and deployed before public disclosure. We will coordinate disclosure with the reporter, crediting them where they wish to be named. We may publish a security advisory and release notes once affected users have had an opportunity to update.
