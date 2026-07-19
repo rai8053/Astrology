@@ -7,7 +7,7 @@ import { asyncHandler } from '../lib/asyncHandler.js';
 import { generateAIResponse, streamAIResponse } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../lib/logger.js';
-import { sanitizePrompt } from '../lib/sanitize.js';
+import { sanitizePrompt, wrapUserData } from '../lib/sanitize.js';
 import { calculateBirthDetails } from '../services/astrology/calculator.js';
 import { RASHI_DATA, RASHI_KEYS } from '../services/astrology/constants.js';
 import {
@@ -226,7 +226,7 @@ function formatPrompt(
   if (historyFormatted) parts.push(historyFormatted);
   if (workingMemory) parts.push(`\nKey details from this conversation:\n${workingMemory}`);
   if (knowledgeContext) parts.push(knowledgeContext);
-  parts.push(`\n--- USER MESSAGE (begin) ---\n${sanitizePrompt(message)}\n--- USER MESSAGE (end) ---`);
+  parts.push(wrapUserData(sanitizePrompt(message)));
   return parts.join('\n');
 }
 
