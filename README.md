@@ -13,7 +13,9 @@
 [![LangChain](https://img.shields.io/badge/LangChain-Ready-1C3C3C?logo=langchain&logoColor=white)](https://www.langchain.com/)
 [![Redis](https://img.shields.io/badge/Redis-7-FF4438?logo=redis&logoColor=white)](https://redis.io/)
 [![Stripe](https://img.shields.io/badge/Stripe-Billing-008CDD?logo=stripe&logoColor=white)](https://stripe.com/)
-[![Tests](https://img.shields.io/badge/Tests-63_passing-22c55e)](https://github.com/rai8053/Astrology/actions)
+[![Tests](https://img.shields.io/badge/Tests-89_passing-22c55e)](https://github.com/rai8053/Astrology/actions)
+[![Sentry](https://img.shields.io/badge/Sentry-Wired_but_idle-362D59?logo=sentry&logoColor=white)](https://sentry.io/)
+[![PostHog](https://img.shields.io/badge/PostHog-Wired_but_idle-000?logo=posthog&logoColor=white)](https://posthog.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Live Site](https://img.shields.io/badge/Live-Soma_%26_Surya-8B5CF6?logo=render&logoColor=white)](https://astrology-frontend-2wkd.onrender.com)
 [![API Health](https://img.shields.io/badge/API-Online-22c55e)](https://astrology-backend-rb79.onrender.com/api/health)
@@ -30,11 +32,11 @@
 
 Soma & Surya combines **Retrieval-Augmented Generation (RAG)** with a **production-grade SaaS backend** to deliver personalized Vedic astrology readings. The system ingests 48+ authoritative astrology knowledge articles, semantically retrieves the most relevant context for each user query, and feeds it to a large language model via OpenRouter — resulting in responses that are grounded, accurate, and personalized to the user's birth chart.
 
-The platform features **streaming AI chat**, **conversation memory**, **birth chart calculation**, **Kundli (D1/D9) visualization**, **Stripe subscription billing**, **admin analytics**, and **full audit logging**.
+The platform features **streaming AI chat** (powered by DeepSeek-V4-Flash via hcnsec.cn with $3,784+ credit), **conversation memory**, **birth chart calculation**, **Kundli (D1/D9) visualization**, **Stripe subscription billing**, **admin analytics**, and **full audit logging**. Embeddings via OpenRouter free tier (text-embedding-3-small, 1536d).
 
 | Metric | Value |
 |--------|-------|
-| Backend Tests | 63 passing |
+| Backend Tests | 89 passing |
 | AI Models | 35 free models + fallback chain |
 | Knowledge Articles | 48 Vedic astrology documents |
 | Database Tables | 14 |
@@ -78,8 +80,8 @@ The platform features **streaming AI chat**, **conversation memory**, **birth ch
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   OpenRouter / LLM                           │
-│  deepseek-chat → qwen3-235b → claude-sonnet (fallback chain)│
+│                   AI Provider (hcnsec.cn)                    │
+│  DeepSeek-V4-Flash → DeepSeek-V4-Pro → glm-5.2 (fallback)  │
 └────────────────────────┬────────────────────────────────────┘
                          │
                          ▼
@@ -98,7 +100,7 @@ The system follows a 5-stage pipeline for every AI request:
 | **1. Memory Retrieval** | `MemoryService` | Fetches conversation history with token-aware windowing (max 3000 tokens). Extracts working memory (birth info, zodiac signs, planet mentions). |
 | **2. Knowledge Retrieval** | `RetrievalService` | Performs PostgreSQL full-text search (`to_tsvector`/`ts_rank`) across knowledge articles. Returns top-5 results ranked by relevance. No external embedding API call needed. |
 | **3. Context Assembly** | `Context Builder` | Combines conversation history + working memory + retrieved documents into a structured prompt. |
-| **4. LLM Inference** | `OpenRouter` | Sends prompt through a fallback chain (preferred → fallback → free models) with retry logic and timeout. |
+| **4. LLM Inference** | `AI Provider` | Sends prompt through a fallback chain (DeepSeek-V4-Flash → DeepSeek-V4-Pro → glm-5.2 → step-3.7-flash) with per-model timeout and exponential backoff with jitter. |
 | **5. Attribution** | `Chat Route` | Stores retrieval source IDs in message metadata for auditability. Logs retrieval latency, result count, and token usage. |
 
 ### Conversation Memory
@@ -178,7 +180,7 @@ AuditLog (N)              ─ standalone
 | **iFLYTEK voice (ASR + TTS)** | WebSocket-based speech-to-text and text-to-speech via iFLYTEK API. Server-side auth with HMAC-SHA256. |
 | **10-locale i18n** | Custom Zustand-based i18n with JSON locale files. AI-powered translation fallback with protected Sanskrit terms. |
 | **Zod + TypeScript throughout** | Runtime validation (Zod) + compile-time checking (TS) from HTTP boundary to database query. |
-| **JWT refresh rotation** | Refresh tokens rotate on every use. Theft detection invalidates all sessions. |
+| **JWT refresh rotation** | Refresh tokens rotate on every use. Single-active-refresh-token per user (newer token invalidates previous one). |
 
 ---
 
@@ -395,9 +397,12 @@ curl -X POST http://localhost:4000/api/voice/tts \
 | EmbeddingService | 7 | Cosine similarity, batch scoring, cache tracking |
 | RetrievalService | 5 | Method existence, cosine similarity validation |
 | MemoryService | 5 | Birth/zodiac/planet detection, prompt formatting |
-| AI Service | 2 | Live OpenRouter calls (generate + structured JSON) |
+| AI Service | 2 | Live AI calls (generate + structured JSON) |
 | Auth / Errors | 12 | AppError hierarchy, asyncHandler, validation |
-| **Total** | **63** | **All passing, 0 skipped** |
+| Routes | 11 | Auth, astrology, chat, payment, voice, user, admin, health |
+| RAG | 2 | Index builder, seed data |
+| Security | 3 | Rate limiting, CORS, auth middleware |
+| **Total** | **89** | **All passing, 0 skipped** |
 
 ```bash
 # Run all tests
@@ -415,7 +420,7 @@ cd backend && npx vitest run src/__tests__/rag/embedding.test.ts
 ```
 GitHub Actions:
   Lint  →  TypeScript --noEmit (frontend + backend)
-  Test  →  vitest run (63 tests)
+  Test  →  vitest run (89 tests)
   Build →  esbuild backend + vite build frontend
   Deploy→  docker compose up -d
 ```
@@ -456,19 +461,37 @@ docker compose exec backend npm run seed:rag
 | `db` (PostgreSQL 16) | 5432 | Persistent volume |
 | `redis` (Redis 7) | 6379 | Cache / session store |
 
-### Environment Variables
+### Service Status
+
+| Service | Status | Notes |
+|---------|--------|-------|
+| AI Chat (DeepSeek-V4-Flash) | ✅ Operational | Primary model via hcnsec.cn ($3,784 credit) |
+| Embeddings (text-embedding-3-small) | ✅ Operational | Via OpenRouter free tier, 1536d vectors |
+| Stripe Billing | ✅ Operational | Checkout, webhook, subscription tiers |
+| iFLYTEK Voice (ASR/TTS) | ✅ Operational | WebSocket with HMAC-SHA256 auth |
+| PostgreSQL Full-Text Search | ✅ Operational | `to_tsvector`/`ts_rank` for RAG |
+| JWT Auth (cookie + bearer) | ✅ Operational | HS256, 5-min TTL, refresh rotation |
+| Prisma ORM | ✅ Operational | 14 models, 6 migrations |
+| Redis Cache | ⚠️ Limited | Deployed but only used for health checks + basic key caching |
+| Sentry Error Tracking | ⏸️ Wired but idle | `SENTRY_DSN` accepted but no events actively captured |
+| PostHog Analytics | ⏸️ Wired but idle | Client-side PostHog loaded but not actively reporting |
+| GitHub OAuth | ⏸️ Schema only | Database has GitHub ID fields but no OAuth flow implemented |
+
+---
 
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
 | `DATABASE_URL` | Yes | — | PostgreSQL connection string |
 | `JWT_SECRET` | Yes | — | Access token signing (≥32 chars) |
 | `JWT_REFRESH_SECRET` | Yes | — | Refresh token signing (≥32 chars) |
-| `OPENROUTER_API_KEY` | Yes | — | AI provider key (openrouter.ai) |
+| `AI_API_KEY` | Yes | — | AI provider key (hcnsec.cn) |
+| `AI_BASE_URL` | No | `https://api.hcnsec.cn/v1` | AI provider base URL |
+| `AI_MODEL` | No | `DeepSeek-V4-Flash` | Primary AI model |
+| `AI_FALLBACK_MODELS` | No | `DeepSeek-V4-Pro,glm-5.2,step-3.7-flash` | AI fallback chain |
+| `EMBEDDING_API_KEY` | Yes | — | Embedding API key (OpenRouter free tier) |
+| `EMBEDDING_BASE_URL` | No | `https://openrouter.ai/api/v1` | Embedding provider URL |
 | `EMBEDDING_MODEL` | No | `openai/text-embedding-3-small` | Embedding model |
 | `EMBEDDING_DIMENSIONS` | No | `1536` | Vector dimensions |
-| `OPENROUTER_MODEL` | No | `deepseek/deepseek-chat-v3-0324` | Preferred LLM |
-| `OPENROUTER_FALLBACK_MODELS` | No | `qwen/qwen3-235b-a22b,claude-sonnet-4` | Fallback chain |
-| `OPENROUTER_MAX_RETRIES` | No | `3` | Retries per model |
 | `STRIPE_SECRET_KEY` | For payments | — | Stripe API key |
 | `STRIPE_WEBHOOK_SECRET` | For payments | — | Stripe webhook secret |
 | `STRIPE_PRO_PRICE_ID` | For payments | — | Pro plan price ID |
@@ -517,7 +540,7 @@ Most astrology apps fall into one of two categories: a generic API wrapper aroun
 
 **10-Locale i18n** — Full internationalization with custom Zustand store and JSON locale files. Never-translate terms (Rahu, Ketu, Nakshatra, etc.) preserved across all languages. AI-powered fallback for untranslated keys.
 
-**Production-Grade Backend** — TypeScript end-to-end, Zod runtime validation on every input, Prisma with 6 managed migrations, Helmet + CORS + rate limiting security, 63 automated tests in CI, Docker Compose deployment, and shared TypeScript types between frontend and backend.
+**Production-Grade Backend** — TypeScript end-to-end, Zod runtime validation on every input, Prisma with 6 managed migrations, Helmet + CORS + rate limiting security, 89 automated tests in CI, Docker Compose deployment, and shared TypeScript types between frontend and backend.
 
 ---
 
