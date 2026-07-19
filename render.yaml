@@ -18,7 +18,7 @@ services:
           property: connectionString
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: astrology-redis
           property: connectionString
       - key: JWT_SECRET
@@ -33,14 +33,14 @@ services:
         fromService:
           type: web
           name: astrology-frontend
-          property: url
+          envVarKey: RENDER_EXTERNAL_URL
       - key: CROSS_ORIGIN_DEPLOY
         value: "true"
       - key: FRONTEND_URL
         fromService:
           type: web
           name: astrology-frontend
-          property: url
+          envVarKey: RENDER_EXTERNAL_URL
       - key: AI_API_KEY
         sync: false
       - key: AI_BASE_URL
@@ -83,11 +83,11 @@ services:
         fromService:
           type: web
           name: astrology-backend
-          property: url
+          envVarKey: RENDER_EXTERNAL_URL
 
-  - type: redis
+  - type: keyvalue
     name: astrology-redis
-    plan: starter
+    plan: free
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
 
