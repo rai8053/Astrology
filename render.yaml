@@ -2,7 +2,6 @@ services:
   - type: web
     name: astrology-backend
     runtime: node
-    repo: https://github.com/rai8053/Astrology
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npx prisma migrate deploy && node dist/index.cjs
@@ -42,8 +41,6 @@ services:
           type: web
           name: astrology-frontend
           property: url
-
-      # AI Provider — hcnsec.cn (set AI_API_KEY in Render dashboard)
       - key: AI_API_KEY
         sync: false
       - key: AI_BASE_URL
@@ -52,8 +49,6 @@ services:
         value: DeepSeek-V4-Flash
       - key: OPENROUTER_FALLBACK_MODELS
         value: DeepSeek-V4-Pro,glm-5.2,step-3.7-flash
-
-      # Embeddings via OpenRouter (free tier)
       - key: EMBEDDING_API_KEY
         sync: false
       - key: EMBEDDING_BASE_URL
@@ -66,7 +61,6 @@ services:
   - type: web
     name: astrology-frontend
     runtime: static
-    repo: https://github.com/rai8053/Astrology
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
