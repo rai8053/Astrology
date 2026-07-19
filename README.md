@@ -251,7 +251,11 @@ Astrology/
 │   │   │   ├── voice.ts                   # iFLYTEK ASR + TTS endpoints
 │   │   │   ├── payment.ts                 # Stripe checkout, portal, webhook
 │   │   │   ├── user.ts                    # Profile CRUD
-│   │   │   └── admin.ts                   # Users, analytics, usage stats
+│   │   │   ├── admin.ts                   # Users, analytics, usage stats
+│   │   │   ├── contact.ts                 # Contact form submissions
+│   │   │   ├── locations.ts               # Astrology center locations
+│   │   │   ├── report.ts                  # PDF report generation
+│   │   │   └── translate.ts               # AI translation proxy
 │   │   └── services/
 │   │       ├── chat.ts                    # Session & message management
 │   │       ├── iflytek/
