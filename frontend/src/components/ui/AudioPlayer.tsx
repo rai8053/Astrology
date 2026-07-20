@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Pause, Loader2, Volume2, AlertCircle } from 'lucide-react';
+import { Pause, Volume2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { api } from '@/lib/api';
 
 interface AudioPlayerProps {
   text: string;
@@ -10,78 +9,49 @@ interface AudioPlayerProps {
 }
 
 export function AudioPlayer({ text, autoPlay = false, onError }: AudioPlayerProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ttsAvailable, setTtsAvailable] = useState<boolean | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUrlRef = useRef<string | null>(null);
+  const [supported, setSupported] = useState<boolean | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
-    api.get<{ available: boolean }>('/api/voice/config')
-      .then(resp => setTtsAvailable(resp.data.available))
-      .catch(() => setTtsAvailable(false));
+    setSupported(typeof window !== 'undefined' && 'speechSynthesis' in window);
   }, []);
 
   useEffect(() => {
     return () => {
-      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+      window.speechSynthesis?.cancel();
     };
   }, []);
 
-  const playAudio = useCallback(async () => {
+  const playAudio = useCallback(() => {
     if (!text) return;
-
-    setIsLoading(true);
+    window.speechSynthesis.cancel();
     setError(null);
 
-    try {
-      const resp = await api.post<{ audio: string; audioType: string }>('/api/voice/tts', {
-        text: text.slice(0, 2000),
-      });
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
 
-      const audioBase64 = resp.data.audio;
-      const audioType = resp.data.audioType || 'audio/mpeg';
-
-      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
-
-      const byteChars = atob(audioBase64);
-      const byteNums = new Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) {
-        byteNums[i] = byteChars.charCodeAt(i);
-      }
-      const byteArr = new Uint8Array(byteNums);
-      const blob = new Blob([byteArr], { type: audioType });
-      const url = URL.createObjectURL(blob);
-      audioUrlRef.current = url;
-
-      const audio = new Audio(url);
-      audioRef.current = audio;
-
-      audio.onended = () => setIsPlaying(false);
-      audio.onerror = () => {
-        setIsPlaying(false);
-        const msg = 'Audio playback failed';
+    utterance.onstart = () => setIsPlaying(true);
+    utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = (e) => {
+      setIsPlaying(false);
+      const msg = e.error === 'canceled' ? null : 'Speech synthesis failed';
+      if (msg) {
         setError(msg);
         if (onError) onError(msg);
-      };
+      }
+    };
 
-      await audio.play();
-      setIsPlaying(true);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
-      if (onError) onError(msg);
-    } finally {
-      setIsLoading(false);
-    }
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
   }, [text, onError]);
 
   const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
+    window.speechSynthesis.cancel();
+    utteranceRef.current = null;
     setIsPlaying(false);
   }, []);
 
@@ -93,20 +63,8 @@ export function AudioPlayer({ text, autoPlay = false, onError }: AudioPlayerProp
     }
   }, [isPlaying, playAudio, stopAudio]);
 
-  if (ttsAvailable === null) return null;
-  if (!ttsAvailable) return null;
-
-  if (isLoading) {
-    return (
-      <button
-        disabled
-        className="p-1.5 rounded-lg bg-gold/10 text-gold/60"
-        aria-label="Generating audio"
-      >
-        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-      </button>
-    );
-  }
+  if (supported === null) return null;
+  if (!supported) return null;
 
   return (
     <div className="inline-flex items-center gap-1.5">
