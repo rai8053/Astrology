@@ -40,7 +40,7 @@ export function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
+    <div className="min-h-screen bg-bg-primary dark:bg-dark-bg-primary overflow-x-hidden">
       <Navbar />
       <div className="max-w-4xl mx-auto px-5 py-24">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">

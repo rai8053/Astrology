@@ -66,7 +66,7 @@ function ChatBubble({ message, index }: { message: ChatMessageDTO; index: number
       <div className={`${
         isUser
           ? 'bg-gradient-to-br from-gold to-amber-400 text-cosmic shadow-lg shadow-gold/20 rounded-2xl rounded-br-md'
-          : 'glass-card-premium rounded-2xl rounded-bl-md border border-white/[0.04] shadow-premium'
+          : 'glass-card-premium rounded-2xl rounded-bl-md border border-ink/10 dark:border-white/[0.06] shadow-premium'
       } max-w-[88%] md:max-w-[78%] p-4 text-sm leading-relaxed`}>
         {isUser ? (
           <p className="font-medium">{message.content}</p>
@@ -414,7 +414,7 @@ export function ChatPage() {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight">{t('chat.title')}</h1>
-            <p className="text-ink/50 dark:text-parchment/50 text-xs mt-0.5">{t('chat.subtitle')}</p>
+            <p className="text-ink/60 dark:text-parchment/60 text-xs mt-0.5">{t('chat.subtitle')}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -437,7 +437,7 @@ export function ChatPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
         <div className="lg:col-span-1 space-y-2 order-2 lg:order-1">
           <PremiumCard glass className="p-3">
-            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/40 dark:text-parchment/40 mb-3 px-1">
+            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.15em] text-ink/50 dark:text-parchment/50 mb-3 px-1">
               {t('chat.history')}
             </h3>
             {sessions.length ? (
@@ -460,7 +460,7 @@ export function ChatPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-ink/30 dark:text-parchment/30 px-1">{t('chat.noSessions')}</p>
+              <p className="text-xs text-ink/50 dark:text-parchment/50 px-1">{t('chat.noSessions')}</p>
             )}
           </PremiumCard>
         </div>
@@ -491,7 +491,7 @@ export function ChatPage() {
                     <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gold/15 to-amber-400/15 flex items-center justify-center">
                       <MessageCircle className="w-8 h-8 text-gold/40" />
                     </div>
-                    <p className="text-ink/40 dark:text-parchment/40 text-sm mb-6 max-w-sm mx-auto px-4">
+                    <p className="text-ink/50 dark:text-parchment/50 text-sm mb-6 max-w-sm mx-auto px-4">
                       {t('chat.emptyPrompt')}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto px-2">
@@ -523,7 +523,7 @@ export function ChatPage() {
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/20 to-amber-400/20 flex items-center justify-center mt-1 shrink-0 border border-gold/10">
                     <Bot className="w-4 h-4 text-gold" />
                   </div>
-                  <div className="glass-card-premium rounded-2xl rounded-bl-md border border-white/[0.04] shadow-premium max-w-[88%] md:max-w-[78%] p-4 text-sm leading-relaxed">
+                  <div className="glass-card-premium rounded-2xl rounded-bl-md border border-ink/10 dark:border-white/[0.06] shadow-premium max-w-[88%] md:max-w-[78%] p-4 text-sm leading-relaxed">
                     <MarkdownContent content={streamText} />
                   </div>
                 </div>
@@ -562,7 +562,7 @@ export function ChatPage() {
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                   placeholder={t('chat.placeholder')}
                   disabled={streaming}
-                  className="flex-1 bg-transparent border border-ink/10 dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-sans placeholder:text-ink/30 dark:placeholder:text-parchment/30 transition-colors focus:border-gold/40 focus:outline-none disabled:opacity-50"
+                  className="flex-1 bg-transparent border border-ink/10 dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-sans placeholder:text-ink/40 dark:placeholder:text-parchment/40 transition-colors focus:border-gold/40 focus:outline-none disabled:opacity-50"
                 />
                 <VoiceChatButton
                   onTranscript={(text) => setInput(text)}

@@ -194,6 +194,23 @@
     -webkit-backdrop-filter: blur(16px) saturate(1.25);
     border: 1px solid color-mix(in srgb, var(--color-primary) 12%, transparent);
   }
+  .glass-card-premium {
+    background: color-mix(in srgb, var(--color-card) 55%, transparent);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+  .shadow-premium {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+  .card-hover-premium {
+    transition: all 0.25s ease;
+    cursor: pointer;
+  }
+  .card-hover-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+  }
 
   /* ── Cosmic Glow ── */
   .cosmic-glow {
