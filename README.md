@@ -487,8 +487,8 @@ docker compose exec backend npm run seed:rag
 | `DATABASE_URL` | Yes | — | PostgreSQL connection string |
 | `JWT_SECRET` | Yes | — | Access token signing (≥32 chars) |
 | `JWT_REFRESH_SECRET` | Yes | — | Refresh token signing (≥32 chars) |
-| `AI_API_KEY` | Yes | — | AI provider key (hcnsec.cn) |
-| `AI_BASE_URL` | No | `https://api.hcnsec.cn/v1` | AI provider base URL |
+| `AI_API_KEY` | Yes | — | AI provider key (iamhc.cn) |
+| `AI_BASE_URL` | No | `https://api.iamhc.cn/v1` | AI provider base URL |
 | `AI_MODEL` | No | `DeepSeek-V4-Flash` | Primary AI model |
 | `AI_FALLBACK_MODELS` | No | `DeepSeek-V4-Pro,glm-5.2,step-3.7-flash` | AI fallback chain |
 | `EMBEDDING_API_KEY` | Yes | — | Embedding API key (OpenRouter free tier) |

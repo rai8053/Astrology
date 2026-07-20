@@ -44,7 +44,7 @@ services:
       - key: AI_API_KEY
         sync: false
       - key: AI_BASE_URL
-        value: https://api.hcnsec.cn/v1
+        value: https://api.iamhc.cn/v1
       - key: OPENROUTER_MODEL
         value: DeepSeek-V4-Flash
       - key: OPENROUTER_FALLBACK_MODELS
