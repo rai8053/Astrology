@@ -151,7 +151,12 @@ export function ChatPage() {
         return await consumeStream(res);
       }
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(t('chat.failedResponse'));
+      }
       if (!data.success) throw new Error(data.error || t('ui.requestFailed'));
       return data.data;
     },
@@ -337,7 +342,12 @@ export function ChatPage() {
         refetchSessions();
         setError(null);
       } else {
-        const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch {
+          throw new Error(t('chat.failedResponse'));
+        }
         if (!data.success) throw new Error(data.error || t('ui.requestFailed'));
         setMessages((prev) => [...prev, {
           id: `msg-${Date.now()}`,
