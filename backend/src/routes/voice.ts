@@ -35,11 +35,19 @@ router.post('/asr', authenticate, validate(asrSchema), asyncHandler(async (req: 
 
 router.post('/tts', authenticate, validate(ttsSchema), asyncHandler(async (req, res) => {
   const { text, speed, volume, pitch } = req.body as z.infer<typeof ttsSchema>;
-  const result = await textToSpeech(text, { speed, volume, pitch });
-  res.json({
-    success: true,
-    data: { audio: result.audio, audioType: result.audioType },
-  });
+  try {
+    const result = await textToSpeech(text, { speed, volume, pitch });
+    res.json({
+      success: true,
+      data: { audio: result.audio, audioType: result.audioType },
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('iFLYTEK credentials not configured')) {
+      res.status(503).json({ success: false, error: 'Voice synthesis is not configured', code: 'TTS_NOT_CONFIGURED' });
+      return;
+    }
+    throw err;
+  }
 }));
 
 router.get('/config', authenticate, (_req: Request, res: Response) => {

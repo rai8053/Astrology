@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Play, Pause, Loader2, Volume2, AlertCircle } from 'lucide-react';
+import { Pause, Loader2, Volume2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 
@@ -13,8 +13,15 @@ export function AudioPlayer({ text, autoPlay = false, onError }: AudioPlayerProp
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ttsAvailable, setTtsAvailable] = useState<boolean | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    api.get<{ available: boolean }>('/api/voice/config')
+      .then(resp => setTtsAvailable(resp.data.available))
+      .catch(() => setTtsAvailable(false));
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -85,6 +92,9 @@ export function AudioPlayer({ text, autoPlay = false, onError }: AudioPlayerProp
       playAudio();
     }
   }, [isPlaying, playAudio, stopAudio]);
+
+  if (ttsAvailable === null) return null;
+  if (!ttsAvailable) return null;
 
   if (isLoading) {
     return (
