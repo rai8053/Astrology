@@ -522,15 +522,14 @@ export function KundliPage() {
                   <div className="flex flex-wrap justify-between items-start gap-4 border-b border-ink/10 dark:border-white/[0.06] pb-5 mb-5">
                     <div>
                       <span className="text-[9px] uppercase font-sans font-bold tracking-[0.2em] text-gold">{t('kundli.chart')}</span>
-                        <h2 className="text-3xl font-serif font-bold mt-1 bg-gradient-to-r from-ink dark:to-parchment to-ink/80 bg-clip-text text-transparent">{profile.name}</h2>
-                        <p className="text-xs text-ink/40 dark:text-parchment/40 mt-1 font-sans">{profile.birthDate} &bull; {profile.birthTime} &bull; {profile.birthPlace}</p>
-                      </div>
+                      <h2 className="text-3xl font-serif font-bold mt-1 bg-gradient-to-r from-ink dark:to-parchment to-ink/80 bg-clip-text text-transparent">{profile.name}</h2>
+                      <p className="text-xs text-ink/40 dark:text-parchment/40 mt-1 font-sans">{profile.birthDate} &bull; {profile.birthTime} &bull; {profile.birthPlace}</p>
                     </div>
                     <div className="text-center px-4 py-2.5 gold-border rounded-lg bg-gold/5 min-w-[100px]">
                       <span className="text-[8px] uppercase font-sans font-bold text-gold block tracking-wider">{t('kundli.nakshatraLordLabel')}</span>
                       <span className="font-serif font-semibold text-gold text-sm">{getPlanetName(profile.rashiLord)}</span>
-                      </div>
                     </div>
+                  </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                       {[

@@ -84,7 +84,7 @@ export function HoroscopePage() {
                 const score = Math.max(10, Math.min(100, horoscope.energyLevel + ((hash * 13 + i * 7) % 15) - 7));
                 return (
                   <div key={item.key} className="text-center">
-                    <div className="h-16 rounded-lg bg-primary/5 overflow-hidden relative" {/* deslop-ignore 22 */}>
+                    <div className="h-16 rounded-lg bg-primary/5 overflow-hidden relative">
                       <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${score}%` }}

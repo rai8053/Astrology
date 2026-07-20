@@ -296,7 +296,7 @@ export function DashboardLayout() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.96 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden z-50" {/* deslop-ignore 22 */}
+                      className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden z-50"
                     >
                       <div className="px-4 py-3 border-b border-border-primary dark:border-dark-border-primary">
                         <p className="text-sm font-medium truncate">{displayName}</p>
