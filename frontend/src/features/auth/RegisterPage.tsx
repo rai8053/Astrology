@@ -98,7 +98,7 @@ export function RegisterPage() {
               {pw && (
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="flex-1 h-1 bg-border-primary dark:bg-dark-border-primary rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${pw.color} ${pw.width}`} />
+                    <div className={`h-full rounded-full transition-[width] ${pw.color} ${pw.width}`} />
                   </div>
                   <span className="text-[10px] font-medium text-text-tertiary">{pw.label}</span>
                 </div>

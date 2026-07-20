@@ -113,7 +113,7 @@ export function TarotPage() {
                 key={key}
                 onClick={() => { setSpread(key); setDrawn([]); setSelectedCard(null); }}
                 className={cn(
-                  'px-4 py-2 rounded-lg text-sm transition-all duration-200 border',
+                  'px-4 py-2 rounded-lg text-sm transition-colors duration-200 border',
                   spread === key
                     ? 'bg-primary/10 border-primary/30 text-primary-light'
                     : 'bg-transparent border-border text-muted-foreground hover:border-primary/20',

@@ -28,7 +28,7 @@ function ErrorFallback({ error }: { error?: Error }) {
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         onClick={() => window.location.reload()}
-        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gold to-amber-400 text-cosmic text-xs font-sans font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-gold/20 hover:shadow-gold/30 transition-all"
+        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gold to-amber-400 text-cosmic text-xs font-sans font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-gold/20 hover:shadow-gold/30 transition-shadow"
       >
         <RefreshCw className="w-4 h-4" /> {t('common.reloadPage')}
       </motion.button>

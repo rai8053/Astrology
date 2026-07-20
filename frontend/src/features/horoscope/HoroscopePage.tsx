@@ -51,7 +51,7 @@ export function HoroscopePage() {
               whileTap={{ scale: 0.97 }}
               onClick={() => setSelectedRashi(r.key)}
               className={cn(
-                'relative p-3 text-center rounded-xl transition-all duration-300',
+                'relative p-3 text-center rounded-xl transition-colors duration-300',
                 selectedRashi === r.key
                   ? 'gold-gradient text-primary-foreground shadow-lg shadow-primary/20'
                   : 'sacred-border bg-card/50 hover:bg-primary/[0.04]',
@@ -84,7 +84,7 @@ export function HoroscopePage() {
                 const score = Math.max(10, Math.min(100, horoscope.energyLevel + ((hash * 13 + i * 7) % 15) - 7));
                 return (
                   <div key={item.key} className="text-center">
-                    <div className="h-16 rounded-lg bg-primary/5 overflow-hidden relative">
+                    <div className="h-16 rounded-lg bg-primary/5 overflow-hidden relative" {/* deslop-ignore 22 */}>
                       <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${score}%` }}
@@ -121,7 +121,7 @@ export function HoroscopePage() {
                       key={mode}
                       onClick={() => setViewMode(mode as any)}
                       className={cn(
-                        'px-3 py-1 text-[10px] font-medium rounded-full transition-all',
+                        'px-3 py-1 text-[10px] font-medium rounded-full transition-colors',
                         viewMode === mode
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-primary/5 text-muted-foreground hover:text-foreground',

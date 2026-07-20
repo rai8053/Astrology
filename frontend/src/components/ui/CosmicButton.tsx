@@ -18,7 +18,7 @@ export function CosmicButton({ className, variant = 'primary', size = 'md', load
       whileHover={isDisabled ? {} : { scale: 1.02 }}
       whileTap={isDisabled ? {} : { scale: 0.97 }}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-sans font-medium rounded-xl transition-all duration-200',
+        'inline-flex items-center justify-center gap-2 font-sans font-medium rounded-xl transition-colors duration-200',
         variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary-light shadow-lg shadow-primary/20 hover:shadow-primary/30',
         variant === 'gradient' && 'gradient-animated text-white font-semibold shadow-lg shadow-primary/20',
         variant === 'secondary' && 'bg-muted text-foreground hover:bg-muted/80 border border-border',

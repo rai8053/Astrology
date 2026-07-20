@@ -172,7 +172,7 @@ function InsightCard({ insight }: { insight: AstroInsight }) {
   const Icon = INSIGHT_ICONS[insight.title] || Sparkles;
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <PremiumCard glass className="h-full p-4 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300">
+      <PremiumCard glass className="h-full p-4 hover:shadow-lg hover:shadow-gold/5 transition-shadow duration-300">
         <div className="flex items-start justify-between mb-3">
           <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${insight.color} bg-opacity-10 flex items-center justify-center`}>
             <Icon className="w-4 h-4 text-white" />
@@ -193,7 +193,7 @@ function RemedyCard({ remedy }: { remedy: Remedy }) {
   const Icon = REMEDY_ICONS[remedy.type] || Sparkles;
   return (
     <motion.div variants={itemVariants}>
-      <PremiumCard glass className="p-4 h-full group hover:shadow-md transition-all duration-300">
+      <PremiumCard glass className="p-4 h-full group hover:shadow-md transition-shadow duration-300">
         <div className="flex gap-3">
           <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center shrink-0 group-hover:bg-gold/20 transition-colors">
             <Icon className="w-4 h-4 text-gold" />
@@ -213,7 +213,7 @@ function TransitCard({ event }: { event: TransitEvent }) {
   const dotColor = event.impact === 'positive' ? 'bg-emerald-500' : event.impact === 'challenging' ? 'bg-red-400' : 'bg-amber-400';
   return (
     <motion.div variants={itemVariants}>
-      <PremiumCard glass className="p-4 flex gap-4 items-start group hover:shadow-md transition-all duration-300">
+      <PremiumCard glass className="p-4 flex gap-4 items-start group hover:shadow-md transition-shadow duration-300">
         <div className="flex flex-col items-center gap-1">
           <div className={`w-2.5 h-2.5 rounded-full ${dotColor} shadow-sm`} />
           <div className="w-px h-full bg-ink/10 dark:bg-white/[0.06]" />
@@ -244,7 +244,7 @@ function ViewToggle({ view, onChange }: { view: 'summary' | 'detailed'; onChange
       <button
         onClick={() => onChange('summary')}
         className={cn(
-          'px-3 py-1.5 text-xs font-medium transition-all',
+          'px-3 py-1.5 text-xs font-medium transition-colors',
           view === 'summary'
             ? 'text-primary border-b-2 border-primary'
             : 'text-muted-foreground hover:text-foreground',
@@ -255,7 +255,7 @@ function ViewToggle({ view, onChange }: { view: 'summary' | 'detailed'; onChange
       <button
         onClick={() => onChange('detailed')}
         className={cn(
-          'px-3 py-1.5 text-xs font-medium transition-all',
+          'px-3 py-1.5 text-xs font-medium transition-colors',
           view === 'detailed'
             ? 'text-primary border-b-2 border-primary'
             : 'text-muted-foreground hover:text-foreground',
@@ -404,7 +404,7 @@ export function KundliPage() {
                 return (
                   <div key={i} className="flex items-center gap-1.5">
                     <div className={cn(
-                      'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all',
+                      'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors',
                       done ? 'bg-primary text-primary-foreground' :
                       active ? 'bg-primary/20 text-primary border border-primary/40' :
                       'bg-primary/10 text-muted-foreground',
@@ -451,7 +451,7 @@ export function KundliPage() {
                       key={s.key}
                       onClick={() => scrollToSection(s.key)}
                       className={cn(
-                        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-medium transition-all',
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-medium transition-colors',
                         activeSection === s.key
                           ? 'bg-primary/10 text-primary-light border border-primary/20'
                           : 'text-muted-foreground hover:text-foreground hover:bg-primary/[0.04]',
@@ -492,7 +492,7 @@ export function KundliPage() {
                       <div>
                         <span className="text-[9px] uppercase font-sans font-bold tracking-[0.2em] text-gold">{t('kundli.chart')}</span>
                         <h2 className="text-3xl font-serif font-bold mt-1 bg-gradient-to-r from-ink dark:to-parchment to-ink/80 bg-clip-text text-transparent">{profile.name}</h2>
-                        <p className="text-xs text-ink/40 dark:text-parchment/40 mt-1 font-mono">{profile.birthDate} &bull; {profile.birthTime} &bull; {profile.birthPlace}</p>
+                        <p className="text-xs text-ink/40 dark:text-parchment/40 mt-1 font-sans">{profile.birthDate} &bull; {profile.birthTime} &bull; {profile.birthPlace}</p>
                       </div>
                       <div className="text-center px-4 py-2.5 gold-border rounded-lg bg-gold/5 min-w-[100px]">
                         <span className="text-[8px] uppercase font-sans font-bold text-gold block tracking-wider">{t('kundli.nakshatraLordLabel')}</span>
@@ -522,8 +522,9 @@ export function KundliPage() {
                   <div className="flex flex-wrap justify-between items-start gap-4 border-b border-ink/10 dark:border-white/[0.06] pb-5 mb-5">
                     <div>
                       <span className="text-[9px] uppercase font-sans font-bold tracking-[0.2em] text-gold">{t('kundli.chart')}</span>
-                      <h2 className="text-3xl font-serif font-bold mt-1 bg-gradient-to-r from-ink dark:to-parchment to-ink/80 bg-clip-text text-transparent">{profile.name}</h2>
-                      <p className="text-xs text-ink/40 dark:text-parchment/40 mt-1 font-mono">{profile.birthDate} &bull; {profile.birthTime} &bull; {profile.birthPlace}</p>
+                        <h2 className="text-3xl font-serif font-bold mt-1 bg-gradient-to-r from-ink dark:to-parchment to-ink/80 bg-clip-text text-transparent">{profile.name}</h2>
+                        <p className="text-xs text-ink/40 dark:text-parchment/40 mt-1 font-sans">{profile.birthDate} &bull; {profile.birthTime} &bull; {profile.birthPlace}</p>
+                      </div>
                     </div>
                     <div className="text-center px-4 py-2.5 gold-border rounded-lg bg-gold/5 min-w-[100px]">
                       <span className="text-[8px] uppercase font-sans font-bold text-gold block tracking-wider">{t('kundli.nakshatraLordLabel')}</span>
@@ -579,7 +580,7 @@ export function KundliPage() {
                           </span>
                         ))}
                       </div>
-                      <p className="text-[10px] text-ink/30 dark:text-parchment/30 font-mono">
+                      <p className="text-[10px] text-ink/30 dark:text-parchment/30 font-sans">
                         {t('kundli.infoText', { color: profile.luckyColor, gemstone: profile.gemstone })}
                       </p>
                     </div>

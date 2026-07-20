@@ -68,12 +68,12 @@ function showPremiumToast(type: 'success' | 'error', title: string, message: str
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -16, scale: 0.95 }}
         transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-        className={`pointer-events-auto flex items-start gap-3 px-5 py-4 rounded-xl shadow-2xl border ${
+        className={`pointer-events-auto flex items-start gap-3 px-5 py-4 rounded-xl border ${
           type === 'success'
             ? 'bg-emerald-950/90 border-emerald-500/30'
             : 'bg-red-950/90 border-red-500/30'
-        } backdrop-blur-xl max-w-sm`}
-        style={{ boxShadow: type === 'success' ? '0 0 40px rgba(52,211,153,0.15)' : '0 0 40px rgba(248,113,113,0.15)' }}
+        } backdrop-blur-xl max-w-sm shadow-lg`}
+        style={{ boxShadow: type === 'success' ? '0 0 16px rgba(52,211,153,0.12)' : '0 0 16px rgba(248,113,113,0.12)' }}
       >
         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
           type === 'success' ? 'bg-emerald-500/20' : 'bg-red-500/20'
@@ -326,7 +326,7 @@ export function SettingsPage() {
                 disabled={btnDisabled}
                 variant={btnVariant}
                 icon={btnIcon}
-                className={`w-full transition-all duration-300 ${
+                className={`w-full transition-colors duration-300 ${
                   saveFeedback === 'success'
                     ? '!bg-emerald-500/20 !text-emerald-400 !border-emerald-500/30'
                     : saveFeedback === 'error'
@@ -379,7 +379,7 @@ export function SettingsPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   onClick={(e) => e.stopPropagation()}
-                  className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl border border-border-primary dark:border-dark-border-primary p-6 max-w-sm w-full"
+                  className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-md border border-border-primary dark:border-dark-border-primary p-6 max-w-sm w-full"
                 >
                   <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
                     <AlertTriangle className="w-6 h-6 text-red-400" />
@@ -425,7 +425,7 @@ export function SettingsPage() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setTheme(themeOption)}
-                  className={`p-4 rounded-xl text-center transition-all duration-300 ${
+                  className={`p-4 rounded-xl text-center transition-colors duration-300 ${
                     theme === themeOption
                       ? 'gold-border bg-gold/10 cosmic-glow'
                       : 'border border-ink/10 dark:border-white/10 hover:border-gold/30 bg-white dark:bg-cosmic-light/30'

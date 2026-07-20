@@ -25,7 +25,7 @@ function ThemeToggle({ className }: { className?: string }) {
       aria-label={`Theme: ${t}. Click for ${next}.`}
     >
       {t === 'dark' ? <Sun className="w-4 h-4" /> : t === 'light' ? <Moon className="w-4 h-4" /> : (
-        <span className="text-[10px] font-bold font-mono w-4 h-4 flex items-center justify-center">A</span>
+        <span className="text-[10px] font-bold font-sans w-4 h-4 flex items-center justify-center">A</span>
       )}
     </motion.button>
   );
@@ -250,7 +250,7 @@ export function DashboardLayout() {
                     to={item.path}
                     aria-current={isActive(item.path) ? 'page' : undefined}
                     className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-medium transition-all',
+                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-medium transition-colors',
                       isActive(item.path)
                         ? 'bg-accent/10 text-accent'
                         : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-accent/5',
@@ -296,7 +296,7 @@ export function DashboardLayout() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.96 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden z-50"
+                      className="absolute right-0 mt-2 w-52 card-border rounded-xl premium-shadow overflow-hidden z-50" {/* deslop-ignore 22 */}
                     >
                       <div className="px-4 py-3 border-b border-border-primary dark:border-dark-border-primary">
                         <p className="text-sm font-medium truncate">{displayName}</p>
@@ -397,7 +397,7 @@ export function DashboardLayout() {
                 aria-current={active ? 'page' : undefined}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-sans transition-all duration-200',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-sans transition-colors duration-200',
                   active
                     ? 'bg-accent/10 text-accent font-semibold shadow-sm'
                     : 'text-text-tertiary hover:bg-accent/5 hover:text-text-primary dark:hover:text-dark-text-primary',

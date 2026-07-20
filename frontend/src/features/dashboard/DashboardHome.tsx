@@ -261,7 +261,7 @@ export function DashboardHome() {
             { icon: '☽', label: t('kundli.moonRashi'), value: snapshot.moonRashi || '—', sub: snapshot.nakshatra || '' },
             { icon: '☉', label: t('kundli.ascendantLabel'), value: snapshot.ascendant || '—', sub: snapshot.lagnaLord || '' },
             { icon: '✦', label: t('dashboard.birthStar'), value: snapshot.nakshatra || '—', sub: snapshot.nakshatraLord || '' },
-            { icon: '🔥', label: t('kundli.elementLabel'), value: snapshot.element || '—', sub: snapshot.doshaDominance || '' },
+            { icon: '△', label: t('kundli.elementLabel'), value: snapshot.element || '—', sub: snapshot.doshaDominance || '' },
           ].map((stat, i) => (
             <motion.div key={i} variants={itemAnim}>
               <div className="sacred-border rounded-xl p-4 bg-card/50">
@@ -276,7 +276,7 @@ export function DashboardHome() {
                   </div>
                 </div>
                 <div className="mt-2 h-[2px] w-full rounded-full bg-primary/10">
-                  <div className="h-full rounded-full bg-primary/40 transition-all" style={{ width: `${60 + Math.random() * 30}%` }} />
+                  <div className="h-full rounded-full bg-primary/40 transition-[width]" style={{ width: `${60 + Math.random() * 30}%` }} />
                 </div>
               </div>
             </motion.div>
@@ -338,7 +338,7 @@ export function DashboardHome() {
               }`}>{cosmicEnergy.score ?? '—'}</div>
               <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{cosmicEnergy.level || '—'}</div>
               <div className="mt-2 h-1 w-full rounded-full bg-primary/10">
-                <div className={`h-1 rounded-full transition-all duration-1000 ${
+                <div className={`h-1 rounded-full transition-[width] duration-1000 ${
                   cosmicEnergy.level === 'Excellent' ? 'w-11/12 bg-gradient-to-r from-primary to-primary-light' :
                   cosmicEnergy.level === 'High' ? 'w-3/4 bg-blue-400' :
                   cosmicEnergy.level === 'Moderate' ? 'w-1/2 bg-amber-400' : 'w-1/4 bg-red-400'
@@ -394,7 +394,7 @@ export function DashboardHome() {
             {transitAlerts.slice(0, 4).map((alert, i) => (
               <motion.div key={i} variants={itemAnim}>
                 <PremiumCard glass>
-                  <p className="text-[10px] font-mono text-muted-foreground">{safeFormatDate(alert.date)}</p>
+                  <p className="text-[10px] font-sans text-muted-foreground">{safeFormatDate(alert.date)}</p>
                   <p className={`mt-0.5 text-xs font-semibold ${
                     alert.impact === 'positive' ? 'text-emerald-400' :
                     alert.impact === 'challenging' ? 'text-red-400' : 'text-amber-400'
@@ -525,7 +525,7 @@ export function DashboardHome() {
                   t('dashboard.streakMessage', { n: streak.currentStreak })}
               </p>
               <div className="h-1 w-full rounded-full bg-muted">
-                <div className="h-1 rounded-full bg-primary transition-all duration-500" style={{ width: `${Math.min(100, (streak.currentStreak / 30) * 100)}%` }} />
+                <div className="h-1 rounded-full bg-primary transition-[width] duration-500" style={{ width: `${Math.min(100, (streak.currentStreak / 30) * 100)}%` }} />
               </div>
               <p className="mt-1.5 text-[11px] text-muted-foreground">{t('dashboard.streakBest', { n: streak.longestStreak })}</p>
             </PremiumCard>

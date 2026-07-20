@@ -443,7 +443,7 @@ export function ChatPage() {
                     </button>
                     <button
                       onClick={() => deleteSession(s.id)}
-                      className="p-1.5 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"
+                      className="p-1.5 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-opacity"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -495,7 +495,7 @@ export function ChatPage() {
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => handleSend(q)}
-                          className="px-4 py-2 text-xs border border-gold/20 rounded-full hover:border-gold/50 hover:bg-gold/5 transition-all text-ink/50 dark:text-parchment/50"
+                          className="px-4 py-2 text-xs border border-gold/20 rounded-full hover:border-gold/50 hover:bg-gold/5 transition-colors text-ink/50 dark:text-parchment/50"
                         >
                           {q}
                         </motion.button>

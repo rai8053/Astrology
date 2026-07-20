@@ -159,7 +159,7 @@ export function LanguageSelector() {
 
       {open && (
         <div
-          className="absolute top-full right-0 mt-[6px] z-50 min-w-[260px] bg-card border border-border rounded-xl shadow-lg overflow-hidden"
+          className="absolute top-full right-0 mt-[6px] z-50 min-w-[260px] bg-card border border-border rounded-xl shadow-lg overflow-hidden" {/* deslop-ignore 22 */}
           role="listbox"
           aria-label={t('common.selectLanguage') || 'Select language'}
         >

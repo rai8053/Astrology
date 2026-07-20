@@ -170,7 +170,7 @@ export function PricingPage() {
                   transition={{ delay: i * 0.06, duration: 0.4 }}
                   whileHover={{ y: -4 }}
                   className={cn(
-                    'rounded-xl p-6 relative transition-all duration-300 flex flex-col',
+                    'rounded-xl p-6 relative transition-transform duration-300 flex flex-col',
                     plan.highlighted
                       ? 'card-border bg-accent/5 dark:bg-dark-accent-subtle border-accent/30 dark:border-dark-accent/30 shadow-sm'
                       : 'card-border bg-bg-primary dark:bg-dark-bg-secondary',

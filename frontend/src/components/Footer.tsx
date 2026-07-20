@@ -64,7 +64,7 @@ export function Footer() {
             {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
           <div className="flex items-center gap-4">
-            <span className="text-[10px] text-text-tertiary/60 dark:text-dark-text-tertiary/60 font-mono">
+            <span className="text-[10px] text-text-tertiary/60 dark:text-dark-text-tertiary/60 font-sans">
               {t('ui.buildVersion', { build: __BUILD_HASH__ })}
             </span>
             <span className="text-[11px] text-text-tertiary dark:text-dark-text-tertiary">

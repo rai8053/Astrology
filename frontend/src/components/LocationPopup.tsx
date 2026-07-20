@@ -84,7 +84,7 @@ export function LocationPopup() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="bg-bg-primary dark:bg-dark-bg-secondary rounded-2xl border border-border-primary dark:border-dark-border-primary shadow-2xl max-w-sm w-full p-6"
+            className="bg-bg-primary dark:bg-dark-bg-secondary rounded-2xl border border-border-primary dark:border-dark-border-primary shadow-md max-w-sm w-full p-6"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">

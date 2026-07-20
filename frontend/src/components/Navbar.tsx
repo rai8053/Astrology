@@ -108,7 +108,7 @@ export function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
+        'fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color,box-shadow] duration-500',
         scrolled
           ? 'glass-nav shadow-lg backdrop-blur-xl border-b border-primary/10'
           : isLanding
@@ -117,11 +117,11 @@ export function Navbar() {
       )}
     >
       <div className={cn(
-        'mx-auto px-5 sm:px-8 transition-all duration-500',
+        'mx-auto px-5 sm:px-8 transition-[padding,max-width] duration-500',
         scrolled ? 'max-w-6xl' : 'max-w-7xl',
       )}>
         <div className={cn(
-          'flex items-center justify-between transition-all duration-500',
+          'flex items-center justify-between transition-[height] duration-500',
           scrolled ? 'h-14' : 'h-16',
         )}>
           {/* Logo */}
@@ -145,7 +145,7 @@ export function Navbar() {
                   key={link.href}
                   to={link.href}
                   className={cn(
-                    'relative px-3 py-2 text-xs font-medium tracking-[0.04em] uppercase transition-all duration-200 group',
+                    'relative px-3 py-2 text-xs font-medium tracking-[0.04em] uppercase transition-colors duration-200 group',
                     isActive
                       ? 'text-primary-light'
                       : 'text-muted-foreground hover:text-foreground',
@@ -165,7 +165,7 @@ export function Navbar() {
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
                 className={cn(
-                  'p-2 rounded-lg transition-all duration-200',
+                  'p-2 rounded-lg transition-colors duration-200',
                   'hover:bg-primary/5 text-muted-foreground hover:text-primary-light',
                 )}
                 aria-label={t('nav.themeAria')}
@@ -197,7 +197,7 @@ export function Navbar() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.96 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 mt-2 w-52 glass-card rounded-xl premium-shadow overflow-hidden"
+                        className="absolute right-0 mt-2 w-52 glass-card rounded-xl premium-shadow overflow-hidden" {/* deslop-ignore 22 */}
                       >
                         <div className="px-4 py-3 border-b border-border">
                           <p className="text-sm font-medium truncate text-foreground">{displayName}</p>

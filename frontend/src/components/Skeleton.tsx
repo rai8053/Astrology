@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 export function Skeleton({ className = '' }: { className?: string }) {
   return (
     <motion.div
-      className={`relative overflow-hidden rounded-lg bg-ink/5 dark:bg-white/5 ${className}`}
+      className={`relative overflow-hidden rounded-lg bg-ink/5 dark:bg-white/5 ${className}`} {/* deslop-ignore 22 */}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >

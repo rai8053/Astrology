@@ -44,7 +44,7 @@ export function HoroscopeSection({
           <button
             key={t.key}
             onClick={() => onPeriodChange(t.key)}
-            className={`flex-1 py-2 text-xs font-sans font-bold uppercase tracking-wider rounded-md transition-all duration-200 ${
+            className={`flex-1 py-2 text-xs font-sans font-bold uppercase tracking-wider rounded-md transition-colors duration-200 ${
               period === t.key
                 ? 'bg-gold/10 text-gold shadow-sm'
                 : 'text-text-tertiary dark:text-dark-text-tertiary hover:text-text-secondary dark:hover:text-dark-text-secondary'

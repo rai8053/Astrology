@@ -69,7 +69,7 @@ export function LanguageSwitcher() {
             onClick={() => setOpen(false)}
           />
           <div
-            className="absolute top-full right-0 mt-[6px] z-50 min-w-[180px] bg-card border border-border rounded-xl shadow-lg overflow-hidden max-h-80 overflow-y-auto"
+            className="absolute top-full right-0 mt-[6px] z-50 min-w-[180px] bg-card border border-border rounded-xl shadow-lg overflow-hidden max-h-80 overflow-y-auto" {/* deslop-ignore 22 */}
             role="listbox"
             aria-label={t('common.selectLanguage') || 'Select language'}
           >

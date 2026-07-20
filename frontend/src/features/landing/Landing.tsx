@@ -388,10 +388,10 @@ export function Landing() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { step: '01', icon: User, titleKey: 'landing.howItWorksStep1', descKey: 'landing.howItWorksStep1Desc' },
-              { step: '02', icon: Zap, titleKey: 'landing.howItWorksStep2', descKey: 'landing.howItWorksStep2Desc' },
-              { step: '03', icon: Eye, titleKey: 'landing.howItWorksStep3', descKey: 'landing.howItWorksStep3Desc' },
-              { step: '04', icon: Sparkles, titleKey: 'landing.howItWorksStep4', descKey: 'landing.howItWorksStep4Desc' },
+              { icon: User, titleKey: 'landing.howItWorksStep1', descKey: 'landing.howItWorksStep1Desc' },
+              { icon: Zap, titleKey: 'landing.howItWorksStep2', descKey: 'landing.howItWorksStep2Desc' },
+              { icon: Eye, titleKey: 'landing.howItWorksStep3', descKey: 'landing.howItWorksStep3Desc' },
+              { icon: Sparkles, titleKey: 'landing.howItWorksStep4', descKey: 'landing.howItWorksStep4Desc' },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -404,7 +404,6 @@ export function Landing() {
                 <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center cosmic-glow">
                   <item.icon className="w-5 h-5 text-primary-light" />
                 </div>
-                <span className="text-[10px] font-bold tracking-widest text-primary-lighter uppercase">{item.step}</span>
                 <h3 className="text-base font-semibold mt-2 mb-2">{t(item.titleKey as TranslationKey)}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{t(item.descKey as TranslationKey)}</p>
               </motion.div>
@@ -845,7 +844,7 @@ function PricingSection() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06, duration: 0.4 }}
                 whileHover={{ y: -4 }}
-                className={`relative rounded-xl p-6 flex flex-col transition-all duration-300 ${
+                className={`relative rounded-xl p-6 flex flex-col transition-transform duration-300 ${
                   plan.highlighted
                     ? 'glass-card border-primary/30 shadow-lg'
                     : 'glass-card'

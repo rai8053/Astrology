@@ -19,7 +19,7 @@ export function PremiumButton({ className, variant = 'primary', size = 'md', loa
       whileTap={isDisabled ? {} : { scale: 0.97 }}
       className={cn(
         variant === 'primary' && 'btn-gold',
-        variant === 'secondary' && 'card-border-premium bg-bg-primary dark:bg-dark-bg-secondary text-text-primary dark:text-dark-text-primary hover:bg-bg-secondary dark:hover:bg-dark-bg-tertiary inline-flex items-center justify-center gap-2 font-sans font-medium rounded-xl transition-all duration-200',
+        variant === 'secondary' && 'card-border-premium bg-bg-primary dark:bg-dark-bg-secondary text-text-primary dark:text-dark-text-primary hover:bg-bg-secondary dark:hover:bg-dark-bg-tertiary inline-flex items-center justify-center gap-2 font-sans font-medium rounded-xl transition-colors duration-200',
         variant === 'ghost' && 'btn-ghost-premium',
         variant === 'outline' && 'btn-outline-premium',
         size === 'sm' && 'px-4 py-1.5 text-[11px]',
