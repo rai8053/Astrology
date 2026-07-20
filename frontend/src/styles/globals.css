@@ -108,8 +108,8 @@
   --color-text-tertiary: #6B6475;
   --color-border-secondary: rgba(166,124,50,0.18);
 
-  --color-ink: #faf8f5;
-  --color-parchment: #1a1a2e;
+  --color-ink: #1a1a2e;
+  --color-parchment: #faf8f5;
 }
 
 @layer base {

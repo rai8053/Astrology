@@ -61,9 +61,8 @@ createRoot(document.getElementById('root')!).render(
         <Toaster
           position="top-right"
           toastOptions={{
-            className: 'font-sans text-sm',
+            className: 'font-sans text-sm !bg-background !text-foreground !border !border-primary/20 !rounded-xl',
             duration: 4000,
-            style: { background: '#1a0b3a', color: '#fdfbf7', borderRadius: '12px', border: '1px solid rgba(212,175,55,0.2)' },
           }}
         />
       </QueryClientProvider>

@@ -41,7 +41,7 @@ function TypingIndicator() {
 
 function MarkdownContent({ content }: { content: string }) {
   return (
-    <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-gold prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2 prose-p:leading-relaxed prose-p:my-1.5 prose-strong:text-gold/90 prose-ul:my-1 prose-li:my-0.5 prose-code:text-gold/80 prose-code:bg-white/5 prose-code:px-1 prose-code:rounded prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10">
+    <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-gold prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2 prose-p:leading-relaxed prose-p:my-1.5 prose-strong:text-gold/90 prose-ul:my-1 prose-li:my-0.5 prose-code:text-gold/80 prose-code:bg-muted/50 prose-code:px-1 prose-code:rounded prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border">
       <ReactMarkdown remarkPlugins={[remarkGfm]}>
         {content}
       </ReactMarkdown>

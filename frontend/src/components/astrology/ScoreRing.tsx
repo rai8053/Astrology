@@ -7,10 +7,10 @@ interface ScoreRingProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 90) return 'stroke-[#C9943A]';
-  if (score >= 70) return 'stroke-[#DBA84E]';
-  if (score >= 50) return 'stroke-[#ECC77A]';
-  return 'stroke-[#C9943A]';
+  if (score >= 90) return 'stroke-[var(--color-primary)]';
+  if (score >= 70) return 'stroke-[var(--color-primary-light)]';
+  if (score >= 50) return 'stroke-[var(--color-primary-lighter)]';
+  return 'stroke-[var(--color-primary)]';
 }
 
 export function ScoreRing({ value, label, size = 64 }: ScoreRingProps) {
@@ -39,7 +39,7 @@ export function ScoreRing({ value, label, size = 64 }: ScoreRingProps) {
     <div className="flex flex-col items-center gap-1">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth="4" className="text-border" />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth="4" className="text-muted" />
           <circle
             cx={size / 2}
             cy={size / 2}

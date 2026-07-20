@@ -175,7 +175,7 @@ function InsightCard({ insight }: { insight: AstroInsight }) {
       <PremiumCard glass className="h-full p-4 hover:shadow-lg hover:shadow-gold/5 transition-shadow duration-300">
         <div className="flex items-start justify-between mb-3">
           <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${insight.color} bg-opacity-10 flex items-center justify-center`}>
-            <Icon className="w-4 h-4 text-white" />
+            <Icon className="w-4 h-4 text-ink dark:text-parchment" />
           </div>
           <div className="flex items-center gap-1">
             <span className="text-lg font-bold font-serif">{insight.score}</span>

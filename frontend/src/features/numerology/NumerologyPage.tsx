@@ -161,7 +161,7 @@ export function NumerologyPage() {
                   type="date"
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-muted border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-primary/40 transition-colors [color-scheme:dark]"
+                  className="w-full px-4 py-2.5 bg-muted border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-primary/40 transition-colors dark:[color-scheme:dark]"
                 />
               </div>
               <PremiumButton
