@@ -1,0 +1,8 @@
+# Gitleaks configuration for Astrology project
+# Extends default rules with project-specific allowlists
+
+[allowlist]
+  # .env.example files contain placeholder values (KEY="") — not real secrets
+  paths = [
+    '''backend/\.env\.example$''',
+  ]

@@ -19,7 +19,8 @@
     "test": "cd backend && npm run test && cd ../frontend && npm run test",
     "clean": "rm -rf dist node_modules",
     "security:audit": "cd backend && npm audit && cd ../frontend && npm audit",
-    "security:outdated": "cd backend && npm outdated && cd ../frontend && npm outdated"
+    "security:outdated": "cd backend && npm outdated && cd ../frontend && npm outdated",
+    "security:gitleaks": "gitleaks git --no-banner --config .gitleaks.toml"
   },
   "overrides": {
     "shell-quote": "^1.8.4",
