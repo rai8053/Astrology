@@ -44,6 +44,8 @@ jobs:
       - name: Build Frontend
         if: steps.check-secrets.outputs.has_secrets == 'true'
         working-directory: frontend
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://astrology-backend-rb79.onrender.com' }}
         run: |
           npm ci
           npm run build
