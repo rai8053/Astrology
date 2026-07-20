@@ -625,7 +625,7 @@ export function KundliPage() {
                             </td>
                             <td className="py-3 text-ink/60 dark:text-parchment/60">{getZodiacName(p.sign)}</td>
                             <td className="py-3">
-                              <span className="px-2 py-0.5 bg-gold/10 text-gold rounded text-[10px] font-mono font-bold">{p.house}</span>
+                              <span className="px-2 py-0.5 bg-gold/10 text-gold rounded text-[10px] font-bold">{p.house}</span>
                             </td>
                             <td className="py-3 text-sm text-ink/50 dark:text-parchment/50">{p.description}</td>
                           </motion.tr>

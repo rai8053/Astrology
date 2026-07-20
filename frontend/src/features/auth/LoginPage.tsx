@@ -51,9 +51,6 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg-primary dark:bg-dark-bg-primary p-4 relative overflow-hidden">
       <SEO title={t('auth.signIn')} description={t('auth.signInSubtitle')} />
-      <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]" style={{
-        backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(212,175,55,0.5) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(212,175,55,0.3) 0%, transparent 40%)',
-      }} />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="w-full max-w-md relative z-10">
         <Link to="/" className="flex items-center gap-2 justify-center mb-8">
           <Sparkles className="w-6 h-6 text-accent" />

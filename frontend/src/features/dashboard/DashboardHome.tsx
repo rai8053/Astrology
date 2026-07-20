@@ -432,9 +432,7 @@ export function DashboardHome() {
             </PremiumCard>
             <PremiumCard glass>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
-                  <Clock className="h-5 w-5 text-purple-400" />
-                </div>
+                <Clock className="h-5 w-5 text-primary shrink-0" />
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('dashboard.antardasha')}</p>
                   <p className="text-base font-bold text-foreground">{dasha.antardasha || '—'}</p>

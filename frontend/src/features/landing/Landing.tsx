@@ -224,16 +224,7 @@ export function Landing() {
 
       {/* ===== HERO ===== */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-background" />
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              radial-gradient(ellipse at 20% 30%, rgba(201,148,58,0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 40%, rgba(229,62,62,0.04) 0%, transparent 40%),
-              radial-gradient(ellipse at 50% 80%, rgba(201,148,58,0.04) 0%, transparent 45%)
-            `,
-          }} />
-        </motion.div>
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-background" />
         <FloatingParticles />
 
         <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 text-center pt-28">
@@ -484,8 +475,8 @@ export function Landing() {
                 variants={staggerItem}
                 className="glass-card rounded-xl p-6 text-center card-hover"
               >
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-cyan-500/10 flex items-center justify-center cosmic-glow-cyan">
-                  <span className="text-2xl font-bold text-secondary">{item.number}</span>
+                <div className="mx-auto mb-4 text-center">
+                  <span className="text-4xl font-bold text-primary">{item.number}</span>
                 </div>
                 <h3 className="text-base font-semibold mb-2">{t(item.titleKey)}</h3>
                 <p className="text-sm text-muted-foreground">{t(item.descKey)}</p>

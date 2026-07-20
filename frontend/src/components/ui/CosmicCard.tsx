@@ -12,7 +12,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 const glowMap = {
   purple: 'cosmic-glow',
   amber: 'cosmic-glow-accent',
-  cyan: 'cosmic-glow-cyan',
+  cyan: 'cosmic-glow-accent-alt',
   none: '',
 };
 

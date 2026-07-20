@@ -419,12 +419,12 @@ export function ChatPage() {
         </div>
         <div className="flex items-center gap-2">
           {!isPremium && dailyUsed > 0 && (
-            <span className="text-[10px] text-gold/60 font-mono bg-gold/5 px-2.5 py-1 rounded-full border border-gold/10">
+            <span className="text-[10px] text-gold/60 bg-gold/5 px-2.5 py-1 rounded-full border border-gold/10">
               {limitRemaining}/{DAILY_FREE_LIMIT}
             </span>
           )}
           {isPremium && (
-            <span className="text-[10px] text-gold font-mono bg-gold/10 px-2.5 py-1 rounded-full border border-gold/20 flex items-center gap-1">
+            <span className="text-[10px] text-gold bg-gold/10 px-2.5 py-1 rounded-full border border-gold/20 flex items-center gap-1">
               <Crown className="w-3 h-3" /> {t('chat.premiumBadge')}
             </span>
           )}

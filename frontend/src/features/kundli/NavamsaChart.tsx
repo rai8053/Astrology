@@ -50,7 +50,7 @@ export function NavamsaChart({ placements }: { placements: VedicProfile['planeta
                   {planetsInSign.map((p) => {
                     const color = NAVAMSA_COLORS[p.planet] || '#999';
                     return (
-                      <span key={p.planet} className="text-[7px] font-mono font-bold px-1 py-0.5 rounded" style={{ backgroundColor: `${color}18`, color }}>
+                      <span key={p.planet} className="text-[7px] font-bold px-1 py-0.5 rounded" style={{ backgroundColor: `${color}18`, color }}>
                         {p.planet.split('(')[1]?.split(')')[0] || p.planet.split(' ')[0]}
                       </span>
                     );
@@ -77,10 +77,10 @@ export function NavamsaChart({ placements }: { placements: VedicProfile['planeta
                 <td className="py-1.5 font-medium text-[10px]">{p.planet}</td>
                 <td className="py-1.5 text-ink/60 dark:text-parchment/60">{p.sign}</td>
                 <td className="py-1.5">
-                  <span className="px-1.5 py-0.5 bg-gold/10 text-gold rounded text-[9px] font-mono font-bold">{p.navamsaSign}</span>
+                  <span className="px-1.5 py-0.5 bg-gold/10 text-gold rounded text-[9px] font-bold">{p.navamsaSign}</span>
                 </td>
                 <td className="py-1.5">
-                  <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[9px] font-mono font-bold">{p.navamsaHouse}</span>
+                  <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[9px] font-bold">{p.navamsaHouse}</span>
                 </td>
               </tr>
             ))}

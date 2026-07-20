@@ -69,9 +69,7 @@ export function CompatibilityPage() {
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2">
           <PremiumCard glass>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center">
-                <Heart className="w-4 h-4 text-pink-400" />
-              </div>
+              <Heart className="w-4 h-4 text-primary" />
               <h3 className="font-sans text-lg font-semibold">{t('compatibility.partnerDetails')}</h3>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
