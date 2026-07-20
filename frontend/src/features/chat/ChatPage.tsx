@@ -4,7 +4,7 @@ import { Send, MessageCircle, Sparkles, Trash2, Bot, User, Stars, Crown, Chevron
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { api } from '@/lib/api';
+import { api, API_BASE } from '@/lib/api';
 import { PremiumButton } from '@/components/PremiumButton';
 import { PremiumCard } from '@/components/ui/PremiumCard';
 import { VoiceChatButton } from '@/components/ui/VoiceChatButton';
@@ -132,8 +132,7 @@ export function ChatPage() {
       const payload: Record<string, unknown> = { message, language };
       if (sessionId) payload.sessionId = sessionId;
 
-      const baseUrl = '';
-      const res = await fetch(`${baseUrl}/api/chat/stream`, {
+      const res = await fetch(`${API_BASE}/api/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -278,7 +277,7 @@ export function ChatPage() {
       const payload: Record<string, unknown> = { message: text, language };
       if (sessionId) payload.sessionId = sessionId;
 
-      const res = await fetch('/api/chat/stream', {
+      const res = await fetch(`${API_BASE}/api/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
