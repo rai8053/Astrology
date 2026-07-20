@@ -32,7 +32,7 @@
 
 Soma & Surya combines **Retrieval-Augmented Generation (RAG)** with a **production-grade SaaS backend** to deliver personalized Vedic astrology readings. The system ingests 48+ authoritative astrology knowledge articles, semantically retrieves the most relevant context for each user query, and feeds it to a large language model via OpenRouter — resulting in responses that are grounded, accurate, and personalized to the user's birth chart.
 
-The platform features **streaming AI chat** (powered by DeepSeek-V4-Flash via hcnsec.cn with $3,784+ credit), **conversation memory**, **birth chart calculation**, **Kundli (D1/D9) visualization**, **Stripe subscription billing**, **admin analytics**, and **full audit logging**. Embeddings via OpenRouter free tier (text-embedding-3-small, 1536d).
+The platform features **streaming AI chat** (powered by DeepSeek-V4-Flash via iamhc.cn with $3,784+ credit), **conversation memory**, **birth chart calculation**, **Kundli (D1/D9) visualization**, **Stripe subscription billing**, **admin analytics**, and **full audit logging**. Embeddings via OpenRouter free tier (text-embedding-3-small, 1536d).
 
 | Metric | Value |
 |--------|-------|
@@ -80,7 +80,7 @@ The platform features **streaming AI chat** (powered by DeepSeek-V4-Flash via hc
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   AI Provider (hcnsec.cn)                    │
+│                   AI Provider (iamhc.cn)                    │
 │  DeepSeek-V4-Flash → DeepSeek-V4-Pro → glm-5.2 (fallback)  │
 └────────────────────────┬────────────────────────────────────┘
                          │
@@ -468,7 +468,7 @@ docker compose exec backend npm run seed:rag
 
 | Service | Status | Notes |
 |---------|--------|-------|
-| AI Chat (DeepSeek-V4-Flash) | ✅ Operational | Primary model via hcnsec.cn ($3,784 credit) |
+| AI Chat (DeepSeek-V4-Flash) | ✅ Operational | Primary model via iamhc.cn ($3,784 credit) |
 | Embeddings (text-embedding-3-small) | ✅ Operational | Via OpenRouter free tier, 1536d vectors |
 | Stripe Billing | ✅ Operational | Checkout, webhook, subscription tiers |
 | iFLYTEK Voice (ASR/TTS) | ✅ Operational | WebSocket with HMAC-SHA256 auth |
