@@ -51,7 +51,7 @@ const PORT = isNaN(rawPort) || rawPort < 1 ? 4000 : rawPort;
 
 const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map(s => s.trim()).filter(Boolean);
 const isDev = process.env.NODE_ENV === 'development';
-const corsOrigin = isDev ? ['http://localhost:5173', 'http://localhost:4000', 'http://127.0.0.1:5173', 'http://127.0.0.1:4000'] : corsOrigins;
+const corsOrigin = isDev ? ['http://localhost:5173', 'http://localhost:4000', 'http://127.0.0.1:5173', 'http://127.0.0.1:4000', 'https://astryn.hara-xy.com/'] : corsOrigins;
 
 function isValidOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
