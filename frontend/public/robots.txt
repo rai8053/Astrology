@@ -1,5 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /api
 Sitemap: https://somasurya.com/sitemap.xml
