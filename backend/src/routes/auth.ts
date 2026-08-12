@@ -29,6 +29,14 @@ const authLimiter = rateLimit({
   message: { success: false, error: 'Too many login attempts. Try again later.' },
 });
 
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 60 : 400,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many request. Try again later.' },
+});
+
 const JWT_SECRET = (() => {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET environment variable is required');
@@ -285,7 +293,7 @@ authRouter.post('/login', authLimiter, validate(loginSchema), asyncHandler(async
   });
 }));
 
-authRouter.post('/refresh', authLimiter, csrfProtection, validate(refreshTokenSchema), asyncHandler(async (req, res) => {
+authRouter.post('/refresh', refreshLimiter, csrfProtection, validate(refreshTokenSchema), asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken || req.body?.refreshToken;
   if (!token) throw new UnauthorizedError('No refresh token provided');
 

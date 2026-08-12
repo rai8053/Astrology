@@ -46,6 +46,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
 
 const app = express();
+app.set('trust proxy', 1);
 const rawPort = parseInt(process.env.PORT || '4000', 10);
 const PORT = isNaN(rawPort) || rawPort < 1 ? 4000 : rawPort;
 
